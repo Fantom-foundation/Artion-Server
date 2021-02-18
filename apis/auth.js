@@ -63,6 +63,7 @@ router.post('/addUser', async (req, res, next) => {
     if (user)
       res.json({
         msg: Constants.USERCREATED,
+        user: user,
       })
     else
       res.status(400).json({
@@ -141,6 +142,7 @@ router.post('/updateUser', async (req, res, next) => {
     if (newUser)
       res.json({
         msg: Constants.USERUPDATED,
+        user: newUser,
       })
     else
       res.status(400).json({
