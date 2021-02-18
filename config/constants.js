@@ -12,6 +12,8 @@ const Constants = {
   SIGNOUTJWTTOKENFAILED: 'sign out token creation failed',
   USERUPDATED: 'user has been updated',
   UPDATEUSERFAILED: 'cannot update a user',
+  USERFOUND: 'user found',
+  USERNOTFOUND: 'cannot find a user',
 }
 
 module.exports = Constants

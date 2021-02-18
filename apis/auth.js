@@ -155,4 +155,24 @@ router.post('/updateUser', async (req, res, next) => {
   }
 })
 
+router.post('/getUser', async (req, res, next) => {
+  let email = req.query.email
+  try {
+    let user = await auth.getUserByEmail(email)
+    if (user)
+      res.json({
+        msg: Constants.USERFOUND,
+        user: user,
+      })
+    else
+      res.status(400).json({
+        msg: Constants.USERNOTFOUND,
+      })
+  } catch (error) {
+    res.status(400).json({
+      msg: Constants.USERNOTFOUND,
+    })
+  }
+})
+
 module.exports = router
