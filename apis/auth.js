@@ -175,4 +175,5 @@ router.post('/getUser', async (req, res, next) => {
   }
 })
 
+router.post('/deleteUser', async (req, res, next) => {})
 module.exports = router
