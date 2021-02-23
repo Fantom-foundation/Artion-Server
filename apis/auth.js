@@ -32,8 +32,8 @@ router.get('/test', async (req, res, next) => {
 router.post('/addUser', async (req, res, next) => {
   // console.log(req.body)
 
-  let email = req.query.email
-  let password = req.query.password
+  let email = req.body.email
+  let password = req.body.password
 
   console.log('add user, name, email, password are ')
   console.log(email, password)
@@ -76,7 +76,7 @@ router.post('/addUser', async (req, res, next) => {
 })
 
 router.post('/signin', async (req, res, next) => {
-  let email = req.query.email
+  let email = req.body.email
 
   try {
     let user = await auth.getUserByEmail(email)
@@ -93,7 +93,7 @@ router.post('/signin', async (req, res, next) => {
 })
 
 router.post('/signout', async (req, res, next) => {
-  let email = req.query.email
+  let email = req.body.email
 
   try {
     let user = await auth.getUserByEmail(email)
@@ -111,8 +111,8 @@ router.post('/signout', async (req, res, next) => {
 
 router.post('/updateUser', async (req, res, next) => {
   console.log(req.body)
-  let email = req.query.email
-  let password = req.query.password
+  let email = req.body.email
+  let password = req.body.password
   if (!email)
     return res.status(400).json({
       msg: Constants.NOEMAIL,
@@ -150,7 +150,7 @@ router.post('/updateUser', async (req, res, next) => {
 })
 
 router.post('/getUser', async (req, res, next) => {
-  let email = req.query.email
+  let email = req.body.email
   try {
     let user = await auth.getUserByEmail(email)
     if (user)
