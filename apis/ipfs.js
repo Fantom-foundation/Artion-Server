@@ -51,6 +51,7 @@ router.post("/uploadImage2Server", async (req, res, next) => {
       let name = fields.name;
       let address = fields.address;
       let limit = fields.limit;
+      let description = fields.description;
       let imageFileName = address + now.toString() + ".png";
       let jsonFileName = address + now.toString() + ".json";
       imgData = imgData.replace(/^data:image\/png;base64,/, "");
@@ -66,6 +67,7 @@ router.post("/uploadImage2Server", async (req, res, next) => {
           fileName: imageFileName,
           address: address,
           limit: limit,
+          description: description,
         };
         let jsonMetadata = JSON.stringify(metaData);
         fs.writeFile("uploads/" + jsonFileName, jsonMetadata, async (err) => {
