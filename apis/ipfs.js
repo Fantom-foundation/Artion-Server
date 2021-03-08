@@ -5,38 +5,75 @@ const FormData = require("form-data");
 const formidable = require("formidable");
 const router = require("express").Router();
 
-const pinFileToIPFS = async (fileName) => {
-  const url = `https://api.pinata.cloud/pinning/pinFileToIPFS`;
-  let data = new FormData();
-  data.append("file", fs.createReadStream("/uploads/" + fileName));
-  const res = await axios.post(url, data, {
-    maxContentLength: "Infinity",
-    headers: {
-      "Content-Type": `multipart/form-data; boundary=${data._boundary}`,
-      pinata_api_key: process.env.PINATA_API_KEY,
-      pinata_secret_api_key: process.env.PINATA_SECRET_API_KEY,
-    },
-  });
-  console.log(res.data);
-};
-const pinJsonToIPFS = async (fileName) => {
-  const url = `https://api.pinata.cloud/pinning/pinFileToIPFS`;
-  let data = new FormData();
-  data.append("file", fs.createReadStream("/uploads/" + fileName));
-  try {
-    const res = await axios.post(url, data, {
-      headers: {
-        maxContentLength: "Infinity",
-        "Content-Type": `multipart/form-data; boundary=${data._boundary}`,
-        pinata_api_key: process.env.PINATA_API_KEY,
-        pinata_secret_api_key: process.env.PINATA_SECRET_API_KEY,
+const pinataSDK = require("@pinata/sdk");
+const pinata = pinataSDK(
+  process.env.PINATA_API_KEY,
+  process.env.PINATA_SECRET_API_KEY
+);
+
+const pinFileToIPFS = async (fileName, address, name) => {
+  const options = {
+    pinataMetadata: {
+      name: name,
+      keyvalues: {
+        address: address,
       },
-    });
-    console.log(res.data);
-  } catch (err) {
-    console.error(err);
+    },
+    pinataOptions: {
+      cidVersion: 0,
+    },
+  };
+  const readableStreamForFile = fs.createReadStream("uploads/" + fileName);
+
+  try {
+    let result = await pinata.pinFileToIPFS(readableStreamForFile, options);
+    console.log(result);
+    return result;
+  } catch (error) {
+    console.log(error);
+    return "failed";
   }
 };
+
+const pinJsonToIPFS = async (jsonMetadata) => {
+  const options = {
+    pinataMetadata: {
+      name: jsonMetadata.name,
+      keyvalues: {
+        address: jsonMetadata.address,
+      },
+    },
+    pinataOptions: {
+      cidVersion: 0,
+    },
+  };
+
+  try {
+    let result = await pinata.pinJSONToIPFS(jsonMetadata, options);
+    console.log(result);
+    return result;
+  } catch (error) {
+    console.log(error);
+    return "failed";
+  }
+};
+
+router.get("/ipfstest", async (req, res, next) => {
+  pinata
+    .testAuthentication()
+    .then((result) => {
+      console.log(result);
+      res.send({
+        result: result,
+      });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.send({
+        result: "failed",
+      });
+    });
+});
 
 router.post("/uploadImage2Server", async (req, res, next) => {
   let now = Date.now();
@@ -53,38 +90,35 @@ router.post("/uploadImage2Server", async (req, res, next) => {
       let limit = fields.limit;
       let description = fields.description;
       let imageFileName = address + now.toString() + ".png";
-      let jsonFileName = address + now.toString() + ".json";
       imgData = imgData.replace(/^data:image\/png;base64,/, "");
-      fs.writeFile("uploads/" + imageFileName, imgData, "base64", (err) => {
-        if (err) {
-          return res.status(400).json({
-            status: "failed",
-          });
-        }
-        // create a json file here & save
-        let metaData = {
-          name: name,
-          fileName: imageFileName,
-          address: address,
-          limit: limit,
-          description: description,
-        };
-        let jsonMetadata = JSON.stringify(metaData);
-        fs.writeFile("uploads/" + jsonFileName, jsonMetadata, async (err) => {
+      let metaData = {
+        name: name,
+        fileName: imageFileName,
+        address: address,
+        limit: limit,
+        description: description,
+      };
+      await fs.writeFile(
+        "uploads/" + imageFileName,
+        imgData,
+        "base64",
+        (err) => {
           if (err) {
             return res.status(400).json({
               status: "failed",
             });
           }
-          await pinFileToIPFS(imageFileName);
-          await pinJsonToIPFS(jsonFileName);
-        });
+        }
+      );
+      let filePinStatus = await pinFileToIPFS(imageFileName, address, name);
+      let jsonPinStatus = await pinJsonToIPFS(metaData);
+      return res.send({
+        status: "success",
+        uploadedCounts: 2,
+        fileHash: filePinStatus.IpfsHash,
+        jsonHash: jsonPinStatus.IpfsHash,
       });
     }
-  });
-
-  return res.json({
-    status: "success",
   });
 });
 
