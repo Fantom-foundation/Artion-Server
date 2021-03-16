@@ -11,12 +11,13 @@ const pinata = pinataSDK(
   process.env.PINATA_SECRET_API_KEY
 );
 
-const pinFileToIPFS = async (fileName, address, name) => {
+const pinFileToIPFS = async (fileName, address, name, symbol) => {
   const options = {
     pinataMetadata: {
       name: name,
       keyvalues: {
         address: address,
+        symbol: symbol,
       },
     },
     pinataOptions: {
@@ -90,10 +91,12 @@ router.post("/uploadImage2Server", async (req, res, next) => {
       let limit = fields.limit;
       let description = fields.description;
       let category = fields.category;
+      let symbol = fields.symbol;
       let imageFileName = address + now.toString() + ".png";
       imgData = imgData.replace(/^data:image\/png;base64,/, "");
       let metaData = {
         name: name,
+        symbol: symbol,
         fileName: imageFileName,
         address: address,
         limit: limit,
@@ -112,7 +115,12 @@ router.post("/uploadImage2Server", async (req, res, next) => {
           }
         }
       );
-      let filePinStatus = await pinFileToIPFS(imageFileName, address, name);
+      let filePinStatus = await pinFileToIPFS(
+        imageFileName,
+        address,
+        name,
+        symbol
+      );
       let jsonPinStatus = await pinJsonToIPFS(metaData);
       return res.send({
         status: "success",
