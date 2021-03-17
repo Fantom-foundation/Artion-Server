@@ -94,15 +94,6 @@ router.post("/uploadImage2Server", async (req, res, next) => {
       let symbol = fields.symbol;
       let imageFileName = address + now.toString() + ".png";
       imgData = imgData.replace(/^data:image\/png;base64,/, "");
-      let metaData = {
-        name: name,
-        symbol: symbol,
-        fileName: imageFileName,
-        address: address,
-        limit: limit,
-        description: description,
-        category: category,
-      };
       await fs.writeFile(
         "uploads/" + imageFileName,
         imgData,
@@ -121,6 +112,18 @@ router.post("/uploadImage2Server", async (req, res, next) => {
         name,
         symbol
       );
+
+      let metaData = {
+        name: name,
+        symbol: symbol,
+        fileName: imageFileName,
+        address: address,
+        limit: limit,
+        description: description,
+        category: category,
+        imageHash: filePinStatus.IpfsHash,
+      };
+
       let jsonPinStatus = await pinJsonToIPFS(metaData);
       return res.send({
         status: "success",
