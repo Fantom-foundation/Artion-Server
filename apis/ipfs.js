@@ -88,7 +88,7 @@ router.post("/uploadImage2Server", async (req, res, next) => {
       let imgData = fields.image;
       let name = fields.name;
       let address = fields.address;
-      let limit = fields.limit;
+      let royalty = fields.royalty;
       let description = fields.description;
       let category = fields.category;
       let symbol = fields.symbol;
@@ -118,7 +118,7 @@ router.post("/uploadImage2Server", async (req, res, next) => {
         symbol: symbol,
         fileName: imageFileName,
         address: address,
-        limit: limit,
+        royalty: royalty,
         description: description,
         category: category,
         imageHash: filePinStatus.IpfsHash,
