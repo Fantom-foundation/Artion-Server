@@ -98,7 +98,7 @@ router.post("/uploadImage2Server", async (req, res, next) => {
       let imageFileName = address + now.toString() + ".png";
       imgData = imgData.replace(/^data:image\/png;base64,/, "");
       await fs.writeFile(
-        "uploads/" + imageFileName,
+        "/home/jason/nft-marketplace/nifty-server/uploads/" + imageFileName,
         imgData,
         "base64",
         (err) => {
@@ -117,7 +117,9 @@ router.post("/uploadImage2Server", async (req, res, next) => {
       );
 
       // remove file once pinned
-      fs.unlinkSync("uploads/" + imageFileName);
+      fs.unlinkSync(
+        "/home/jason/nft-marketplace/nifty-server/uploads/" + imageFileName
+      );
 
       let metaData = {
         name: name,
