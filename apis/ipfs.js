@@ -104,7 +104,7 @@ router.post("/uploadImage2Server", async (req, res, next) => {
         (err) => {
           if (err) {
             return res.status(400).json({
-              status: "failed",
+              status: "failed to save an image file",
             });
           }
         }
