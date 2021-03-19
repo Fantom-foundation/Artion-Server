@@ -1,3 +1,4 @@
 /node_modules
 
 .env
+/config/fantomsea_tommy_service.json
