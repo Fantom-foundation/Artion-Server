@@ -73,6 +73,11 @@ router.get("/ipfstest", async (req, res, next) => {
       });
     });
 });
+router.get("/test", async (req, res, next) => {
+  return res.json({
+    apistatus: "running",
+  });
+});
 
 router.post("/uploadImage2Server", async (req, res, next) => {
   let now = Date.now();
