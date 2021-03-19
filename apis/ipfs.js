@@ -28,11 +28,10 @@ const pinFileToIPFS = async (fileName, address, name, symbol) => {
 
   try {
     let result = await pinata.pinFileToIPFS(readableStreamForFile, options);
-    console.log(result);
     return result;
   } catch (error) {
     console.log(error);
-    return "failed";
+    return "failed to pin file to ipfs";
   }
 };
 
@@ -51,11 +50,10 @@ const pinJsonToIPFS = async (jsonMetadata) => {
 
   try {
     let result = await pinata.pinJSONToIPFS(jsonMetadata, options);
-    console.log(result);
     return result;
   } catch (error) {
     console.log(error);
-    return "failed";
+    return "failed to pin json to ipfs";
   }
 };
 
@@ -112,6 +110,9 @@ router.post("/uploadImage2Server", async (req, res, next) => {
         name,
         symbol
       );
+
+      // remove file once pinned
+      fs.unlinkSync("uploads/" + imageFileName);
 
       let metaData = {
         name: name,
