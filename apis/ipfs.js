@@ -121,6 +121,8 @@ router.post("/uploadImage2Server", async (req, res, next) => {
       fs.unlinkSync(
         "/home/jason/nft-marketplace/nifty-server/uploads/" + imageFileName
       );
+      let now = new Date();
+      let currentTime = now.toTimeString();
 
       let metaData = {
         name: name,
@@ -131,6 +133,7 @@ router.post("/uploadImage2Server", async (req, res, next) => {
         description: description,
         category: category,
         imageHash: filePinStatus.IpfsHash,
+        createdAt: currentTime,
       };
 
       let jsonPinStatus = await pinJsonToIPFS(metaData);
