@@ -2,7 +2,8 @@ require('dotenv').config()
 const fs = require('fs')
 const formidable = require('formidable')
 const router = require('express').Router()
-const Collection = require('../models/collection')
+const mongoose = require('mongoose')
+const Collection = mongoose.model('Collection')
 
 const pinataSDK = require('@pinata/sdk')
 const pinata = pinataSDK(
@@ -198,7 +199,7 @@ router.post('/uploadCollectionImage2Server', async (req, res, next) => {
   form.parse(req, async (err, fields, files) => {
     if (err) {
       return res.status(400).json({
-        status: 'failed',
+        status: 'failedParsingForm',
       })
     } else {
       let imgData = fields.image
@@ -230,21 +231,21 @@ router.post('/uploadCollectionImage2Server', async (req, res, next) => {
       fs.unlinkSync(
         '/home/jason/nft-marketplace/nifty-server/uploads/' + imageFileName,
       )
-      let newCollection = new Collection({
-        collectionName: name,
-        imageHash: filePinStatus.IpfsHash,
-      })
+      let collection = new Collection()
+      collection.collectionName = name
+      collection.description = description
+      collection.imageHash = filePinStatus.IpfsHash
 
       try {
-        newCollection.save((err, data) => {
+        collection.save((err, data) => {
           if (err) {
             return res.status(400).json({
-              status: 'failed',
+              status: 'failedSavingToDB',
             })
           }
           return res.send({
             status: 'success',
-            fileHash: filePinStatus.IpfsHash,
+            collection: collection.toJsonList(),
           })
         })
       } catch (error) {
@@ -269,6 +270,7 @@ router.post('/uploadCollectionImage2Server', async (req, res, next) => {
       // let jsonPinStatus = await pinCollectionJsonToIPFS(metaData)
 
       // save collection info to db
+
       return res.send({
         status: 'success',
         // uploadedCounts: 2,
