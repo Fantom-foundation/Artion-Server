@@ -206,7 +206,7 @@ router.post('/uploadCollectionImage2Server', async (req, res, next) => {
       let name = fields.name
       let description = fields.description
       let address = fields.address
-      let imageFileName = name + now.toString() + '.png'
+      let imageFileName = name.replace(' ', '') + address + '.png'
       imgData = imgData.replace(/^data:image\/png;base64,/, '')
       await fs.writeFile(
         '/home/jason/nft-marketplace/nifty-server/uploads/' + imageFileName,
