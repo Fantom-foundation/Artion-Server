@@ -1,25 +1,30 @@
 const mongoose = require('mongoose')
 
-const History = new mongoose.Schema({
-  nftBasicID: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'NFTBasics',
+const History = mongoose.Schema(
+  {
+    nftBasicID: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'NFTBasics',
+    },
+    eventID: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Event',
+    },
+    collectionID: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Collection',
+    },
+    history_7: [mongoose.Schema.Types.Mixed],
+    history_14: [mongoose.Schema.Types.Mixed],
+    history_30: [mongoose.Schema.Types.Mixed],
+    history_60: [mongoose.Schema.Types.Mixed],
+    history_90: [mongoose.Schema.Types.Mixed],
+    history_lastYear: [mongoose.Schema.Types.Mixed],
+    history_all: [mongoose.Schema.Types.Mixed],
   },
-  eventID: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Event',
+  {
+    timestamps: true,
   },
-  collectionID: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Collection',
-  },
-  history_7: [mongoose.Schema.Types.Mixed],
-  history_14: [mongoose.Schema.Types.Mixed],
-  history_30: [mongoose.Schema.Types.Mixed],
-  history_60: [mongoose.Schema.Types.Mixed],
-  history_90: [mongoose.Schema.Types.Mixed],
-  history_lastYear: [mongoose.Schema.Types.Mixed],
-  history_all: [mongoose.Schema.Types.Mixed],
-})
+)
 
-module.exports = mongoose.model('History', History)
+mongoose.model('History', History)

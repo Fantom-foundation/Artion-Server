@@ -1,8 +1,13 @@
 const mongoose = require('mongoose')
 
-const Event = new mongoose.Schema({
-  eventName: { type: String, required: true },
-  tkID: { type: Number, required: true },
-})
+const Event = mongoose.Schema(
+  {
+    eventName: { type: String, required: true },
+    tkID: { type: Number, required: true },
+  },
+  {
+    timestamps: true,
+  },
+)
 
-module.exports = mongoose.model('Event', Event)
+mongoose.model('Event', Event)

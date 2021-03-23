@@ -234,18 +234,24 @@ router.post('/uploadCollectionImage2Server', async (req, res, next) => {
         collectionName: name,
         imageHash: filePinStatus.IpfsHash,
       })
-      newCollection.save((err, data) => {
-        if (err) {
-          return res.status(400).json({
-            status: 'failed',
-          })
-        }
 
-        return res.send({
-          status: 'success',
-          fileHash: filePinStatus.IpfsHash,
+      try {
+        newCollection.save((err, data) => {
+          if (err) {
+            return res.status(400).json({
+              status: 'failed',
+            })
+          }
+          return res.send({
+            status: 'success',
+            fileHash: filePinStatus.IpfsHash,
+          })
         })
-      })
+      } catch (error) {
+        return res.status(400).json({
+          status: 'failedOutSave',
+        })
+      }
 
       // we will not need to save the json file of the collection, rather it would be better off to store on the db
       // let now = new Date()
