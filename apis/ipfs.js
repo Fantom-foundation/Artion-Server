@@ -6,6 +6,9 @@ const mongoose = require('mongoose')
 const Collection = mongoose.model('Collection')
 
 const pinataSDK = require('@pinata/sdk')
+
+const uploadPath = '/home/jason/nft-marketplace/nifty-server/uploads/'
+// const uploadPath = 'uploads/'
 const pinata = pinataSDK(
   process.env.PINATA_API_KEY,
   process.env.PINATA_SECRET_API_KEY,
@@ -25,7 +28,7 @@ const pinFileToIPFS = async (fileName, address, name, symbol) => {
       cidVersion: 0,
     },
   }
-  const readableStreamForFile = fs.createReadStream('uploads/' + fileName)
+  const readableStreamForFile = fs.createReadStream(uploadPath + fileName)
 
   try {
     let result = await pinata.pinFileToIPFS(readableStreamForFile, options)
@@ -50,7 +53,7 @@ const pinCollectionFileToIPFS = async (fileName, name, address) => {
       cidVersion: 0,
     },
   }
-  const readableStreamForFile = fs.createReadStream('uploads/' + fileName)
+  const readableStreamForFile = fs.createReadStream(uploadPath + fileName)
 
   try {
     let result = await pinata.pinFileToIPFS(readableStreamForFile, options)
@@ -145,7 +148,7 @@ router.post('/uploadImage2Server', async (req, res, next) => {
       let imageFileName = address + now.toString() + '.png'
       imgData = imgData.replace(/^data:image\/png;base64,/, '')
       await fs.writeFile(
-        '/home/jason/nft-marketplace/nifty-server/uploads/' + imageFileName,
+        uploadPath + imageFileName,
         imgData,
         'base64',
         (err) => {
@@ -165,9 +168,10 @@ router.post('/uploadImage2Server', async (req, res, next) => {
       )
 
       // remove file once pinned
-      fs.unlinkSync(
-        '/home/jason/nft-marketplace/nifty-server/uploads/' + imageFileName,
-      )
+      try {
+        fs.unlinkSync(uploadPath + imageFileName)
+      } catch (error) {}
+
       let now = new Date()
       let currentTime = now.toTimeString()
 
@@ -202,14 +206,14 @@ router.post('/uploadCollectionImage2Server', async (req, res, next) => {
         status: 'failedParsingForm',
       })
     } else {
-      let imgData = fields.image
+      let imgData = fields.imgData
       let name = fields.name
       let description = fields.description
       let address = fields.address
-      let imageFileName = name.replace(' ', '') + address + '.png'
+      let imageFileName = address + name.replace(' ', '') + '.png'
       imgData = imgData.replace(/^data:image\/png;base64,/, '')
       await fs.writeFile(
-        '/home/jason/nft-marketplace/nifty-server/uploads/' + imageFileName,
+        uploadPath + imageFileName,
         imgData,
         'base64',
         (err) => {
@@ -228,27 +232,30 @@ router.post('/uploadCollectionImage2Server', async (req, res, next) => {
         address,
       )
       // remove file once pinned
-      fs.unlinkSync(
-        '/home/jason/nft-marketplace/nifty-server/uploads/' + imageFileName,
-      )
+      try {
+        fs.unlinkSync(uploadPath + imageFileName)
+      } catch (error) {}
+
       let collection = new Collection()
       collection.collectionName = name
       collection.description = description
       collection.imageHash = filePinStatus.IpfsHash
+      collection.address = address
 
       try {
-        collection.save((err, data) => {
-          if (err) {
-            return res.status(400).json({
-              status: 'failedSavingToDB',
-            })
-          }
+        let saveStatus = await collection.save()
+        if (saveStatus) {
           return res.send({
             status: 'success',
-            collection: collection.toJsonList(),
+            collection: saveStatus,
           })
-        })
+        } else {
+          return res.status(400).json({
+            status: 'failedSavingToDB',
+          })
+        }
       } catch (error) {
+        console.log(error)
         return res.status(400).json({
           status: 'failedOutSave',
         })
@@ -270,13 +277,6 @@ router.post('/uploadCollectionImage2Server', async (req, res, next) => {
       // let jsonPinStatus = await pinCollectionJsonToIPFS(metaData)
 
       // save collection info to db
-
-      return res.send({
-        status: 'success',
-        // uploadedCounts: 2,
-        fileHash: filePinStatus.IpfsHash,
-        // jsonHash: jsonPinStatus.IpfsHash,
-      })
     }
   })
 })
