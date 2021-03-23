@@ -1,9 +1,8 @@
 require('dotenv').config()
-const axios = require('axios')
 const fs = require('fs')
-const FormData = require('form-data')
 const formidable = require('formidable')
 const router = require('express').Router()
+const Collection = require('../models/collection')
 
 const pinataSDK = require('@pinata/sdk')
 const pinata = pinataSDK(
@@ -231,25 +230,44 @@ router.post('/uploadCollectionImage2Server', async (req, res, next) => {
       fs.unlinkSync(
         '/home/jason/nft-marketplace/nifty-server/uploads/' + imageFileName,
       )
-
-      let now = new Date()
-      let currentTime = now.toTimeString()
-
-      let metaData = {
-        name: name,
-        fileName: imageFileName,
-        address: address,
-        description: description,
+      let newCollection = new Collection({
+        collectionName: name,
         imageHash: filePinStatus.IpfsHash,
-        createdAt: currentTime,
-      }
+      })
+      newCollection.save((err, data) => {
+        if (err) {
+          return res.status(400).json({
+            status: 'failed',
+          })
+        }
 
-      let jsonPinStatus = await pinCollectionJsonToIPFS(metaData)
+        return res.send({
+          status: 'success',
+          fileHash: filePinStatus.IpfsHash,
+        })
+      })
+
+      // we will not need to save the json file of the collection, rather it would be better off to store on the db
+      // let now = new Date()
+      // let currentTime = now.toTimeString()
+
+      // let metaData = {
+      //   name: name,
+      //   fileName: imageFileName,
+      //   address: address,
+      //   description: description,
+      //   imageHash: filePinStatus.IpfsHash,
+      //   createdAt: currentTime,
+      // }
+
+      // let jsonPinStatus = await pinCollectionJsonToIPFS(metaData)
+
+      // save collection info to db
       return res.send({
         status: 'success',
-        uploadedCounts: 2,
+        // uploadedCounts: 2,
         fileHash: filePinStatus.IpfsHash,
-        jsonHash: jsonPinStatus.IpfsHash,
+        // jsonHash: jsonPinStatus.IpfsHash,
       })
     }
   })
