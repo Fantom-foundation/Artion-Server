@@ -145,7 +145,7 @@ router.post('/uploadImage2Server', async (req, res, next) => {
       let description = fields.description
       let category = fields.category
       let symbol = fields.symbol
-      let imageFileName = address + now.toString() + '.png'
+      let imageFileName = address + name.replace(' ', '') + category + '.png'
       imgData = imgData.replace(/^data:image\/png;base64,/, '')
       await fs.writeFile(
         uploadPath + imageFileName,
