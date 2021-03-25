@@ -1,18 +1,19 @@
-require('dotenv').config()
-const fs = require('fs')
-const formidable = require('formidable')
-const router = require('express').Router()
-const mongoose = require('mongoose')
-const Collection = mongoose.model('Collection')
+require("dotenv").config();
+const fs = require("fs");
+const formidable = require("formidable");
+const router = require("express").Router();
+const mongoose = require("mongoose");
+const Collection = mongoose.model("Collection");
+const ERC721TOKEN = mongoose.model("ERC721TOKEN");
 
-const pinataSDK = require('@pinata/sdk')
+const pinataSDK = require("@pinata/sdk");
 
-const uploadPath = '/home/jason/nft-marketplace/nifty-server/uploads/'
-// const uploadPath = 'uploads/'
+// const uploadPath = '/home/jason/nft-marketplace/nifty-server/uploads/'
+const uploadPath = "uploads/";
 const pinata = pinataSDK(
   process.env.PINATA_API_KEY,
-  process.env.PINATA_SECRET_API_KEY,
-)
+  process.env.PINATA_SECRET_API_KEY
+);
 
 // pin image file for NFT creation
 const pinFileToIPFS = async (fileName, address, name, symbol) => {
@@ -27,17 +28,17 @@ const pinFileToIPFS = async (fileName, address, name, symbol) => {
     pinataOptions: {
       cidVersion: 0,
     },
-  }
-  const readableStreamForFile = fs.createReadStream(uploadPath + fileName)
+  };
+  const readableStreamForFile = fs.createReadStream(uploadPath + fileName);
 
   try {
-    let result = await pinata.pinFileToIPFS(readableStreamForFile, options)
-    return result
+    let result = await pinata.pinFileToIPFS(readableStreamForFile, options);
+    return result;
   } catch (error) {
-    console.log(error)
-    return 'failed to pin file to ipfs'
+    console.log(error);
+    return "failed to pin file to ipfs";
   }
-}
+};
 
 // pin image for collection
 const pinCollectionFileToIPFS = async (fileName, name, address) => {
@@ -52,17 +53,17 @@ const pinCollectionFileToIPFS = async (fileName, name, address) => {
     pinataOptions: {
       cidVersion: 0,
     },
-  }
-  const readableStreamForFile = fs.createReadStream(uploadPath + fileName)
+  };
+  const readableStreamForFile = fs.createReadStream(uploadPath + fileName);
 
   try {
-    let result = await pinata.pinFileToIPFS(readableStreamForFile, options)
-    return result
+    let result = await pinata.pinFileToIPFS(readableStreamForFile, options);
+    return result;
   } catch (error) {
-    console.log(error)
-    return 'failed to pin file to ipfs'
+    console.log(error);
+    return "failed to pin file to ipfs";
   }
-}
+};
 // pin json to ipfs for NFT
 const pinJsonToIPFS = async (jsonMetadata) => {
   const options = {
@@ -75,16 +76,16 @@ const pinJsonToIPFS = async (jsonMetadata) => {
     pinataOptions: {
       cidVersion: 0,
     },
-  }
+  };
 
   try {
-    let result = await pinata.pinJSONToIPFS(jsonMetadata, options)
-    return result
+    let result = await pinata.pinJSONToIPFS(jsonMetadata, options);
+    return result;
   } catch (error) {
-    console.log(error)
-    return 'failed to pin json to ipfs'
+    console.log(error);
+    return "failed to pin json to ipfs";
   }
-}
+};
 // pin json to ipfs for collection
 const pinCollectionJsonToIPFS = async (jsonMetadata) => {
   const options = {
@@ -97,83 +98,83 @@ const pinCollectionJsonToIPFS = async (jsonMetadata) => {
     pinataOptions: {
       cidVersion: 0,
     },
-  }
+  };
 
   try {
-    let result = await pinata.pinJSONToIPFS(jsonMetadata, options)
-    return result
+    let result = await pinata.pinJSONToIPFS(jsonMetadata, options);
+    return result;
   } catch (error) {
-    console.log(error)
-    return 'failed to pin json to ipfs'
+    console.log(error);
+    return "failed to pin json to ipfs";
   }
-}
+};
 
-router.get('/ipfstest', async (req, res, next) => {
+router.get("/ipfstest", async (req, res, next) => {
   pinata
     .testAuthentication()
     .then((result) => {
-      console.log(result)
+      console.log(result);
       res.send({
         result: result,
-      })
+      });
     })
     .catch((err) => {
-      console.log(err)
+      console.log(err);
       res.send({
-        result: 'failed',
-      })
-    })
-})
-router.get('/test', async (req, res, next) => {
+        result: "failed",
+      });
+    });
+});
+router.get("/test", async (req, res, next) => {
   return res.json({
-    apistatus: 'running',
-  })
-})
+    apistatus: "running",
+  });
+});
 
-router.post('/uploadImage2Server', async (req, res, next) => {
-  let form = new formidable.IncomingForm()
+router.post("/uploadImage2Server", async (req, res, next) => {
+  let form = new formidable.IncomingForm();
   form.parse(req, async (err, fields, files) => {
     if (err) {
       return res.status(400).json({
-        status: 'failed',
-      })
+        status: "failed",
+      });
     } else {
-      let imgData = fields.image
-      let name = fields.name
-      let address = fields.address
-      let royalty = fields.royalty
-      let description = fields.description
-      let category = fields.category
-      let symbol = fields.symbol
-      let imageFileName = address + name.replace(' ', '') + category + '.png'
-      imgData = imgData.replace(/^data:image\/png;base64,/, '')
+      let imgData = fields.image;
+      let name = fields.name;
+      let address = fields.address;
+      let royalty = fields.royalty;
+      let description = fields.description;
+      let category = fields.category;
+      let symbol = fields.symbol;
+      let imageFileName = address + name.replace(" ", "") + category + ".png";
+      imgData = imgData.replace(/^data:image\/png;base64,/, "");
       await fs.writeFile(
         uploadPath + imageFileName,
         imgData,
-        'base64',
+        "base64",
         (err) => {
           if (err) {
             return res.status(400).json({
-              status: 'failed to save an image file',
+              status: "failed to save an image file",
               err,
-            })
+            });
           }
-        },
-      )
+        }
+      );
       let filePinStatus = await pinFileToIPFS(
         imageFileName,
         address,
         name,
-        symbol,
-      )
+        symbol
+      );
 
       // remove file once pinned
       try {
-        fs.unlinkSync(uploadPath + imageFileName)
+        fs.unlinkSync(uploadPath + imageFileName);
       } catch (error) {}
 
-      let now = new Date()
-      let currentTime = now.toTimeString()
+      let now = new Date();
+      let currentTime = now.toTimeString();
 
       let metaData = {
         name: name,
@@ -185,100 +186,83 @@ router.post('/uploadImage2Server', async (req, res, next) => {
         category: category,
         imageHash: filePinStatus.IpfsHash,
         createdAt: currentTime,
-      }
+      };
 
-      let jsonPinStatus = await pinJsonToIPFS(metaData)
+      let jsonPinStatus = await pinJsonToIPFS(metaData);
       return res.send({
-        status: 'success',
+        status: "success",
         uploadedCounts: 2,
         fileHash: filePinStatus.IpfsHash,
         jsonHash: jsonPinStatus.IpfsHash,
-      })
+      });
     }
-  })
-})
+  });
+});
 
-router.post('/uploadCollectionImage2Server', async (req, res, next) => {
-  let form = new formidable.IncomingForm()
+router.post("/uploadCollectionImage2Server", async (req, res, next) => {
+  let form = new formidable.IncomingForm();
   form.parse(req, async (err, fields, files) => {
     if (err) {
       return res.status(400).json({
-        status: 'failedParsingForm',
-      })
+        status: "failedParsingForm",
+      });
     } else {
-      let imgData = fields.imgData
-      let name = fields.name
-      let description = fields.description
-      let address = fields.address
-      let imageFileName = address + name.replace(' ', '') + '.png'
-      imgData = imgData.replace(/^data:image\/png;base64,/, '')
+      let imgData = fields.imgData;
+      let name = fields.name;
+      let description = fields.description;
+      let address = fields.address;
+      let imageFileName = address + name.replace(" ", "") + ".png";
+      imgData = imgData.replace(/^data:image\/png;base64,/, "");
       await fs.writeFile(
         uploadPath + imageFileName,
         imgData,
-        'base64',
+        "base64",
         (err) => {
           if (err) {
             return res.status(400).json({
-              status: 'failed to save an image file',
+              status: "failed to save an image file",
               err,
-            })
+            });
           }
-        },
-      )
+        }
+      );
 
       let filePinStatus = await pinCollectionFileToIPFS(
         imageFileName,
         name,
-        address,
-      )
+        address
+      );
       // remove file once pinned
       try {
-        fs.unlinkSync(uploadPath + imageFileName)
+        fs.unlinkSync(uploadPath + imageFileName);
       } catch (error) {}
 
-      let collection = new Collection()
-      collection.collectionName = name
-      collection.description = description
-      collection.imageHash = filePinStatus.IpfsHash
-      collection.address = address
+      let collection = new Collection();
+      collection.collectionName = name;
+      collection.description = description;
+      collection.imageHash = filePinStatus.IpfsHash;
+      collection.address = address;
 
       try {
-        let saveStatus = await collection.save()
+        let saveStatus = await collection.save();
         if (saveStatus) {
           return res.send({
-            status: 'success',
+            status: "success",
             collection: saveStatus,
-          })
+          });
         } else {
           return res.status(400).json({
-            status: 'failedSavingToDB',
-          })
+            status: "failedSavingToDB",
+          });
         }
       } catch (error) {
-        console.log(error)
+        console.log(error);
         return res.status(400).json({
-          status: 'failedOutSave',
-        })
+          status: "failedOutSave",
+        });
       }
-
-      // we will not need to save the json file of the collection, rather it would be better off to store on the db
-      // let now = new Date()
-      // let currentTime = now.toTimeString()
-
-      // let metaData = {
-      //   name: name,
-      //   fileName: imageFileName,
-      //   address: address,
-      //   description: description,
-      //   imageHash: filePinStatus.IpfsHash,
-      //   createdAt: currentTime,
-      // }
-
-      // let jsonPinStatus = await pinCollectionJsonToIPFS(metaData)
-
-      // save collection info to db
     }
-  })
-})
+  });
+});
 
-module.exports = router
+module.exports = router;

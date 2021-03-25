@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
 const Collection = mongoose.Schema(
   {
@@ -10,17 +10,17 @@ const Collection = mongoose.Schema(
   },
   {
     timestamps: true,
-  },
-)
+  }
+);
 
-Collection.methods.toJsonList = () => {
+Collection.methods.toCollectionJson = () => {
   return {
     id: this._id,
     collectionName: this.collectionName,
     description: this.description,
     address: this.address,
     imageHash: this.imageHash,
-  }
-}
+  };
+};
 
-mongoose.model('Collection', Collection)
+mongoose.model("Collection", Collection);
