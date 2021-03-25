@@ -15,7 +15,8 @@ app.use(
 require('./models/account')
 require('./models/collection')
 require('./models/event')
-require('./models/nftbasics')
+require('./models/erc721token')
+require('./models/erc721contract')
 require('./models/tradehistory')
 
 app.use(bodyParser.json())
