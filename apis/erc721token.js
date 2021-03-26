@@ -6,7 +6,7 @@ const ERC721TOKEN = mongoose.model("ERC721TOKEN");
 router.post("/savenewtoken", async (req, res, next) => {
   let newToken = new ERC721TOKEN();
 
-  newToken.contractAddress = req.params["contractAddress"];
+  newToken.contractAddress = req.body.contractAddress;
   newToken.tokenID = req.body.tokenID;
   newToken.symbol = req.body.symbol;
   newToken.royalty = req.body.royalty;

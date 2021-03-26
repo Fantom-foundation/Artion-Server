@@ -3,7 +3,7 @@ const fs = require("fs");
 const formidable = require("formidable");
 const router = require("express").Router();
 const mongoose = require("mongoose");
-const Collection = mongoose.model("Collection");
+const Bundle = mongoose.model("Bundle");
 const ERC721TOKEN = mongoose.model("ERC721TOKEN");
 
 const pinataSDK = require("@pinata/sdk");
@@ -40,13 +40,13 @@ const pinFileToIPFS = async (fileName, address, name, symbol) => {
   }
 };
 
-// pin image for collection
-const pinCollectionFileToIPFS = async (fileName, name, address) => {
+// pin image for bundle
+const pinBundleFileToIPFS = async (fileName, name, address) => {
   const options = {
     pinataMetadata: {
       name: name,
       keyvalues: {
-        collectionName: name,
+        bundleName: name,
         address: address,
       },
     },
@@ -86,13 +86,13 @@ const pinJsonToIPFS = async (jsonMetadata) => {
     return "failed to pin json to ipfs";
   }
 };
-// pin json to ipfs for collection
-const pinCollectionJsonToIPFS = async (jsonMetadata) => {
+// pin json to ipfs for bundle
+const pinBundleJsonToIPFS = async (jsonMetadata) => {
   const options = {
     pinataMetadata: {
       name: jsonMetadata.name,
       keyvalues: {
-        collectionName: jsonMetadata.name,
+        bundleName: jsonMetadata.name,
       },
     },
     pinataOptions: {
@@ -199,7 +199,7 @@ router.post("/uploadImage2Server", async (req, res, next) => {
   });
 });
 
-router.post("/uploadCollectionImage2Server", async (req, res, next) => {
+router.post("/uploadBundleImage2Server", async (req, res, next) => {
   let form = new formidable.IncomingForm();
   form.parse(req, async (err, fields, files) => {
     if (err) {
@@ -227,7 +227,7 @@ router.post("/uploadCollectionImage2Server", async (req, res, next) => {
         }
       );
 
-      let filePinStatus = await pinCollectionFileToIPFS(
+      let filePinStatus = await pinBundleFileToIPFS(
         imageFileName,
         name,
         address
@@ -237,18 +237,18 @@ router.post("/uploadCollectionImage2Server", async (req, res, next) => {
         fs.unlinkSync(uploadPath + imageFileName);
       } catch (error) {}
 
-      let collection = new Collection();
-      collection.collectionName = name;
-      collection.description = description;
-      collection.imageHash = filePinStatus.IpfsHash;
-      collection.address = address;
+      let bundle = new Bundle();
+      bundle.bundleName = name;
+      bundle.description = description;
+      bundle.imageHash = filePinStatus.IpfsHash;
+      bundle.address = address;
 
       try {
-        let saveStatus = await collection.save();
+        let saveStatus = await bundle.save();
         if (saveStatus) {
           return res.send({
             status: "success",
-            collection: saveStatus,
+            bundle: saveStatus,
           });
         } else {
           return res.status(400).json({

@@ -17,7 +17,7 @@ app.use(
 );
 
 require("./models/account");
-require("./models/collection");
+require("./models/bundle");
 require("./models/event");
 require("./models/erc721token");
 require("./models/erc721contract");

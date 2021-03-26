@@ -1,26 +1,24 @@
 const mongoose = require("mongoose");
 
-const Collection = mongoose.Schema(
+const Bundle = mongoose.Schema(
   {
-    collectionName: { type: String, required: true },
+    bundleName: { type: String, required: true },
     description: { type: String, required: true },
     address: { type: String, required: true },
     imageHash: { type: String, required: true },
-    tkIds: [{ type: String }],
   },
   {
     timestamps: true,
   }
 );
 
-Collection.methods.toCollectionJson = () => {
+Bundle.methods.toBundleJson = () => {
   return {
     id: this._id,
-    collectionName: this.collectionName,
+    bundleName: this.bundleName,
     description: this.description,
     address: this.address,
-    imageHash: this.imageHash,
   };
 };
 
-mongoose.model("Collection", Collection);
+mongoose.model("Bundle", Bundle);
