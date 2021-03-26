@@ -8,8 +8,8 @@ const ERC721TOKEN = mongoose.model("ERC721TOKEN");
 
 const pinataSDK = require("@pinata/sdk");
 
-// const uploadPath = '/home/jason/nft-marketplace/nifty-server/uploads/'
-const uploadPath = "uploads/";
+const uploadPath = "/home/jason/nft-marketplace/nifty-server/uploads/";
+// const uploadPath = "uploads/";
 const pinata = pinataSDK(
   process.env.PINATA_API_KEY,
   process.env.PINATA_SECRET_API_KEY
