@@ -1,18 +1,18 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
 const History = mongoose.Schema(
   {
     nftBasicID: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'NFTBasics',
+      ref: "NFTBasics",
     },
     eventID: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Event',
+      ref: "Event",
     },
     collectionID: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Collection',
+      ref: "Collection",
     },
     history_7: [mongoose.Schema.Types.Mixed],
     history_14: [mongoose.Schema.Types.Mixed],
@@ -24,7 +24,7 @@ const History = mongoose.Schema(
   },
   {
     timestamps: true,
-  },
-)
+  }
+);
 
-mongoose.model('History', History)
+mongoose.model("History", History);

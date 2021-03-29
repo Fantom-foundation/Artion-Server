@@ -4,7 +4,8 @@ const formidable = require("formidable");
 const router = require("express").Router();
 const mongoose = require("mongoose");
 const Bundle = mongoose.model("Bundle");
-const ERC721TOKEN = mongoose.model("ERC721TOKEN");
+
+const auth = require("./middleware/auth");
 
 const pinataSDK = require("@pinata/sdk");
 
@@ -109,7 +110,7 @@ const pinBundleJsonToIPFS = async (jsonMetadata) => {
   }
 };
 
-router.get("/ipfstest", async (req, res, next) => {
+router.get("/ipfstest", async (req, res) => {
   pinata
     .testAuthentication()
     .then((result) => {
@@ -125,13 +126,13 @@ router.get("/ipfstest", async (req, res, next) => {
       });
     });
 });
-router.get("/test", async (req, res, next) => {
+router.get("/test", auth, async (req, res) => {
   return res.json({
     apistatus: "running",
   });
 });
 
-router.post("/uploadImage2Server", async (req, res, next) => {
+router.post("/uploadImage2Server", auth, async (req, res) => {
   let form = new formidable.IncomingForm();
   form.parse(req, async (err, fields, files) => {
     if (err) {
@@ -199,7 +200,7 @@ router.post("/uploadImage2Server", async (req, res, next) => {
   });
 });
 
-router.post("/uploadBundleImage2Server", async (req, res, next) => {
+router.post("/uploadBundleImage2Server", auth, async (req, res) => {
   let form = new formidable.IncomingForm();
   form.parse(req, async (err, fields, files) => {
     if (err) {

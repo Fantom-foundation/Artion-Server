@@ -1,14 +1,16 @@
+require("dotenv").config();
 const router = require("express").Router();
 const mongoose = require("mongoose");
+
+const auth = require("./middleware/auth");
 const Account = mongoose.model("Account");
 
 // update the account alias or if not registered, create a new account
-router.post("/accountdetails", async (req, res, next) => {
+router.post("/accountdetails", auth, async (req, res) => {
   let address = req.body.address;
   let alias = req.body.alias;
   let email = req.body.email;
   let bio = req.body.bio;
-  console.log(address, "  ", alias);
   let account = await Account.findOne({ address: address });
   if (account) {
     account.alias = alias;
@@ -35,7 +37,7 @@ router.post("/accountdetails", async (req, res, next) => {
 
 // get account info by address
 
-router.get("/getaccountinfo", async (req, res, next) => {
+router.get("/getaccountinfo", auth, async (req, res) => {
   let address = req.body.address;
   let account = await Account.findOne({ address: address });
   if (account) {

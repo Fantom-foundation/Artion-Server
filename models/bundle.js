@@ -6,18 +6,25 @@ const Bundle = mongoose.Schema(
     description: { type: String, required: true },
     address: { type: String, required: true },
     imageHash: { type: String, required: true },
+    tokens: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Collection",
+      },
+    ],
   },
   {
     timestamps: true,
   }
 );
 
-Bundle.methods.toBundleJson = () => {
+Bundle.methods.toBundleJson = function () {
   return {
     id: this._id,
     bundleName: this.bundleName,
     description: this.description,
     address: this.address,
+    tokens: this.tokens.toString(),
   };
 };
 

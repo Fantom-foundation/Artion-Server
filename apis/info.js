@@ -4,16 +4,15 @@ const ERC721TOKEN = mongoose.model("ERC721TOKEN");
 const ERC721CONTRACT = mongoose.model("ERC721CONTRACT");
 
 // list the newly minted 10 tokens
-router.get("/getNewestTokens", async (req, res, next) => {
+router.get("/getNewestTokens", async (req, res) => {
   let tokens = await ERC721TOKEN.find().sort({ createdAt: 1 }).limit(10);
-  console.log("result is ", result);
   return res.json({
     status: "success",
-    data: result,
+    data: tokens,
   });
 });
 
-router.get("/geterc721contracts", async (req, res, next) => {
+router.get("/geterc721contracts", async (req, res) => {
   let all = await ERC721CONTRACT.find({});
   let erc721contracts = new Array();
   all.map((contract) => {
@@ -23,7 +22,6 @@ router.get("/geterc721contracts", async (req, res, next) => {
       symbol: contract.symbol,
     });
   });
-  console.log(erc721contracts);
   return res.json({
     status: "success",
     data: erc721contracts,

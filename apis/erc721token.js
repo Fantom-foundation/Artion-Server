@@ -1,10 +1,12 @@
 const router = require("express").Router();
 const mongoose = require("mongoose");
 const formidable = require("formidable");
+
+const auth = require("./middleware/auth");
 const ERC721TOKEN = mongoose.model("ERC721TOKEN");
 
 // save a new token -- returns a json of newly added token
-router.post("/savenewtoken", async (req, res, next) => {
+router.post("/savenewtoken", auth, async (req, res) => {
   let form = new formidable.IncomingForm();
   form.parse(req, async (err, fields, files) => {
     if (err) {
@@ -26,7 +28,6 @@ router.post("/savenewtoken", async (req, res, next) => {
       newToken.createdAt = now;
 
       let _newToken = await newToken.save();
-      console.log(_newToken);
       return res.json({
         status: "success",
         data: _newToken.toJSON(),
@@ -37,7 +38,7 @@ router.post("/savenewtoken", async (req, res, next) => {
 
 //increase the view count -- returns a increased view count
 
-router.post("/increaseViews", async (req, res, next) => {
+router.post("/increaseViews", auth, async (req, res) => {
   let form = new formidable.IncomingForm();
   form.parse(req, async (err, fields, files) => {
     if (err) {

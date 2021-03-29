@@ -1,0 +1,25 @@
+require("dotenv").config();
+const jwt = require("jsonwebtoken");
+const jwt_secret = process.env.JWT_SECRET;
+
+function auth(req, res, next) {
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (token == null)
+    return res.status(401).json({
+      status: "failed",
+      data: "auth token not provided",
+    });
+
+  jwt.verify(token, jwt_secret, (err) => {
+    if (err)
+      return res.status(400).json({
+        status: "failed",
+        data: "auth token expired",
+      });
+    next();
+  });
+}
+
+module.exports = auth;
