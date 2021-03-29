@@ -13,6 +13,8 @@ router.post("/savenewtoken", async (req, res, next) => {
   newToken.category = req.body.category;
   newToken.imageHash = req.body.imageHash;
   newToken.jsonHash = req.body.jsonHash;
+  newToken.createdAt = now;
+  let now = new Date();
 
   let _newToken = await newToken.save();
   return res.json({
