@@ -4,6 +4,7 @@ const Account = mongoose.Schema(
   {
     address: { type: String, required: true },
     alias: { type: String, required: true },
+    email: { type: String, required: true },
     assetTkIds: [
       {
         type: Number,
@@ -23,6 +24,7 @@ Account.methods.toAccountJSON = function () {
   return {
     address: this.address,
     alias: this.alias,
+    email: this.email,
     assetTkIds: this.assetTkIds,
   };
 };
