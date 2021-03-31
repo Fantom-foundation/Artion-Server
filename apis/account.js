@@ -10,12 +10,10 @@ router.post("/accountdetails", auth, async (req, res) => {
   let address = req.body.address;
   let alias = req.body.alias;
   let email = req.body.email;
-  let bio = req.body.bio;
   let account = await Account.findOne({ address: address });
   if (account) {
     account.alias = alias;
     account.email = email;
-    account.bio = bio;
     let _account = await account.save();
     return res.json({
       status: "success",
@@ -26,7 +24,6 @@ router.post("/accountdetails", auth, async (req, res) => {
     newAccount.address = address;
     newAccount.alias = alias;
     newAccount.email = email;
-    newAccount.bio = bio;
     let _newAccount = await newAccount.save();
     return res.json({
       status: "success",

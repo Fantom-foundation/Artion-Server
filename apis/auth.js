@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const jwt_secret = process.env.JWT_SECRET;
 const router = require("express").Router();
 
-router.get("/getToken", (req, res) => {
+router.post("/getToken", (req, res) => {
   let address = req.body.address;
   let token = jwt.sign(
     {
