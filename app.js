@@ -22,6 +22,7 @@ require("./models/event");
 require("./models/erc721token");
 require("./models/erc721contract");
 require("./models/tradehistory");
+require("./models/collection");
 
 app.use(bodyParser.json());
 app.options("*", cors()); // include before other routes

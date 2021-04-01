@@ -8,11 +8,10 @@ const Account = mongoose.Schema(
     assetTkIds: [
       {
         type: Number,
-        // required: true,
       },
     ],
-    tkIdsIn: [{ type: Number /*, required: true*/ }],
-    tkIdsOut: [{ type: Number /*, required: true*/ }],
+    tkIdsIn: [{ type: Number }],
+    tkIdsOut: [{ type: Number }],
   },
   {
     timestamps: true,
