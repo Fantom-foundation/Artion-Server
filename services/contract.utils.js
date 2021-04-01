@@ -23,4 +23,8 @@ const loadContractFromAddress = async (address) => {
   return contract;
 };
 
-loadContractFromAddress("0xe1146b9ac456fcbb60644c36fd3f868a9072fc6e");
+const contractutils = {
+  loadContractFromAddress,
+};
+
+module.exports = contractutils;

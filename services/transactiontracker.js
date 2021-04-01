@@ -41,6 +41,10 @@ const trackListing = async (isTestnet) => {
       );
     }
   );
+
+  contract.on("ItemSold", (buyer, nft, tokenID, price) => {
+    console.log(`item has been sold`);
+  });
 };
 
 module.exports = trackListing;

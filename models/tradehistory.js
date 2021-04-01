@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const History = mongoose.Schema(
+const TradeHistory = mongoose.Schema(
   {
     nftBasicID: {
       type: mongoose.Schema.Types.ObjectId,
@@ -27,4 +27,4 @@ const History = mongoose.Schema(
   }
 );
 
-mongoose.model("History", History);
+mongoose.model("TradeHistory", TradeHistory);

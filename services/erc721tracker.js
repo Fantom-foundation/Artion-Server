@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 
 require("../models/erc721contract");
 const ERC721CONTRACT = mongoose.model("ERC721CONTRACT");
+const trackCollectionTransfer = require("./collectiontracker");
 
 const ftmScanApiKey = process.env.FTM_SCAN_API_KEY;
 const validatorAddress = process.env.VALIDATORADDRESS;
@@ -37,6 +38,7 @@ const trackerc721 = async (begin, end) => {
       minter.name = contract.name;
       minter.symbol = contract.symbol;
       let _minter = await minter.save();
+      await trackCollectionTransfer(_minter.address);
       console.log("new erc721 contract has been found");
       console.log(_minter);
     } else {

@@ -79,4 +79,12 @@ router.post("/searchCollection", auth, async (req, res) => {
     });
 });
 
+router.get("fetchAllCollections", auth, async (req, res) => {
+  let all = await Collection.find();
+  return res.json({
+    status: "success",
+    data: all,
+  });
+});
+
 module.exports = router;

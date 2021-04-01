@@ -62,4 +62,9 @@ router.post("/increaseViews", auth, async (req, res) => {
   });
 });
 
+router.post("fetchTokens", auth, async (req, res) => {
+  let filters;
+  let step = parseInt(req.body.step);
+});
+
 module.exports = router;
