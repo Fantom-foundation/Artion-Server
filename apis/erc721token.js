@@ -28,7 +28,7 @@ router.post("/savenewtoken", auth, async (req, res) => {
       newToken.createdAt = now;
 
       let _newToken = await newToken.save();
-      return res.json({
+      return res.send({
         status: "success",
         data: _newToken.toJSON(),
       });
