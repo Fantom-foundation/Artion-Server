@@ -19,7 +19,12 @@ const loadContractABIFromAddress = async (address) => {
 const loadContractFromAddress = async (address) => {
   let abi = await loadContractABIFromAddress(address);
   if (abi == "") return null;
-  let contract = new ethers.Contract(address, abi);
+  let provider = new ethers.providers.JsonRpcProvider(
+    "https://rpc.fantom.network",
+    250
+  );
+
+  let contract = new ethers.Contract(address, abi, provider);
   return contract;
 };
 

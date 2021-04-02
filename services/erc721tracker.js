@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 
 require("../models/erc721contract");
 const ERC721CONTRACT = mongoose.model("ERC721CONTRACT");
-const trackCollectionTransfer = require("./collectiontracker");
+const collectionTracker = require("./collectiontracker");
 
 const ftmScanApiKey = process.env.FTM_SCAN_API_KEY;
 const validatorAddress = process.env.VALIDATORADDRESS;
@@ -33,14 +33,19 @@ const trackerc721 = async (begin, end) => {
   contracts.map(async (contract) => {
     let erc721 = await ERC721CONTRACT.findOne({ address: contract.address });
     if (!erc721) {
+      let sc = await collectionTracker.trackCollectionTransfer(
+        contract.address
+      );
+      // do not save the smart contracts which are not verified
+      if (sc == null) return;
+      await collectionTracker.trackERC721Distribution(contract.address);
       let minter = new ERC721CONTRACT();
       minter.address = contract.address;
       minter.name = contract.name;
       minter.symbol = contract.symbol;
       let _minter = await minter.save();
-      await trackCollectionTransfer(_minter.address);
-      console.log("new erc721 contract has been found");
-      console.log(_minter);
+      // console.log("new erc721 contract has been found");
+      console.log(_minter.name);
     } else {
       console.log(
         `contract with address of ${contract.address} is already registered`
@@ -56,7 +61,7 @@ const trackAll = async () => {
     counter += 1;
     if (counter == 10) counter = 0;
     await trackerc721(limit - step * (counter + 1), limit - step * counter);
-  }, 1000);
+  }, 1000 * 3);
 };
 
 module.exports = trackAll;

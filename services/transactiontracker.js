@@ -1,8 +1,11 @@
 require("dotenv").config();
 
+const mongoose = require("mongoose");
+require("../models/tradehistory");
 const ethers = require("ethers");
 const SimpleNFTSellerContract = require("../constants/simpleseller.sc");
-const simeNFTSellerSC = require("../constants/simpleseller.sc");
+
+const TradeHistory = mongoose.model("TradeHistory");
 
 const trackListing = async (isTestnet) => {
   let provider = new ethers.providers.JsonRpcProvider(
@@ -13,7 +16,7 @@ const trackListing = async (isTestnet) => {
     isTestnet
       ? SimpleNFTSellerContract.TESTNET_ADDRESS
       : SimpleNFTSellerContract.MAINNET_ADDRESS,
-    simeNFTSellerSC.ABI,
+    SimpleNFTSellerContract.ABI,
     provider
   );
   contract.on(
@@ -42,8 +45,14 @@ const trackListing = async (isTestnet) => {
     }
   );
 
-  contract.on("ItemSold", (buyer, nft, tokenID, price) => {
-    console.log(`item has been sold`);
+  contract.on("ItemSold", async (seller, buyer, nft, tokenID, price) => {
+    let trade = new TradeHistory();
+    trade.erc721address = nft;
+    trade.from = seller;
+    trade.to = buyer;
+    trade.tokenID = tokenID;
+    trade.price = price;
+    await trade.save();
   });
 };
 

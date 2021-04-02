@@ -6,6 +6,7 @@ const TransferHistory = mongoose.Schema(
     from: { type: String, required: true },
     to: { type: String, required: true },
     tokenID: { type: Number, required: true },
+    trasferDate: { type: Date, default: new Date() },
   },
   {
     timestamps: true,
