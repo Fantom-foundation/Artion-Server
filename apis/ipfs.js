@@ -9,6 +9,8 @@ const auth = require("./middleware/auth");
 
 const pinataSDK = require("@pinata/sdk");
 
+const ipfsUri = "https://gateway.pinata.cloud/ipfs/";
+
 const uploadPath = "/home/jason/nft-marketplace/nifty-server/uploads/";
 // const uploadPath = "uploads/";
 const pinata = pinataSDK(
@@ -185,7 +187,7 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
         royalty: royalty,
         description: description,
         category: category,
-        imageHash: filePinStatus.IpfsHash,
+        imageHash: ipfsUri + filePinStatus.IpfsHash,
         createdAt: currentTime,
       };
 
@@ -193,8 +195,8 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
       return res.send({
         status: "success",
         uploadedCounts: 2,
-        fileHash: filePinStatus.IpfsHash,
-        jsonHash: jsonPinStatus.IpfsHash,
+        fileHash: ipfsUri + filePinStatus.IpfsHash,
+        jsonHash: ipfsUri + jsonPinStatus.IpfsHash,
       });
     }
   });
@@ -241,7 +243,7 @@ router.post("/uploadBundleImage2Server", auth, async (req, res) => {
       let bundle = new Bundle();
       bundle.bundleName = name;
       bundle.description = description;
-      bundle.imageHash = filePinStatus.IpfsHash;
+      bundle.imageHash = ipfsUri + filePinStatus.IpfsHash;
       bundle.address = address;
 
       try {

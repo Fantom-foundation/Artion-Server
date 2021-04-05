@@ -28,4 +28,6 @@ router.get("/geterc721contracts", async (req, res) => {
   });
 });
 
+router.post("/geterc721tokensfromaddress", async (req, res) => {});
+
 module.exports = router;

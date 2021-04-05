@@ -1,5 +1,8 @@
 require("dotenv").config();
+const EmailValidation = require("emailvalid");
 const nodemailer = require("nodemailer");
+
+const ev = new EmailValidation({ allowFreemail: false });
 
 sendEmail = async (to, subject, content) => {
   let transporter = nodemailer.createTransport({
@@ -18,8 +21,15 @@ sendEmail = async (to, subject, content) => {
   });
 };
 
+validateEmail = (email) => {
+  let isValid = ev.check(email);
+  console.log(isValid);
+  return isValid;
+};
+
 const MailService = {
   sendEmail,
+  validateEmail,
 };
 
 module.exports = MailService;

@@ -1,9 +1,13 @@
+require("dotenv").config();
+const { default: axios } = require("axios");
 const router = require("express").Router();
 const mongoose = require("mongoose");
 
 const auth = require("./middleware/auth");
 
 const Collection = mongoose.model("Collection");
+
+const ftmScanApiKey = process.env.FTM_SCAN_API_KEY;
 
 router.post("/collectiondetails", auth, async (req, res) => {
   let erc721Address = req.body.erc721Address;
@@ -85,6 +89,30 @@ router.get("fetchAllCollections", auth, async (req, res) => {
     status: "success",
     data: all,
   });
+});
+
+router.post("/isValidated", auth, async (req, res) => {
+  try {
+    let erc721Address = req.body.erc721Address;
+    let request = `https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${erc721Address}&apikey=${ftmScanApiKey}`;
+    let response = await axios.get(request);
+    if (
+      response.status != "1" ||
+      response.result.ABI == "Contract source code not verified"
+    )
+      return res.json({
+        status: "success",
+        isValidated: "no",
+      });
+    return res.json({
+      status: "success",
+      isValidated: "yes",
+    });
+  } catch (error) {
+    return res.json({
+      status: "failed",
+    });
+  }
 });
 
 module.exports = router;
