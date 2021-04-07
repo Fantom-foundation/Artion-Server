@@ -12,46 +12,63 @@ const limit = 999999999;
 const step = 100000000;
 
 const trackerc721 = async (begin, end) => {
-  let contracts = new Array();
-  let request = `https://api.ftmscan.com/api?module=account&action=tokennfttx&address=${validatorAddress}&startblock=${begin}&endblock=${end}&sort=asc&apikey=${ftmScanApiKey}`;
-  let result = await axios.get(request);
-  let tnxs = result.data.result;
-  if (tnxs) {
-    tnxs.map((tnx) => {
-      let contractInfo = {
-        address: tnx.contractAddress,
-        name: tnx.tokenName,
-        symbol: tnx.tokenSymbol,
-      };
-      if (
-        !contracts.some((contract) => contract.address == contractInfo.address)
-      ) {
-        contracts.push(contractInfo);
+  setTimeout(async () => {
+    try {
+      let contracts = new Array();
+      let request = `https://api.ftmscan.com/api?module=account&action=tokennfttx&address=${validatorAddress}&startblock=${begin}&endblock=${end}&sort=asc&apikey=${ftmScanApiKey}`;
+      let result = await axios.get(request);
+      let tnxs = result.data.result;
+      if (tnxs) {
+        tnxs.map((tnx) => {
+          let contractInfo = {
+            address: tnx.contractAddress,
+            name: tnx.tokenName,
+            symbol: tnx.tokenSymbol,
+          };
+          if (
+            !contracts.some(
+              (contract) => contract.address == contractInfo.address
+            )
+          ) {
+            contracts.push(contractInfo);
+          }
+        });
       }
-    });
-  }
-  contracts.map(async (contract) => {
-    let erc721 = await ERC721CONTRACT.findOne({ address: contract.address });
-    if (!erc721) {
-      let sc = await collectionTracker.trackCollectionTransfer(
-        contract.address
-      );
-      // do not save the smart contracts which are not verified
-      if (sc == null) return;
-      await collectionTracker.trackERC721Distribution(contract.address);
-      let minter = new ERC721CONTRACT();
-      minter.address = contract.address;
-      minter.name = contract.name;
-      minter.symbol = contract.symbol;
-      let _minter = await minter.save();
-      // console.log("new erc721 contract has been found");
-      console.log(_minter.name);
-    } else {
-      console.log(
-        `contract with address of ${contract.address} is already registered`
-      );
+      contracts.map(async (contract) => {
+        setTimeout(async () => {
+          let erc721 = await ERC721CONTRACT.findOne({
+            address: contract.address,
+          });
+          if (!erc721) {
+            setTimeout(async () => {
+              let sc = await collectionTracker.trackCollectionTransfer(
+                contract.address
+              );
+              // do not save the smart contracts which are not verified
+              if (sc == null) return;
+              setTimeout(async () => {
+                await collectionTracker.trackERC721Distribution(
+                  contract.address
+                );
+                let minter = new ERC721CONTRACT();
+                minter.address = contract.address;
+                minter.name = contract.name;
+                minter.symbol = contract.symbol;
+                let _minter = await minter.save();
+                console.log(_minter.name);
+              }, 500);
+            }, 500);
+          } else {
+            console.log(
+              `contract with address of ${contract.address} is already registered`
+            );
+          }
+        }, 500);
+      });
+    } catch (error) {
+      console.log(error);
     }
-  });
+  }, 500);
 };
 
 const trackAll = async () => {
@@ -61,7 +78,7 @@ const trackAll = async () => {
     counter += 1;
     if (counter == 10) counter = 0;
     await trackerc721(limit - step * (counter + 1), limit - step * counter);
-  }, 1000 * 3);
+  }, 1000 * 60);
 };
 
 module.exports = trackAll;

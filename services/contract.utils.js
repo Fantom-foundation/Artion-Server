@@ -1,24 +1,37 @@
 require("dotenv").config();
+const mongoose = require("mongoose");
 const axios = require("axios");
 const ethers = require("ethers");
 
 const ftmScanApiKey = process.env.FTM_SCAN_API_KEY;
 
+require("../models/abi");
+const ABI = mongoose.model("ABI");
+
 const loadContractABIFromAddress = async (address) => {
-  const request = `https://api.ftmscan.com/api?module=contract&action=getabi&address=${address}&apikey=${ftmScanApiKey}`;
-  let response = await axios.get(request);
-  let data = response.data;
+  let abi = await ABI.findOne({ address: address });
+  console.log("abi is ", abi);
+  if (abi) return abi.abi;
+  else {
+    const request = `https://api.ftmscan.com/api?module=contract&action=getabi&address=${address}&apikey=${ftmScanApiKey}`;
+    let response = await axios.get(request);
+    let data = response.data;
 
-  let status = data.status == "1" && data.message == "OK" ? true : false;
+    let status = data.status == "1" && data.message == "OK" ? true : false;
 
-  if (!status) return "";
-  let abi = data.result;
-  return abi;
+    if (!status) return "";
+    let abi = data.result;
+    let newABI = new ABI();
+    newABI.address = address;
+    newABI.abi = abi;
+    await newABI.save();
+    return abi;
+  }
 };
 
 const loadContractFromAddress = async (address) => {
   let abi = await loadContractABIFromAddress(address);
-  if (abi == "") return null;
+  if (!abi) return null;
   let provider = new ethers.providers.JsonRpcProvider(
     "https://rpc.fantom.network",
     250

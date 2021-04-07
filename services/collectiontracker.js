@@ -4,14 +4,28 @@ const mongoose = require("mongoose");
 const contractutils = require("./contract.utils");
 
 require("../models/transferhistory");
+require("../models/erc721token");
 const TransferHistory = mongoose.model("TransferHistory");
-
+const ERC721TOKEN = mongoose.model("ERC721TOKEN");
 const ftmScanApiKey = process.env.FTM_SCAN_API_KEY;
 
 const trackCollectionTransfer = async (address) => {
   let contract = await contractutils.loadContractFromAddress(address);
   if (!contract) return null;
   contract.on("Transfer", async (from, to, tokenID) => {
+    let erc721token = await ERC721TOKEN.findOne({
+      contractAddress: address,
+      tokenID: tokenID,
+    });
+
+    if (erc721token) {
+    } else {
+      let newTk = new ERC721TOKEN();
+      newTk.contractAddress = address;
+      newTk.tokenID = tokenID;
+      await newTk.save();
+    }
+
     let history = await TransferHistory.findOne({
       collectionAddress: address,
       tokenID: tokenID,
@@ -44,6 +58,20 @@ const trackERC721Distribution = async (minterAddress) => {
       let from = tnx.from;
       let to = tnx.to;
       let tokenID = tnx.tokenID;
+
+      let erc721token = await ERC721TOKEN.findOne({
+        contractAddress: minterAddress,
+        tokenID: tokenID,
+      });
+
+      if (erc721token) {
+      } else {
+        let newTk = new ERC721TOKEN();
+        newTk.contractAddress = minterAddress;
+        newTk.tokenID = tokenID;
+        await newTk.save();
+      }
+
       let history = await TransferHistory.findOne({
         collectionAddress: minterAddress,
         tokenID: tokenID,

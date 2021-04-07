@@ -2,10 +2,12 @@ require("dotenv").config();
 
 const mongoose = require("mongoose");
 require("../models/tradehistory");
+require("../models/listing");
 const ethers = require("ethers");
 const SimpleNFTSellerContract = require("../constants/simpleseller.sc");
 
 const TradeHistory = mongoose.model("TradeHistory");
+const Listing = mongoose.model("Listing");
 
 const trackListing = async (isTestnet) => {
   let provider = new ethers.providers.JsonRpcProvider(
@@ -31,17 +33,16 @@ const trackListing = async (isTestnet) => {
       isPrivate,
       allowedAddress
     ) => {
-      console.log(
-        "fired event params are ",
-        owner,
-        nft,
-        tokenID,
-        quantity,
-        pricePerItem,
-        startingTime,
-        isPrivate,
-        allowedAddress
-      );
+      let listing = new Listing();
+      listing.owner = owner;
+      listing.minter = nft;
+      listing.tokenID = tokenID;
+      listing.quantity = quantity;
+      listing.price = pricePerItem;
+      listing.startTime = new Date(startingTime);
+      listing.isPrivate = isPrivate;
+      listing.allowedAddress = allowedAddress;
+      await listing.save()
     }
   );
 
@@ -53,6 +54,14 @@ const trackListing = async (isTestnet) => {
     trade.tokenID = tokenID;
     trade.price = price;
     await trade.save();
+  });
+
+  contract.on("ItemCanceled", async (owner, nft, tokenID) => {
+    await Listing.deleteOne({
+      owner : owner,
+      minter : nft,
+      tokenID : tokenID
+    })
   });
 };
 

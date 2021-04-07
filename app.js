@@ -24,6 +24,8 @@ require("./models/erc721contract");
 require("./models/tradehistory");
 require("./models/collection");
 require("./models/transferhistory");
+require("./models/abi");
+require("./models/listing");
 
 app.use(bodyParser.json());
 app.options("*", cors()); // include before other routes
