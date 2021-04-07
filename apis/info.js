@@ -2,7 +2,8 @@ const router = require("express").Router();
 const mongoose = require("mongoose");
 const ERC721TOKEN = mongoose.model("ERC721TOKEN");
 const ERC721CONTRACT = mongoose.model("ERC721CONTRACT");
-
+const Collection = mongoose.model("Collection");
+const TransferHistory = mongoose.model("TransferHistory");
 // list the newly minted 10 tokens
 router.get("/getNewestTokens", async (req, res) => {
   let tokens = await ERC721TOKEN.find().sort({ createdAt: 1 }).limit(10);
@@ -15,19 +16,48 @@ router.get("/getNewestTokens", async (req, res) => {
 router.get("/geterc721contracts", async (req, res) => {
   let all = await ERC721CONTRACT.find({});
   let erc721contracts = new Array();
-  all.map((contract) => {
-    erc721contracts.push({
-      address: contract.address,
-      name: contract.name,
-      symbol: contract.symbol,
+
+  for (let i = 0; i < all.length; ++i) {
+    let contract = all[i];
+    let collection = await Collection.findOne({
+      erc721Address: contract.address,
     });
-  });
+    if (collection) {
+      erc721contracts.push({
+        address: collection.erc721Address,
+        collectionName: collection.collectionName,
+        description: collection.description,
+        categories: collection.categories,
+        logoImageHash: collection.logoImageHash,
+        siteUrl: collection.siteUrl,
+        discord: collection.discord,
+        twitterHandle: collection.twitterHandle,
+        mediumHandle: collection.mediumHandle,
+        telegram: collection.telegram,
+        isVerified: true,
+      });
+    } else {
+      erc721contracts.push({
+        address: contract.address,
+        name: contract.name,
+        symbol: contract.symbol,
+        isVerified: false,
+      });
+    }
+  }
   return res.json({
     status: "success",
     data: erc721contracts,
   });
 });
 
-router.post("/geterc721tokensfromaddress", async (req, res) => {});
+router.post("/geterc721tokensfromaddress", async (req, res) => {
+  let address = req.body.address;
+  let transfers = TransferHistory.find({ to: address });
+  return res.json({
+    status: "success",
+    data: transfers,
+  });
+});
 
 module.exports = router;

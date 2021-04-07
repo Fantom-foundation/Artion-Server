@@ -4,7 +4,7 @@ const Collection = mongoose.Schema({
   erc721Address: { type: String, required: true },
   collectionName: { type: String, required: true },
   description: { type: String, required: true },
-  categories: { type: String },
+  categories: [{ type: String }],
   logoImageHash: { type: String, required: true },
   siteUrl: { type: String, required: true },
   discord: { type: String },

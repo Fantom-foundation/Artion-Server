@@ -5,6 +5,7 @@ const ERC721CONTRACT = mongoose.Schema(
     address: { type: String, required: true },
     name: { type: String, required: true },
     symbol: { type: String, required: true },
+    isVerified: { type: Boolean, default: false },
   },
   {
     timestamps: true,

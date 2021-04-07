@@ -14,6 +14,7 @@ router.post("/collectiondetails", auth, async (req, res) => {
   let collectionName = req.body.collectionName;
   let description = req.body.description;
   let categories = req.body.categories;
+  categories = categories.split(",");
   let logoImageHash = req.body.logoImageHash;
   let siteUrl = req.body.siteUrl;
   let discord = req.body.discord;
