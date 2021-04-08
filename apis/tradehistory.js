@@ -8,7 +8,7 @@ router.post("/getTradeHistory", auth, async (req, res) => {
   let erc721address = req.body.erc721address;
   let tokenID = req.body.tokenID;
 
-  let history = TradeHistory.find({
+  let history = await TradeHistory.find({
     erc721address: erc721address,
     tokenID: tokenID,
   });

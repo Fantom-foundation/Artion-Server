@@ -3,11 +3,13 @@ require("dotenv").config();
 const mongoose = require("mongoose");
 require("../models/tradehistory");
 require("../models/listing");
+require("../models/erc721token")
 const ethers = require("ethers");
 const SimpleNFTSellerContract = require("../constants/simpleseller.sc");
 
 const TradeHistory = mongoose.model("TradeHistory");
 const Listing = mongoose.model("Listing");
+const ERC721TOKEN = mongoose.model("ERC721TOKEN")
 
 const trackListing = async (isTestnet) => {
   let provider = new ethers.providers.JsonRpcProvider(
@@ -43,6 +45,14 @@ const trackListing = async (isTestnet) => {
       listing.isPrivate = isPrivate;
       listing.allowedAddress = allowedAddress;
       await listing.save()
+
+      // update the price of nft when listed
+      let token = await ERC721TOKEN.findOne({
+        contractAddress : nft, tokenID : tokenID
+      })
+      if(token){
+      token.price = pricePerItem
+      await token.save()}
     }
   );
 
@@ -54,6 +64,15 @@ const trackListing = async (isTestnet) => {
     trade.tokenID = tokenID;
     trade.price = price;
     await trade.save();
+
+    // update the last sale price
+    let token = await ERC721TOKEN.findOne({
+      contractAddress : nft, tokenID : tokenID
+    })
+    if(token){
+      token.lastSalePrice = price
+      await token.save()
+    }
   });
 
   contract.on("ItemCanceled", async (owner, nft, tokenID) => {

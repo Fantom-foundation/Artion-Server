@@ -41,8 +41,16 @@ const loadContractFromAddress = async (address) => {
   return contract;
 };
 
+const getTokenInfo = async (address, tkID) => {
+  let minter = await contractutils.loadContractFromAddress(address);
+  if (!minter) return null;
+  let uri = await minter.tokenURI(tkID);
+  return uri;
+};
+
 const contractutils = {
   loadContractFromAddress,
+  getTokenInfo,
 };
 
 module.exports = contractutils;

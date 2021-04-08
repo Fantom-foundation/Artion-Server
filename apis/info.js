@@ -4,6 +4,8 @@ const ERC721TOKEN = mongoose.model("ERC721TOKEN");
 const ERC721CONTRACT = mongoose.model("ERC721CONTRACT");
 const Collection = mongoose.model("Collection");
 const TransferHistory = mongoose.model("TransferHistory");
+
+const contractutils = require("../services/contract.utils");
 // list the newly minted 10 tokens
 router.get("/getNewestTokens", async (req, res) => {
   let tokens = await ERC721TOKEN.find().sort({ createdAt: 1 }).limit(10);
@@ -53,7 +55,16 @@ router.get("/geterc721contracts", async (req, res) => {
 
 router.post("/geterc721tokensfromaddress", async (req, res) => {
   let address = req.body.address;
-  let transfers = TransferHistory.find({ to: address });
+  let transfers = await TransferHistory.find({ to: address });
+  let tokens = new Array();
+  for (let i = 0; i < transfers.length; ++i) {
+    let transfer = transfers[i];
+    let minter = transfer.collectionAddress;
+    let tokenID = transfer.tokenID;
+    let tokenUri = await contractutils.getTokenInfo(minter, tokenID);
+    let name;
+  }
+
   return res.json({
     status: "success",
     data: transfers,

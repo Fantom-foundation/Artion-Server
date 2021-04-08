@@ -67,6 +67,31 @@ const pinBundleFileToIPFS = async (fileName, name, address) => {
     return "failed to pin file to ipfs";
   }
 };
+
+// pin image for collection
+const pinCollectionFileToIPFS = async (fileName, name, address) => {
+  const options = {
+    pinataMetadata: {
+      name: name,
+      keyvalues: {
+        bundleName: name,
+        address: address,
+      },
+    },
+    pinataOptions: {
+      cidVersion: 0,
+    },
+  };
+  const readableStreamForFile = fs.createReadStream(uploadPath + fileName);
+
+  try {
+    let result = await pinata.pinFileToIPFS(readableStreamForFile, options);
+    return result;
+  } catch (error) {
+    console.log(error);
+    return "failed to pin file to ipfs";
+  }
+};
 // pin json to ipfs for NFT
 const pinJsonToIPFS = async (jsonMetadata) => {
   const options = {
@@ -149,8 +174,13 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
       let description = fields.description;
       let category = fields.category;
       let symbol = fields.symbol;
-      let imageFileName = address + name.replace(" ", "") + category + ".png";
-      imgData = imgData.replace(/^data:image\/png;base64,/, "");
+      let extension = imgData.substring(
+        "data:image/".length,
+        imgData.indexOf(";base64")
+      );
+      let imageFileName =
+        address + name.replace(" ", "") + category + "." + extension;
+      imgData = imgData.replace(`^data:image\/${extension};base64,`, "");
       await fs.writeFile(
         uploadPath + imageFileName,
         imgData,
@@ -214,8 +244,12 @@ router.post("/uploadBundleImage2Server", auth, async (req, res) => {
       let name = fields.name;
       let description = fields.description;
       let address = fields.address;
-      let imageFileName = address + name.replace(" ", "") + ".png";
-      imgData = imgData.replace(/^data:image\/png;base64,/, "");
+      let extension = imgData.substring(
+        "data:image/".length,
+        imgData.indexOf(";base64")
+      );
+      let imageFileName = address + name.replace(" ", "") + "." + extension;
+      imgData = imgData.replace(`^data:image\/${extension};base64,`, "");
       await fs.writeFile(
         uploadPath + imageFileName,
         imgData,
@@ -264,6 +298,55 @@ router.post("/uploadBundleImage2Server", auth, async (req, res) => {
           status: "failedOutSave",
         });
       }
+    }
+  });
+});
+
+// pin collection image
+router.post("/uploadCollectionImage2Server", auth, async (req, res) => {
+  let form = new formidable.IncomingForm();
+  form.parse(req, async (err, fields, files) => {
+    if (err) {
+      return res.status(400).json({
+        status: "failedParsingForm",
+      });
+    } else {
+      let imgData = fields.imgData;
+      let name = fields.collectionName;
+      let address = fields.erc721Address;
+      let extension = imgData.substring(
+        "data:image/".length,
+        imgData.indexOf(";base64")
+      );
+      let imageFileName = address + name.replace(" ", "") + "." + extension;
+      imgData = imgData.replace(`^data:image\/${extension};base64,`, "");
+      await fs.writeFile(
+        uploadPath + imageFileName,
+        imgData,
+        "base64",
+        (err) => {
+          if (err) {
+            return res.status(400).json({
+              status: "failed to save an image file",
+              err,
+            });
+          }
+        }
+      );
+
+      let filePinStatus = await pinCollectionFileToIPFS(
+        imageFileName,
+        name,
+        address
+      );
+      // remove file once pinned
+      try {
+        fs.unlinkSync(uploadPath + imageFileName);
+      } catch (error) {}
+      return res.json({
+        status: "success",
+        data: filePinStatus.IpfsHash,
+      });
     }
   });
 });

@@ -111,7 +111,7 @@ router.post("/accountdetails", auth, async (req, res) => {
 
 // get account info by address
 
-router.get("/getaccountinfo", auth, async (req, res) => {
+router.post("/getaccountinfo", auth, async (req, res) => {
   let address = req.body.address;
   let account = await Account.findOne({ address: address });
   if (account) {

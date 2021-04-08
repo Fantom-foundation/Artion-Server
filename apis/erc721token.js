@@ -7,13 +7,6 @@ const ERC721TOKEN = mongoose.model("ERC721TOKEN");
 
 const contractutils = require("../services/contract.utils");
 
-const getTokenInfo = async (address, tkID) => {
-  let minter = await contractutils.loadContractFromAddress(address);
-  if (!minter) return null;
-  let uri = await minter.tokenURI(tkID);
-  return uri;
-};
-
 // save a new token -- returns a json of newly added token
 router.post("/savenewtoken", auth, async (req, res) => {
   let form = new formidable.IncomingForm();
@@ -79,7 +72,7 @@ router.post("/fetchTokens", auth, async (req, res) => {
 router.post("/getTokenURI", async (req, res) => {
   let address = req.body.address;
   let tokenID = req.body.tokenID;
-  let uri = await getTokenInfo(address, tokenID);
+  let uri = await contractutils.getTokenInfo(address, tokenID);
   return res.json({
     status: "success",
     data: uri,
