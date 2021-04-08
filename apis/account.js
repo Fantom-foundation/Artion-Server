@@ -143,7 +143,7 @@ router.get("/getaccountinfo", auth, async (req, res) => {
   if (account) {
     return res.json({
       status: "success",
-      data: account.toAccountJSON(),
+      data: account,
     });
   } else {
     return res.status(400).json({
