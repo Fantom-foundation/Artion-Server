@@ -13,6 +13,21 @@ const pinata = pinataSDK(
   process.env.PINATA_SECRET_API_KEY
 );
 
+const jwt = require("jsonwebtoken");
+const jwt_secret = process.env.JWT_SECRET;
+
+const extractAddress = (req) => {
+  let authorization = req.headers.authorization.split(" ")[1],
+    decoded;
+  try {
+    decoded = jwt.verify(authorization, jwt_secret);
+  } catch (e) {
+    return res.status(401).send("unauthorized");
+  }
+  let address = decoded.data;
+  return address;
+};
+
 const uploadPath = "/home/jason/nft-marketplace/nifty-server/uploads/";
 // const uploadPath = "uploads/";
 
@@ -74,7 +89,7 @@ router.post("/accountdetails", auth, async (req, res) => {
         status: "failed",
       });
     }
-    let address = req.body.address;
+    let address = extractAddress(req);
     let alias = req.body.alias;
     let email = req.body.email;
     let bio = req.body.bio;
@@ -111,8 +126,8 @@ router.post("/accountdetails", auth, async (req, res) => {
 
 // get account info by address
 
-router.post("/getaccountinfo", auth, async (req, res) => {
-  let address = req.body.address;
+router.get("/getaccountinfo", auth, async (req, res) => {
+  let address = extractAddress(req);
   let account = await Account.findOne({ address: address });
   if (account) {
     return res.json({
