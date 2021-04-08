@@ -28,8 +28,8 @@ const extractAddress = (req, res) => {
   return address;
 };
 
-const uploadPath = "/home/jason/nft-marketplace/nifty-server/uploads/";
-// const uploadPath = "uploads/";
+// const uploadPath = "/home/jason/nft-marketplace/nifty-server/uploads/";
+const uploadPath = "uploads/";
 
 const pinAccountAvatar = async (account, imgData, userName, address, res) => {
   // check wether the account is new or already existing one -> unpin the file
@@ -44,7 +44,7 @@ const pinAccountAvatar = async (account, imgData, userName, address, res) => {
     imgData.indexOf(";base64")
   );
   let fileName = `${userName}${address}.${extension}`;
-  let base64Data = imgData.replace(`^data:image\/${extension};base64,`, "");
+  let base64Data = imgData.replace(`data:image\/${extension};base64,`, "");
   await fs.writeFile(uploadPath + fileName, base64Data, "base64", (err) => {
     if (err) {
       return res.status(400).json({
@@ -55,7 +55,7 @@ const pinAccountAvatar = async (account, imgData, userName, address, res) => {
 
   const pinataOptions = {
     pinataMetadata: {
-      address: address,
+      name: userName + address + "avatar",
       keyvalues: {
         address: address,
         userName: userName,
@@ -73,7 +73,7 @@ const pinAccountAvatar = async (account, imgData, userName, address, res) => {
     );
     // remove file once pinned
     try {
-      fs.unlinkSync(uploadPath + fileName);
+      // fs.unlinkSync(uploadPath + fileName);
     } catch (error) {}
     console.log(`ipfs hash before return is ${result.IpfsHash}`);
     return result.IpfsHash;

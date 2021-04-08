@@ -180,7 +180,7 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
       );
       let imageFileName =
         address + name.replace(" ", "") + category + "." + extension;
-      imgData = imgData.replace(`^data:image\/${extension};base64,`, "");
+      imgData = imgData.replace(`data:image\/${extension};base64,`, "");
       await fs.writeFile(
         uploadPath + imageFileName,
         imgData,
@@ -249,7 +249,7 @@ router.post("/uploadBundleImage2Server", auth, async (req, res) => {
         imgData.indexOf(";base64")
       );
       let imageFileName = address + name.replace(" ", "") + "." + extension;
-      imgData = imgData.replace(`^data:image\/${extension};base64,`, "");
+      imgData = imgData.replace(`data:image\/${extension};base64,`, "");
       await fs.writeFile(
         uploadPath + imageFileName,
         imgData,
@@ -319,7 +319,7 @@ router.post("/uploadCollectionImage2Server", auth, async (req, res) => {
         imgData.indexOf(";base64")
       );
       let imageFileName = address + name.replace(" ", "") + "." + extension;
-      imgData = imgData.replace(`^data:image\/${extension};base64,`, "");
+      imgData = imgData.replace(`data:image\/${extension};base64,`, "");
       await fs.writeFile(
         uploadPath + imageFileName,
         imgData,
