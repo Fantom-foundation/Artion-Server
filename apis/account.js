@@ -28,8 +28,8 @@ const extractAddress = (req, res) => {
   return address;
 };
 
-// const uploadPath = "/home/jason/nft-marketplace/nifty-server/uploads/";
-const uploadPath = "uploads/";
+const uploadPath = "/home/jason/nft-marketplace/nifty-server/uploads/";
+// const uploadPath = "uploads/";
 
 const pinAccountAvatar = async (account, imgData, userName, address, res) => {
   // check wether the account is new or already existing one -> unpin the file
@@ -73,9 +73,8 @@ const pinAccountAvatar = async (account, imgData, userName, address, res) => {
     );
     // remove file once pinned
     try {
-      // fs.unlinkSync(uploadPath + fileName);
+      fs.unlinkSync(uploadPath + fileName);
     } catch (error) {}
-    console.log(`ipfs hash before return is ${result.IpfsHash}`);
     return result.IpfsHash;
   } catch (error) {
     console.log(error);
