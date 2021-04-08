@@ -16,7 +16,7 @@ const pinata = pinataSDK(
 const jwt = require("jsonwebtoken");
 const jwt_secret = process.env.JWT_SECRET;
 
-const extractAddress = (req) => {
+const extractAddress = (req, res) => {
   let authorization = req.headers.authorization.split(" ")[1],
     decoded;
   try {
@@ -28,25 +28,29 @@ const extractAddress = (req) => {
   return address;
 };
 
-const uploadPath = "/home/jason/nft-marketplace/nifty-server/uploads/";
-// const uploadPath = "uploads/";
+// const uploadPath = "/home/jason/nft-marketplace/nifty-server/uploads/";
+const uploadPath = "uploads/";
 
 const pinAccountAvatar = async (account, imgData, userName, address, res) => {
   // check wether the account is new or already existing one -> unpin the file
   if (account) {
     let hash = account.imageHash;
-    await pinata.unpin(hash);
+    try {
+      await pinata.unpin(hash);
+    } catch (error) {}
   }
   let extension = imgData.substring(
     "data:image/".length,
     imgData.indexOf(";base64")
   );
-  let fileName = `${userName}~${address}.${extension}`;
+  let fileName = `${userName}${address}.${extension}`;
   let base64Data = imgData.replace(`^data:image\/${extension};base64,`, "");
   await fs.writeFile(uploadPath + fileName, base64Data, "base64", (err) => {
-    return res.status(400).json({
-      status: "failed to save an image",
-    });
+    if (err) {
+      return res.status(400).json({
+        status: "failed to save an image 1",
+      });
+    }
   });
 
   const pinataOptions = {
@@ -71,11 +75,12 @@ const pinAccountAvatar = async (account, imgData, userName, address, res) => {
     try {
       fs.unlinkSync(uploadPath + fileName);
     } catch (error) {}
+    console.log(`ipfs hash before return is ${result.IpfsHash}`);
     return result.IpfsHash;
   } catch (error) {
     console.log(error);
     return res.status(400).json({
-      status: "failed to save an image",
+      status: "failed to save an image 2",
     });
   }
 };
@@ -89,14 +94,20 @@ router.post("/accountdetails", auth, async (req, res) => {
         status: "failed",
       });
     }
-    let address = extractAddress(req);
-    let alias = req.body.alias;
-    let email = req.body.email;
-    let bio = req.body.bio;
-    let imgData = req.body.imgData;
+    let address = extractAddress(req, res);
+    let alias = fields.alias;
+    let email = fields.email;
+    let bio = fields.bio;
+    let imgData = fields.imgData;
 
     let account = await Account.findOne({ address: address });
-    let ipfsHash = pinAccountAvatar(account, imgData, alias, address, res);
+    let ipfsHash = await pinAccountAvatar(
+      account,
+      imgData,
+      alias,
+      address,
+      res
+    );
     if (account) {
       account.address = address;
       account.alias = alias;
