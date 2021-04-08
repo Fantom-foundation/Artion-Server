@@ -98,38 +98,53 @@ router.post("/accountdetails", auth, async (req, res) => {
     let email = fields.email;
     let bio = fields.bio;
     let imgData = fields.imgData;
-
     let account = await Account.findOne({ address: address });
-    let ipfsHash = await pinAccountAvatar(
-      account,
-      imgData,
-      alias,
-      address,
-      res
-    );
-    if (account) {
-      account.address = address;
-      account.alias = alias;
-      account.email = email;
-      account.bio = bio;
-      account.imageHash = ipfsHash;
-      let _account = await account.save();
-      return res.json({
-        status: "success",
-        data: _account,
-      });
+    if (imgData.startsWith("https")) {
+      if (account) {
+        account.alias = alias;
+        account.email = email;
+        account.bio = bio;
+        let _account = await account.save();
+        return res.json({
+          status: "success",
+          data: _account,
+        });
+      } else {
+        return res.status(400).json({
+          status: "failed",
+        });
+      }
     } else {
-      let newAccount = new Account();
-      newAccount.address = address;
-      newAccount.alias = alias;
-      newAccount.email = email;
-      newAccount.bio = bio;
-      newAccount.imageHash = ipfsHash;
-      let _account = await newAccount.save();
-      return res.json({
-        status: "success",
-        data: _account,
-      });
+      let ipfsHash = await pinAccountAvatar(
+        account,
+        imgData,
+        alias,
+        address,
+        res
+      );
+      if (account) {
+        account.alias = alias;
+        account.email = email;
+        account.bio = bio;
+        account.imageHash = ipfsHash;
+        let _account = await account.save();
+        return res.json({
+          status: "success",
+          data: _account,
+        });
+      } else {
+        let newAccount = new Account();
+        newAccount.address = address;
+        newAccount.alias = alias;
+        newAccount.email = email;
+        newAccount.bio = bio;
+        newAccount.imageHash = ipfsHash;
+        let _account = await newAccount.save();
+        return res.json({
+          status: "success",
+          data: _account,
+        });
+      }
     }
   });
 });
