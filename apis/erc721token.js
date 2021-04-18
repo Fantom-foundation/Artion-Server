@@ -64,9 +64,16 @@ router.post("/increaseViews", auth, async (req, res) => {
   });
 });
 
-router.post("/fetchTokens", auth, async (req, res) => {
+router.post("/fetchTokens", async (req, res) => {
   let filters;
   let step = parseInt(req.body.step);
+
+  let allTokens = await ERC721TOKEN.find({});
+  let tokens = allTokens.slice(step * 20, (step + 1) * 20);
+  return res.json({
+    status: "success",
+    data: tokens,
+  });
 });
 
 router.post("/getTokenURI", async (req, res) => {

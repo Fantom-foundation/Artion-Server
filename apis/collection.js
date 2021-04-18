@@ -21,6 +21,7 @@ router.post("/collectiondetails", auth, async (req, res) => {
   let twitterHandle = req.body.twitterHandle;
   let mediumHandle = req.body.mediumHandle;
   let telegram = req.body.telegram;
+  let instagram = req.body.instagram;
 
   let collection = await Collection.findOne({ erc721Address: erc721Address });
   if (collection) {
@@ -34,6 +35,7 @@ router.post("/collectiondetails", auth, async (req, res) => {
     collection.twitterHandle = twitterHandle;
     collection.mediumHandle = mediumHandle;
     collection.telegram = telegram;
+    collection.instagramHandle = instagram;
 
     let _collection = await collection.save();
     if (_collection)
@@ -57,6 +59,7 @@ router.post("/collectiondetails", auth, async (req, res) => {
     _collection.twitterHandle = twitterHandle;
     _collection.mediumHandle = mediumHandle;
     _collection.telegram = telegram;
+    _collection.instagramHandle = instagram;
     let newCollection = await _collection.save();
     if (newCollection)
       return res.send({
