@@ -10,6 +10,10 @@ const port = 5001;
 
 const trackAll = require("./services/erc721tracker");
 
+// self written detector
+
+const ERC721Detector = require("./services/erc721detector");
+
 app.use(
   bodyParser.urlencoded({
     extended: false,
@@ -26,6 +30,9 @@ require("./models/collection");
 require("./models/transferhistory");
 require("./models/abi");
 require("./models/listing");
+require("./models/notification");
+require("./models/bid");
+require("./models/highestblock");
 
 app.use(bodyParser.json());
 app.options("*", cors()); // include before other routes
@@ -42,7 +49,11 @@ const connect = () => {
   db.on("error", console.error.bind(console, "connection error:"));
   db.once("open", function () {
     console.log("nifty server has been connected to the db server");
+    // disable ftmscan api relied service
     trackAll();
+
+    // start self detector
+    // ERC721Detector.erc721detector();
     app.listen(port, () => {
       console.log(`nifty server is running at port ${port}`);
     });

@@ -7,7 +7,6 @@ require("../models/transferhistory");
 require("../models/erc721token");
 const TransferHistory = mongoose.model("TransferHistory");
 const ERC721TOKEN = mongoose.model("ERC721TOKEN");
-const ftmScanApiKey = process.env.FTM_SCAN_API_KEY;
 
 const trackCollectionTransfer = async (address) => {
   let contract = await contractutils.loadContractFromAddress(address);
@@ -20,9 +19,11 @@ const trackCollectionTransfer = async (address) => {
 
     if (erc721token) {
     } else {
+      let tokenURI = await contract.tokenURI(tokenID);
       let newTk = new ERC721TOKEN();
       newTk.contractAddress = address;
       newTk.tokenID = tokenID;
+      newTk.tokenURI = tokenURI;
       await newTk.save();
     }
 
@@ -48,17 +49,11 @@ const trackCollectionTransfer = async (address) => {
 };
 
 const trackERC721Distribution = async (minterAddress) => {
-  let request = `https://api.ftmscan.com/api?module=account&action=tokennfttx&contractaddress=${minterAddress}&startblock=0&endblock=999999999&sort=asc&apikey=${ftmScanApiKey}`;
-  let result = await axios.get(request);
-  let tnxs = result.data.result;
-  if (tnxs) {
-    tnxs = Object.values(tnxs);
-    tnxs.map(async (tnx) => {
-      console.log(tnx);
-      let from = tnx.from;
-      let to = tnx.to;
-      let tokenID = tnx.tokenID;
-
+  const contract = await contractutils.loadContractFromAddress(minterAddress);
+  let tokenID = 1;
+  while (tokenID != 0) {
+    try {
+      let tokenURI = await contract.tokenURI(tokenID);
       let erc721token = await ERC721TOKEN.findOne({
         contractAddress: minterAddress,
         tokenID: tokenID,
@@ -69,8 +64,13 @@ const trackERC721Distribution = async (minterAddress) => {
         let newTk = new ERC721TOKEN();
         newTk.contractAddress = minterAddress;
         newTk.tokenID = tokenID;
+        newTk.tokenURI = tokenURI;
         await newTk.save();
       }
+
+      // say from is the minter, to is the current owner
+      let from = minterAddress;
+      let to = await contract.ownerOf(tokenID);
 
       let history = await TransferHistory.findOne({
         collectionAddress: minterAddress,
@@ -89,7 +89,13 @@ const trackERC721Distribution = async (minterAddress) => {
         newHistory.tokenID = tokenID;
         await newHistory.save();
       }
-    });
+      console.log(`tokenID is incremented to ${tokenID}`);
+      tokenID++;
+    } catch (error) {
+      tokenID = 0;
+      console.log("exception, exiting ...");
+      break;
+    }
   }
 };
 

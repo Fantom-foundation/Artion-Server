@@ -9,6 +9,7 @@ const Collection = mongoose.Schema({
   siteUrl: { type: String, required: true },
   discord: { type: String },
   twitterHandle: { type: String },
+  instagramHandle: { type: String },
   mediumHandle: { type: String },
   telegram: { type: String },
 });
