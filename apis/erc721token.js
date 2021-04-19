@@ -68,19 +68,15 @@ router.post("/fetchTokens", async (req, res) => {
   let filters;
   let step = parseInt(req.body.step);
 
+  let tokenCounts = await ERC721TOKEN.countDocuments({});
   let allTokens = await ERC721TOKEN.find({});
   let tokens = allTokens.slice(step * 20, (step + 1) * 20);
   return res.json({
     status: "success",
-    data: tokens,
-  });
-});
-
-router.get("/getTotalTokenCounts", async (req, res) => {
-  let tokenCounts = await ERC721TOKEN.countDocuments({});
-  return res.json({
-    status: "success",
-    data: tokenCounts,
+    data: {
+      tokens: tokens,
+      totalTokenCounts: tokenCounts,
+    },
   });
 });
 
