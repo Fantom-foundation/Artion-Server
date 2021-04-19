@@ -211,14 +211,15 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
 
       let metaData = {
         name: name,
-        symbol: symbol,
-        fileName: imageFileName,
-        address: address,
-        royalty: royalty,
+        image: ipfsUri + filePinStatus.IpfsHash,
         description: description,
-        category: category,
-        imageHash: ipfsUri + filePinStatus.IpfsHash,
-        createdAt: currentTime,
+        properties: {
+          symbol: symbol,
+          address: address,
+          royalty: royalty,
+          category: category,
+          createdAt: currentTime,
+        },
       };
 
       let jsonPinStatus = await pinJsonToIPFS(metaData);

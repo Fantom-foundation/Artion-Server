@@ -4,6 +4,7 @@ const formidable = require("formidable");
 
 const auth = require("./middleware/auth");
 const ERC721TOKEN = mongoose.model("ERC721TOKEN");
+const TransferHistory = mongoose.model("TransferHistory");
 
 const contractutils = require("../services/contract.utils");
 
@@ -87,6 +88,25 @@ router.post("/getTokenURI", async (req, res) => {
   return res.json({
     status: "success",
     data: uri,
+  });
+});
+
+router.post("/fetchTokensFromAddress", async (req, res) => {
+  let address = req.body.address;
+  let transfers = await TransferHistory.find({ to: address });
+  let tokensInAddress = new Array();
+
+  for (let i = 0; i < transfers.length; ++i) {
+    let transfer = transfers[i];
+    let token = await ERC721TOKEN.findOne({
+      contractAddress: transfer.collectionAddress,
+      tokenID: transfer.tokenID,
+    });
+    tokensInAddress.push(token);
+  }
+  return res.send({
+    status: "success",
+    data: tokensInAddress,
   });
 });
 
