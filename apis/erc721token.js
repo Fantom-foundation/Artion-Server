@@ -76,6 +76,14 @@ router.post("/fetchTokens", async (req, res) => {
   });
 });
 
+router.get("/getTotalTokenCounts", async (req, res) => {
+  let tokenCounts = await ERC721TOKEN.countDocuments({});
+  return res.json({
+    status: "success",
+    data: tokenCounts,
+  });
+});
+
 router.post("/getTokenURI", async (req, res) => {
   let address = req.body.address;
   let tokenID = req.body.tokenID;
