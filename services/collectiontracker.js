@@ -8,6 +8,8 @@ require("../models/erc721token");
 const TransferHistory = mongoose.model("TransferHistory");
 const ERC721TOKEN = mongoose.model("ERC721TOKEN");
 
+const isUrlExists = require("url-exists-nodejs");
+
 const trackCollectionTransfer = async (address) => {
   let contract = await contractutils.loadContractFromAddress(address);
   if (!contract) return null;
@@ -17,9 +19,14 @@ const trackCollectionTransfer = async (address) => {
       tokenID: tokenID,
     });
 
+    let tokenURI = await contract.tokenURI(tokenID);
+    let isValidURI = await isUrlExists(tokenURI);
+    if (!isValidURI) {
+      return;
+    }
+
     if (erc721token) {
     } else {
-      let tokenURI = await contract.tokenURI(tokenID);
       let newTk = new ERC721TOKEN();
       newTk.contractAddress = address;
       newTk.tokenID = tokenID;
@@ -54,6 +61,8 @@ const trackERC721Distribution = async (minterAddress) => {
   while (tokenID != 0) {
     try {
       let tokenURI = await contract.tokenURI(tokenID);
+      let isValidURI = await isUrlExists(tokenURI);
+      if (!isValidURI) return;
       let erc721token = await ERC721TOKEN.findOne({
         contractAddress: minterAddress,
         tokenID: tokenID,
