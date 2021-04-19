@@ -98,7 +98,7 @@ const pinJsonToIPFS = async (jsonMetadata) => {
     pinataMetadata: {
       name: jsonMetadata.name,
       keyvalues: {
-        address: jsonMetadata.address,
+        address: jsonMetadata.properties.address,
       },
     },
     pinataOptions: {
