@@ -166,4 +166,21 @@ router.get("/getaccountinfo", auth, async (req, res) => {
   }
 });
 
+// get account info by address
+
+router.post("/getuseraccountinfo", async (req, res) => {
+  let address = req.body.address;
+  let account = await Account.findOne({ address: address });
+  if (account) {
+    return res.json({
+      status: "success",
+      data: account,
+    });
+  } else {
+    return res.status(400).json({
+      status: "failed",
+    });
+  }
+});
+
 module.exports = router;

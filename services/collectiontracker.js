@@ -24,6 +24,7 @@ const trackCollectionTransfer = async (address) => {
     if (!isValidURI) {
       return;
     }
+    console.log(`uri ${tokenURI} is valid`);
 
     if (erc721token) {
     } else {
