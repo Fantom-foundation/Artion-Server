@@ -63,14 +63,14 @@ const trackerc721 = async (begin, end) => {
 
 const trackAll = async () => {
   console.log("erc72 tracker has been started");
-  let counter = 10;
+  let counter = 9;
 
   const func = async () => {
     await trackerc721(limit - step * (counter + 1), limit - step * counter);
 
     console.log(`counter is ${counter}`);
     counter -= 1;
-    if (counter == 0) counter = 10;
+    if (counter == 0) counter = 9;
     setTimeout(() => {
       func();
     }, 1000 * 60);
