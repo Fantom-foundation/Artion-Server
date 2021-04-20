@@ -69,12 +69,19 @@ const trackAll = async () => {
   //   await trackerc721(limit - step * (counter + 1), limit - step * counter);
   // }, 1000 * 60);
 
-  for (let i = 0; i < 100; i = i * 1) {
+  const func = async () => {
     await trackerc721(limit - step * (counter + 1), limit - step * counter);
+
     console.log(`counter is ${counter}`);
     counter += 1;
     if (counter == 10) counter = 0;
-  }
+
+    setTimeout(() => {
+      func();
+    }, 1000);
+  };
+
+  func();
 };
 
 module.exports = trackAll;
