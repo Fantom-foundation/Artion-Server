@@ -25,6 +25,7 @@ router.get("/geterc721contracts", async (req, res) => {
       erc721Address: contract.address,
     });
     if (collection) {
+      console.log("collection of address ", contract.address);
       erc721contracts.push({
         address: collection.erc721Address,
         collectionName: collection.collectionName,
