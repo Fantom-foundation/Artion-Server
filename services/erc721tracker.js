@@ -16,7 +16,11 @@ const trackerc721 = async (begin, end) => {
   let request = `https://api.ftmscan.com/api?module=account&action=tokennfttx&address=${validatorAddress}&startblock=${begin}&endblock=${end}&sort=asc&apikey=${ftmScanApiKey}`;
   let result = await axios.get(request);
   let tnxs = result.data.result;
-  if (tnxs) {
+
+  console.log("tnnx found in between ", begin, " and ", end);
+  console.log(tnxs.length);
+  if (tnxs.length == 0) return;
+  else {
     tnxs.map((tnx) => {
       let contractInfo = {
         address: tnx.contractAddress,
@@ -60,11 +64,18 @@ const trackerc721 = async (begin, end) => {
 const trackAll = async () => {
   console.log("erc72 tracker has been started");
   let counter = 0;
-  setInterval(async () => {
+  // setInterval(async () => {
+  //   counter += 1;
+  //   if (counter == 10) counter = 0;
+  //   await trackerc721(limit - step * (counter + 1), limit - step * counter);
+  // }, 1000 * 60);
+
+  for (let i = 0; i < 100; i = i * 1) {
+    await trackerc721(limit - step * (counter + 1), limit - step * counter);
+    console.log(`counter is ${counter}`);
     counter += 1;
     if (counter == 10) counter = 0;
-    await trackerc721(limit - step * (counter + 1), limit - step * counter);
-  }, 1000 * 60);
+  }
 };
 
 module.exports = trackAll;
