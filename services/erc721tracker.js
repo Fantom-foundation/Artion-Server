@@ -48,12 +48,9 @@ const trackerc721 = async (begin, end) => {
         contract.address
       );
       // do not save the smart contracts which are not verified
-      console.log("smart contract is");
-      console.log(sc);
-      return;
       if (sc == null) return;
 
-      await collectionTracker.trackERC721Distribution(contract.address);
+      await collectionTracker.trackERC721Distribution(contract);
 
       console.log(_minter.name);
     } else {

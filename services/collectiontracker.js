@@ -56,10 +56,8 @@ const trackCollectionTransfer = async (address) => {
   return contract;
 };
 
-const trackERC721Distribution = async (minterAddress) => {
-  const contract = await contractutils.loadContractFromAddress(minterAddress);
-
-  console.log(`${minterAddress} distribution has been started`);
+const trackERC721Distribution = async (contract) => {
+  console.log(`${contract.address} distribution has been started`);
 
   let tokenID = 1;
   while (tokenID != 0) {
