@@ -43,10 +43,13 @@ const trackCollectionTransfer = async (address) => {
       tokenID: tokenID,
       to: from,
     });
+    console.log("found history is");
+    console.log(history);
     if (history) {
       history.from = from;
       history.to = to;
-      await token.save();
+      await history.save();
+      console.log("new transfer of existing updated");
     } else {
       let newHistory = new TransferHistory();
       newHistory.collectionAddress = address;
@@ -54,6 +57,8 @@ const trackCollectionTransfer = async (address) => {
       newHistory.to = to;
       newHistory.tokenID = tokenID;
       await newHistory.save();
+
+      console.log("new transfer of  non existing added");
     }
   });
   return contract;
