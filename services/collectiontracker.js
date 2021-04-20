@@ -14,19 +14,19 @@ const trackCollectionTransfer = async (address) => {
   let contract = await contractutils.loadContractFromAddress(address);
   if (!contract) return null;
   contract.on("Transfer", async (from, to, tokenID) => {
-    console.log("new transfer detected");
-    console.log(from, to, tokenID);
+    // console.log("new transfer detected");
+    // console.log(from, to, tokenID);
 
     let erc721token = await ERC721TOKEN.findOne({
       contractAddress: address,
       tokenID: tokenID,
     });
 
-    console.log("found token is ");
-    console.log(erc721token);
+    // console.log("found token is ");
+    // console.log(erc721token);
 
     let tokenURI = await contract.tokenURI(tokenID);
-    console.log("tokens token uri is ", tokenURI);
+    // console.log("tokens token uri is ", tokenURI);
     let isValidURI = await isUrlExists(tokenURI);
     if (!isValidURI) {
       // return;
@@ -40,8 +40,8 @@ const trackCollectionTransfer = async (address) => {
       newTk.tokenID = tokenID;
       newTk.tokenURI = tokenURI;
       let _newTK = await newTk.save();
-      console.log("saved new token is ");
-      console.log(_newTK);
+      // console.log("saved new token is ");
+      // console.log(_newTK);
     }
 
     let history = await TransferHistory.findOne({
@@ -49,14 +49,14 @@ const trackCollectionTransfer = async (address) => {
       tokenID: tokenID,
       to: from,
     });
-    console.log("found history is");
-    console.log(history);
+    // console.log("found history is");
+    // console.log(history);
     if (history) {
       history.from = from;
       history.to = to;
       let _history = await history.save();
-      console.log("new transfer of existing updated");
-      console.log(_history);
+      // console.log("new transfer of existing updated");
+      // console.log(_history);
     } else {
       let newHistory = new TransferHistory();
       newHistory.collectionAddress = address;
@@ -65,9 +65,9 @@ const trackCollectionTransfer = async (address) => {
       newHistory.tokenID = tokenID;
       let _newHistory = await newHistory.save();
 
-      console.log("new transfer of  non existing added");
+      // console.log("new transfer of  non existing added");
 
-      console.log(_newHistory);
+      // console.log(_newHistory);
     }
   });
   return contract;
