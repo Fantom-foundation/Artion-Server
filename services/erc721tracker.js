@@ -17,8 +17,8 @@ const trackerc721 = async (begin, end) => {
   let result = await axios.get(request);
   let tnxs = result.data.result;
 
-  console.log("tnnx found in between ", begin, " and ", end);
-  console.log(tnxs);
+  // console.log("tnnx found in between ", begin, " and ", end);
+  // console.log(tnxs);
   if (tnxs) {
     tnxs.map((tnx) => {
       let contractInfo = {
@@ -41,8 +41,8 @@ const trackerc721 = async (begin, end) => {
       minter.name = contract.name;
       minter.symbol = contract.symbol;
       let _minter = await minter.save();
-      console.log("new erc721 contract has been found");
-      console.log(_minter);
+      // console.log("new erc721 contract has been found");
+      // console.log(_minter);
 
       let sc = await collectionTracker.trackCollectionTransfer(
         contract.address
@@ -53,26 +53,21 @@ const trackerc721 = async (begin, end) => {
 
       console.log(_minter.name);
     } else {
-      console.log(
-        `contract with address of ${contract.address} is already registered`
-      );
+      // console.log(
+      //   `contract with address of ${contract.address} is already registered`
+      // );
     }
   });
 };
 
 const trackAll = async () => {
-  console.log("erc72 tracker has been started");
+  // console.log("erc72 tracker has been started");
   let counter = 0;
-  // setInterval(async () => {
-  //   counter += 1;
-  //   if (counter == 10) counter = 0;
-  //   await trackerc721(limit - step * (counter + 1), limit - step * counter);
-  // }, 1000 * 60);
 
   const func = async () => {
     await trackerc721(limit - step * (counter + 1), limit - step * counter);
 
-    console.log(`counter is ${counter}`);
+    // console.log(`counter is ${counter}`);
     counter += 1;
     if (counter == 10) counter = 0;
 
