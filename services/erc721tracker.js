@@ -18,6 +18,7 @@ const trackerc721 = async (begin, end) => {
   let tnxs = result.data.result;
 
   console.log("tnnx found in between ", begin, " and ", end);
+  console.log(tnxs);
   if (tnxs) {
     tnxs.map((tnx) => {
       let contractInfo = {
