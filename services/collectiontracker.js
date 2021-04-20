@@ -68,7 +68,9 @@ const trackERC721Distribution = async (contract, minterAddress) => {
       );
       let isValidURI = await isUrlExists(tokenURI);
       console.log(`token uri of ${tokenURI} is `, isValidURI);
-      if (isValidURI) {
+      if (!isValidURI) {
+        tokenID++;
+      } else {
         let erc721token = await ERC721TOKEN.findOne({
           contractAddress: minterAddress,
           tokenID: tokenID,
