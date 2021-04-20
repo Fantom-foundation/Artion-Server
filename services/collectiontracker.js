@@ -113,6 +113,7 @@ const trackERC721Distribution = async (contract) => {
       console.log(`tokenID is incremented to ${tokenID}`);
       tokenID++;
     } catch (error) {
+      console.log(error);
       tokenID = 0;
       console.log("exception, exiting ...");
       break;
