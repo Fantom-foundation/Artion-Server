@@ -19,15 +19,13 @@ router.get("/geterc721contracts", async (req, res) => {
   let all = await ERC721CONTRACT.find({});
   let erc721contracts = new Array();
 
-  let collections = await Collection.find({});
-  console.log("collections are ");
-  console.log(collections);
-
   for (let i = 0; i < all.length; ++i) {
     let contract = all[i];
     let collection = await Collection.findOne({
       erc721Address: contract.address,
     });
+    console.log(collection);
+
     if (collection) {
       console.log("collection of address ", contract.address);
       erc721contracts.push({
