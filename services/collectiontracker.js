@@ -31,7 +31,7 @@ const trackCollectionTransfer = async (address) => {
     if (!isValidURI) {
       return;
     }
-    //console.log(`uri ${tokenURI} is valid`);
+    console.log(`uri ${tokenURI} is valid`);
 
     if (erc721token) {
     } else {
@@ -39,7 +39,9 @@ const trackCollectionTransfer = async (address) => {
       newTk.contractAddress = address;
       newTk.tokenID = tokenID;
       newTk.tokenURI = tokenURI;
-      await newTk.save();
+      let _newTK = await newTk.save();
+      console.log("saved new token is ");
+      console.log(_newTK);
     }
 
     let history = await TransferHistory.findOne({
@@ -52,17 +54,20 @@ const trackCollectionTransfer = async (address) => {
     if (history) {
       history.from = from;
       history.to = to;
-      await history.save();
+      let _history = await history.save();
       console.log("new transfer of existing updated");
+      console.log(_history);
     } else {
       let newHistory = new TransferHistory();
       newHistory.collectionAddress = address;
       newHistory.from = from;
       newHistory.to = to;
       newHistory.tokenID = tokenID;
-      await newHistory.save();
+      let _newHistory = await newHistory.save();
 
       console.log("new transfer of  non existing added");
+
+      console.log(_newHistory);
     }
   });
   return contract;
