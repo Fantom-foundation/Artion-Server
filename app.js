@@ -42,7 +42,8 @@ app.use(require("./apis"));
 const connect = () => {
   const db_pwd = process.env.MONGODB_ATLAS_PASSWORD;
   const db_name = process.env.DB_NAME;
-  const uri = `mongodb+srv://admin:${db_pwd}@fantom.9jjuy.mongodb.net/${db_name}?retryWrites=true&w=majority`;
+  // const uri = `mongodb+srv://admin:${db_pwd}@fantom.9jjuy.mongodb.net/${db_name}?retryWrites=true&w=majority`;
+  const uri = `mongodb://localhost:27017/FantomMarketPlace`;
 
   mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
   const db = mongoose.connection;
@@ -50,10 +51,8 @@ const connect = () => {
   db.once("open", function () {
     console.log("nifty server has been connected to the db server");
     // disable ftmscan api relied service
-    trackAll();
+    // trackAll();
 
-    // start self detector
-    // ERC721Detector.erc721detector();
     app.listen(port, () => {
       console.log(`nifty server is running at port ${port}`);
     });

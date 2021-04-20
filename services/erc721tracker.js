@@ -34,14 +34,20 @@ const trackerc721 = async (begin, end) => {
     });
   }
   contracts.map(async (contract) => {
-    let erc721 = await ERC721CONTRACT.findOne({ address: contract.address });
+    console.log(contract);
+    let erc721 = null;
+    try {
+      erc721 = await ERC721CONTRACT.findOne({ address: contract.address });
+    } catch (error) {
+      erc721 = null;
+    }
     if (!erc721) {
       let minter = new ERC721CONTRACT();
       minter.address = contract.address;
       minter.name = contract.name;
       minter.symbol = contract.symbol;
       let _minter = await minter.save();
-      // console.log("new erc721 contract has been found");
+      console.log("new erc721 contract has been found");
       // console.log(_minter);
 
       let sc = await collectionTracker.trackCollectionTransfer(
@@ -62,14 +68,14 @@ const trackerc721 = async (begin, end) => {
 
 const trackAll = async () => {
   // console.log("erc72 tracker has been started");
-  let counter = 0;
+  let counter = 9;
 
   const func = async () => {
     await trackerc721(limit - step * (counter + 1), limit - step * counter);
 
     // console.log(`counter is ${counter}`);
-    counter += 1;
-    if (counter == 10) counter = 0;
+    counter -= 1;
+    if (counter == 0) counter = 9;
 
     setTimeout(() => {
       func();
