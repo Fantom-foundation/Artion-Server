@@ -22,7 +22,7 @@ router.get("/geterc721contracts", async (req, res) => {
   for (let i = 0; i < all.length; ++i) {
     let contract = all[i];
     let collection = await Collection.findOne({
-      erc721Address: contract.address,
+      erc721Address_lower: contract.address.toLowerCase(),
     });
     console.log(collection);
 
