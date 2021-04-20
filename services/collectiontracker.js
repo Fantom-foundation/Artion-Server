@@ -22,7 +22,11 @@ const trackCollectionTransfer = async (address) => {
       tokenID: tokenID,
     });
 
+    console.log("found token is ");
+    console.log(erc721token);
+
     let tokenURI = await contract.tokenURI(tokenID);
+    console.log("tokens token uri is ", tokenURI);
     let isValidURI = await isUrlExists(tokenURI);
     if (!isValidURI) {
       return;
