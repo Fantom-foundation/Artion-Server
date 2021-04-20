@@ -117,7 +117,6 @@ const trackERC721Distribution = async (contract, minterAddress) => {
       console.log(error);
       tokenID = 0;
       console.log("exception, exiting ...");
-      break;
     }
   }
 };
