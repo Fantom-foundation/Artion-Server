@@ -42,28 +42,25 @@ router.post("/savenewtoken", auth, async (req, res) => {
 
 //increase the view count -- returns a increased view count
 
-router.post("/increaseViews", auth, async (req, res) => {
-  let form = new formidable.IncomingForm();
-  form.parse(req, async (err, fields, files) => {
-    if (err) {
-      return res.status(400).json({
-        status: "failed",
-      });
-    } else {
-      let contractAddress = fields.contractAddress;
-      let tokenID = fields.tokenID;
-      let token = ERC721TOKEN.findOne({
-        contractAddress: contractAddress,
-        tokenID: tokenID,
-      });
-      token.viewed = token.viewed + 1;
-      let _token = await token.save();
-      return res.json({
-        status: "success",
-        data: _token.viewed,
-      });
-    }
-  });
+router.post("/increaseViews", async (req, res) => {
+  try {
+    let contractAddress = req.body.contractAddress;
+    let tokenID = req.body.tokenID;
+    let token = await ERC721TOKEN.findOne({
+      contractAddress: contractAddress,
+      tokenID: tokenID,
+    });
+    token.viewed = token.viewed + 1;
+    let _token = await token.save();
+    return res.json({
+      status: "success",
+      data: _token.viewed,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      status: "failed",
+    });
+  }
 });
 
 router.post("/fetchTokens", async (req, res) => {
