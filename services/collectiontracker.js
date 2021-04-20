@@ -68,48 +68,49 @@ const trackERC721Distribution = async (contract, minterAddress) => {
       );
       let isValidURI = await isUrlExists(tokenURI);
       console.log(`token uri of ${tokenURI} is `, isValidURI);
-      if (!isValidURI) return;
-      let erc721token = await ERC721TOKEN.findOne({
-        contractAddress: minterAddress,
-        tokenID: tokenID,
-      });
+      if (isValidURI) {
+        let erc721token = await ERC721TOKEN.findOne({
+          contractAddress: minterAddress,
+          tokenID: tokenID,
+        });
 
-      if (erc721token) {
-        console.log("token exists");
-      } else {
-        let newTk = new ERC721TOKEN();
-        newTk.contractAddress = minterAddress;
-        newTk.tokenID = tokenID;
-        newTk.tokenURI = tokenURI;
-        await newTk.save();
-        console.log("token newly saved");
+        if (erc721token) {
+          console.log("token exists");
+        } else {
+          let newTk = new ERC721TOKEN();
+          newTk.contractAddress = minterAddress;
+          newTk.tokenID = tokenID;
+          newTk.tokenURI = tokenURI;
+          await newTk.save();
+          console.log("token newly saved");
+        }
+
+        // say from is the minter, to is the current owner
+        let from = minterAddress;
+        let to = await contract.ownerOf(tokenID);
+
+        let history = await TransferHistory.findOne({
+          collectionAddress: minterAddress,
+          tokenID: tokenID,
+          to: from,
+        });
+        if (history) {
+          history.from = from;
+          history.to = to;
+          await token.save();
+          console.log("already in history");
+        } else {
+          let newHistory = new TransferHistory();
+          newHistory.collectionAddress = minterAddress;
+          newHistory.from = from;
+          newHistory.to = to;
+          newHistory.tokenID = tokenID;
+          await newHistory.save();
+          console.log("token newly saved to history");
+        }
+        console.log(`tokenID is incremented to ${tokenID}`);
+        tokenID++;
       }
-
-      // say from is the minter, to is the current owner
-      let from = minterAddress;
-      let to = await contract.ownerOf(tokenID);
-
-      let history = await TransferHistory.findOne({
-        collectionAddress: minterAddress,
-        tokenID: tokenID,
-        to: from,
-      });
-      if (history) {
-        history.from = from;
-        history.to = to;
-        await token.save();
-        console.log("already in history");
-      } else {
-        let newHistory = new TransferHistory();
-        newHistory.collectionAddress = minterAddress;
-        newHistory.from = from;
-        newHistory.to = to;
-        newHistory.tokenID = tokenID;
-        await newHistory.save();
-        console.log("token newly saved to history");
-      }
-      console.log(`tokenID is incremented to ${tokenID}`);
-      tokenID++;
     } catch (error) {
       console.log(error);
       tokenID = 0;
