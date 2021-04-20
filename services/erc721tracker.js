@@ -44,14 +44,16 @@ const trackerc721 = async (begin, end) => {
       console.log("new erc721 contract has been found");
       console.log(_minter);
 
-      let sc = await collectionTracker.trackCollectionTransfer(
-        contract.address
-      );
+      // let sc = await collectionTracker.trackCollectionTransfer(
+      //   contract.address
+      // );
+      let sc = collectionTracker.trackCollectionTransfer(contract.address);
+      sc.then((res) => {
+        if (res == null) return;
+        collectionTracker.trackERC721Distribution(contract.address);
+        console.log(_minter.name);
+      });
       // do not save the smart contracts which are not verified
-      if (sc == null) return;
-      await collectionTracker.trackERC721Distribution(contract.address);
-
-      console.log(_minter.name);
     } else {
       console.log(
         `contract with address of ${contract.address} is already registered`

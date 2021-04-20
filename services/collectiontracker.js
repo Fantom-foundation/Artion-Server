@@ -32,7 +32,8 @@ const trackCollectionTransfer = async (address) => {
       newTk.contractAddress = address;
       newTk.tokenID = tokenID;
       newTk.tokenURI = tokenURI;
-      await newTk.save();
+      // await newTk.save();
+      newTk.save();
     }
 
     let history = await TransferHistory.findOne({
@@ -43,14 +44,16 @@ const trackCollectionTransfer = async (address) => {
     if (history) {
       history.from = from;
       history.to = to;
-      await token.save();
+      // await token.save();
+      token.save();
     } else {
       let newHistory = new TransferHistory();
       newHistory.collectionAddress = address;
       newHistory.from = from;
       newHistory.to = to;
       newHistory.tokenID = tokenID;
-      await newHistory.save();
+      // await newHistory.save();
+      newHistory.save();
     }
   });
   return contract;
