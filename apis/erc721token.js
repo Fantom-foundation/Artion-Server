@@ -80,7 +80,7 @@ router.post("/fetchTokens", async (req, res) => {
 });
 
 router.post("/getTokenURI", async (req, res) => {
-  let address = req.body.address;
+  let address = req.body.contractAddress;
   let tokenID = req.body.tokenID;
   let uri = await contractutils.getTokenInfo(address, tokenID);
   return res.json({
