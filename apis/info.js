@@ -17,14 +17,22 @@ router.get("/getNewestTokens", async (req, res) => {
 
 router.get("/geterc721contracts", async (req, res) => {
   let all = await ERC721CONTRACT.find({});
+  let allCollections = await Collection.find({});
+
+  console.log("all collections are ");
+  console.log(allCollections);
+
   let erc721contracts = new Array();
 
   for (let i = 0; i < all.length; ++i) {
     let contract = all[i];
-    let collection = await Collection.findOne({
-      erc721Address: contract.address,
-    });
+    let collection = allCollections.find(
+      (col) => col.erc721Address.toLowerCase() == contract.address.toLowerCase()
+    );
+    console.log(collection);
+
     if (collection) {
+      console.log("collection of address ", contract.address);
       erc721contracts.push({
         address: collection.erc721Address,
         collectionName: collection.collectionName,
