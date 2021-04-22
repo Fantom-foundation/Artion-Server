@@ -9,7 +9,7 @@ router.post("/getTradeHistory", async (req, res) => {
   let tokenID = req.body.tokenID;
 
   let history = await TradeHistory.find({
-    erc721address: erc721address,
+    erc721address: { $regex: new RegExp(erc721address, "i") },
     tokenID: tokenID,
   });
   return res.send({
