@@ -9,9 +9,12 @@ const Offer = mongoose.model("Offer");
 router.post("/getOffers", async (req, res) => {
   let nft = req.body.contractAddress;
   let tokenID = req.body.tokenID;
+  console.log(nft, tokenID);
 
   try {
     let offers = await Offer.find({ nft: nft, tokenId: tokenID });
+    console.log("offers");
+    console.log(offers);
     return res.json({
       status: "success",
       data: offers,
