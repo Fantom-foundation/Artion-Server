@@ -12,6 +12,6 @@ router.use("/tradehistory", require("./tradehistory"));
 router.use("/notifications", require("./notification"));
 router.use("/listing", require("./listing"));
 router.use("/erc721", require("./erc721"));
-route.use("/offer", require("./offer"));
+router.use("/offer", require("./offer"));
 
 module.exports = router;
