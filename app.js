@@ -33,6 +33,7 @@ require("./models/listing");
 require("./models/notification");
 require("./models/bid");
 require("./models/highestblock");
+require("./models/offer");
 
 app.use(bodyParser.json());
 app.options("*", cors()); // include before other routes
