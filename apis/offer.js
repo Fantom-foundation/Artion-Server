@@ -1,8 +1,6 @@
 const router = require("express").Router();
 const auth = require("./middleware/auth");
 const mongoose = require("mongoose");
-const { rmSync } = require("fs");
-const { off } = require("process");
 
 const Offer = mongoose.model("Offer");
 
@@ -12,7 +10,10 @@ router.post("/getOffers", async (req, res) => {
   console.log(nft, tokenID);
 
   try {
-    let offers = await Offer.find({ nft: nft, tokenId: tokenID });
+    let offers = await Offer.find({
+      nft: { $regex: new RegExp(nft, "i") },
+      tokenId: tokenID,
+    });
     console.log("offers");
     console.log(offers);
     return res.json({
