@@ -93,12 +93,18 @@ router.post("/fetchTokens", async (req, res) => {
 
   let allTokens = new Array();
 
-  let transfers = await TransferHistory.find(filter).select('contractAddress','tokenID')
+  let transfers = await TransferHistory.find(filter).select(
+    "contractAddress",
+    "tokenID"
+  );
 
-  transfers.map(transfer => {
-    let token = await ERC721TOKEN.findOne({contractAddress : transfer.collectionAddress, tokenID : transfer.to})
-    allTokens.push(token)
-  })
+  transfers.map(async (transfer) => {
+    let token = await ERC721TOKEN.findOne({
+      contractAddress: transfer.collectionAddress,
+      tokenID: transfer.to,
+    });
+    allTokens.push(token);
+  });
 
   let tokens = allTokens.slice(step * 20, (step + 1) * 20);
   return res.json({
