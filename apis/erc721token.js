@@ -97,6 +97,7 @@ router.post("/fetchTokens", async (req, res) => {
   let transfers = await TransferHistory.find(transferFilter).select([
     "collectionAddress",
     "tokenID",
+    "to",
   ]);
 
   console.log(transfers);
