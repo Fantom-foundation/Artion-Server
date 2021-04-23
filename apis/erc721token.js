@@ -116,7 +116,7 @@ router.post("/fetchTokens", async (req, res) => {
       },
     });
 
-  let tokens = allTokens.slice(step * 20, (step + 1) * 20);
+  let tokens = allTokens.slice(step * 36, (step + 1) * 36);
   return res.json({
     status: "success",
     data: {
