@@ -107,15 +107,6 @@ router.post("/fetchTokens", async (req, res) => {
 
   await Promise.all(promises);
 
-  if (owner)
-    return res.json({
-      status: "success",
-      data: {
-        tokens: allTokens,
-        totalTokenCounts: allTokens.length,
-      },
-    });
-
   let tokens = allTokens.slice(step * 36, (step + 1) * 36);
   return res.json({
     status: "success",
