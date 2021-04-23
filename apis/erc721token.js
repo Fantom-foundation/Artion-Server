@@ -7,7 +7,6 @@ const ERC721TOKEN = mongoose.model("ERC721TOKEN");
 const TransferHistory = mongoose.model("TransferHistory");
 
 const contractutils = require("../services/contract.utils");
-const { filter } = require("../constants/simplifiederc721abi");
 
 // save a new token -- returns a json of newly added token
 router.post("/savenewtoken", auth, async (req, res) => {
@@ -93,7 +92,7 @@ router.post("/fetchTokens", async (req, res) => {
 
   let allTokens = new Array();
 
-  let transfers = await TransferHistory.find(filter).select([
+  let transfers = await TransferHistory.find(transferFilter).select([
     "contractAddress",
     "tokenID",
   ]);
