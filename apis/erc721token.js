@@ -7,6 +7,7 @@ const ERC721TOKEN = mongoose.model("ERC721TOKEN");
 const TransferHistory = mongoose.model("TransferHistory");
 
 const contractutils = require("../services/contract.utils");
+const { filter } = require("../constants/simplifiederc721abi");
 
 // save a new token -- returns a json of newly added token
 router.post("/savenewtoken", auth, async (req, res) => {
@@ -64,17 +65,47 @@ router.post("/increaseViews", async (req, res) => {
 });
 
 router.post("/fetchTokens", async (req, res) => {
-  let filters;
+  let transferFilter = {};
+
+  let minter = null;
+  let owner = null;
+
   let step = parseInt(req.body.step);
 
-  let tokenCounts = await ERC721TOKEN.countDocuments({});
-  let allTokens = await ERC721TOKEN.find({});
+  try {
+    minter = req.body.contractAddress;
+  } catch (error) {}
+  try {
+    owner = req.body.address;
+  } catch (error) {}
+
+  if (owner) {
+    if (minter) {
+      transferFilter = { collectionAddress: minter, to: owner };
+    } else {
+      transferFilter = { to: owner };
+    }
+  } else {
+    if (minter) {
+      transferFilter = { collectionAddress: minter };
+    }
+  }
+
+  let allTokens = new Array();
+
+  let transfers = await TransferHistory.find(filter).select('contractAddress','tokenID')
+
+  transfers.map(transfer => {
+    let token = await ERC721TOKEN.findOne({contractAddress : transfer.collectionAddress, tokenID : transfer.to})
+    allTokens.push(token)
+  })
+
   let tokens = allTokens.slice(step * 20, (step + 1) * 20);
   return res.json({
     status: "success",
     data: {
       tokens: tokens,
-      totalTokenCounts: tokenCounts,
+      totalTokenCounts: allTokens.length,
     },
   });
 });
