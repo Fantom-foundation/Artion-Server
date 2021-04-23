@@ -80,13 +80,13 @@ router.post("/fetchTokens", async (req, res) => {
 
   if (owner) {
     if (minter) {
-      transferFilter = { collectionAddress: minter, to: owner };
+      transferFilter = { collectionAddress: { $in: minter }, to: owner };
     } else {
       transferFilter = { to: owner };
     }
   } else {
     if (minter) {
-      transferFilter = { collectionAddress: minter };
+      transferFilter = { collectionAddress: { $in: minter } };
     }
   }
 
