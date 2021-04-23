@@ -107,12 +107,11 @@ router.post("/fetchTokens", async (req, res) => {
       contractAddress: transfer.collectionAddress,
       tokenID: transfer.tokenID,
     });
+    console.log(token);
     allTokens.push(token);
   });
 
   await Promise.all(promises);
-
-  console.log(allTokens);
 
   let tokens = allTokens.slice(step * 20, (step + 1) * 20);
   return res.json({
