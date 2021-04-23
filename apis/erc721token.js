@@ -101,13 +101,16 @@ router.post("/fetchTokens", async (req, res) => {
 
   console.log(transfers);
 
-  transfers.map(async (transfer) => {
+  let promises = transfers.map(async (transfer) => {
     let token = await ERC721TOKEN.findOne({
       contractAddress: transfer.collectionAddress,
       tokenID: transfer.to,
     });
     allTokens.push(token);
   });
+
+  await Promise.all(promises);
+
   console.log(allTokens);
 
   let tokens = allTokens.slice(step * 20, (step + 1) * 20);
