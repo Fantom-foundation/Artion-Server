@@ -80,32 +80,34 @@ router.post("/fetchTokens", async (req, res) => {
 
   if (owner) {
     if (minter) {
-      transferFilter = { collectionAddress: minter, to: owner };
+      transferFilter = { collectionAddress: { $in: minter }, to: owner };
     } else {
       transferFilter = { to: owner };
     }
   } else {
     if (minter) {
-      transferFilter = { collectionAddress: minter };
+      transferFilter = { collectionAddress: { $in: minter } };
     }
   }
 
   let allTokens = new Array();
 
   let transfers = await TransferHistory.find(transferFilter).select([
-    "contractAddress",
+    "collectionAddress",
     "tokenID",
+    "to",
   ]);
-
-  transfers.map(async (transfer) => {
+  let promises = transfers.map(async (transfer) => {
     let token = await ERC721TOKEN.findOne({
       contractAddress: transfer.collectionAddress,
-      tokenID: transfer.to,
+      tokenID: transfer.tokenID,
     });
     allTokens.push(token);
   });
 
-  let tokens = allTokens.slice(step * 20, (step + 1) * 20);
+  await Promise.all(promises);
+
+  let tokens = allTokens.slice(step * 36, (step + 1) * 36);
   return res.json({
     status: "success",
     data: {
