@@ -105,7 +105,7 @@ router.post("/fetchTokens", async (req, res) => {
   let promises = transfers.map(async (transfer) => {
     let token = await ERC721TOKEN.findOne({
       contractAddress: transfer.collectionAddress,
-      tokenID: transfer.to,
+      tokenID: transfer.tokenID,
     });
     allTokens.push(token);
   });
