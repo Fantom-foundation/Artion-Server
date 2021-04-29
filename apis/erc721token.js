@@ -110,33 +110,10 @@ router.post("/fetchTokens", async (req, res) => {
 
   let tokens = allTokens.slice(step * 36, (step + 1) * 36);
 
-  let tokensInfo = new Array();
-  let tkInfoPromises = tokens.map(async (tk) => {
-    let { data } = await axios.get(tk.tokenURI);
-    let tkInfo = {
-      contractAddress: contractAddress,
-      tokenID: tk.tokenID,
-      tokenURI: tk.tokenURI,
-      symbol: tk.symbol,
-      royalty: tk.royalty,
-      category: tk.category,
-      price: tk.price,
-      lastSalePrice: tk.lastSalePrice,
-      viewed: tk.viewed,
-      createdAt: tk.createdAt,
-      listedAt: tk.listedAt,
-      soldAt: tk.soldAt,
-      saleEndsdAt: tk.saleEndsdAt,
-      image: data.image,
-      name: data.name,
-    };
-    tokensInfo.push(tkInfo);
-  });
-  await Promise.all(tkInfoPromises);
   return res.json({
     status: "success",
     data: {
-      tokens: tokensInfo,
+      tokens: tokens,
       totalTokenCounts: allTokens.length,
     },
   });
