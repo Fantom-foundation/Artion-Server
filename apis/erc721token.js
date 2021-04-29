@@ -132,7 +132,7 @@ router.post("/fetchTokens", async (req, res) => {
     };
     tokensInfo.push(tkInfo);
   });
-  Promise.all(tkInfoPromises);
+  await Promise.all(tkInfoPromises);
   return res.json({
     status: "success",
     data: {
