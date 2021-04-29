@@ -7,6 +7,7 @@ const ERC721TOKEN = mongoose.model("ERC721TOKEN");
 const TransferHistory = mongoose.model("TransferHistory");
 
 const contractutils = require("../services/contract.utils");
+const { default: axios } = require("axios");
 
 // save a new token -- returns a json of newly added token
 router.post("/savenewtoken", auth, async (req, res) => {
@@ -121,9 +122,10 @@ router.post("/getTokenURI", async (req, res) => {
   let address = req.body.contractAddress;
   let tokenID = req.body.tokenID;
   let uri = await contractutils.getTokenInfo(address, tokenID);
+  let { data } = await axios.get(uri);
   return res.json({
     status: "success",
-    data: uri,
+    data: data,
   });
 });
 
