@@ -123,10 +123,9 @@ router.post("/getTokenURI", async (req, res) => {
   let address = req.body.contractAddress;
   let tokenID = req.body.tokenID;
   let uri = await contractutils.getTokenInfo(address, tokenID);
-  let { data } = await axios.get(uri);
   return res.json({
     status: "success",
-    data: data,
+    data: uri,
   });
 });
 
