@@ -15,7 +15,7 @@ const contractutils = require("./contract.utils");
 const collectionTracker = require("./collectiontracker");
 
 const provider = new ethers.providers.JsonRpcProvider(
-  "https://rpc.fantom.network",
+  "https://rpcapi.fantom.network",
   250
 );
 

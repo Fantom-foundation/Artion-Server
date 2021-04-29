@@ -25,6 +25,7 @@ const ERC721TOKEN = mongoose.Schema(
 ERC721TOKEN.methods.toERC721TOKENJson = function () {
   return {
     contractAddress: this.contractAddress,
+
     tokenID: this.tokenID,
     symbol: this.symbol,
     tokenURI: this.tokenURI,

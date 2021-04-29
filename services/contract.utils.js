@@ -6,7 +6,7 @@ const SimplifiedERC721ABI = require("../constants/simplifiederc721abi");
 const loadContractFromAddress = (address) => {
   let abi = SimplifiedERC721ABI;
   let provider = new ethers.providers.JsonRpcProvider(
-    "https://rpc.fantom.network",
+    "https://rpcapi.fantom.network",
     250
   );
 
