@@ -31,8 +31,6 @@ ERC721TOKEN.methods.toERC721TOKENJson = function () {
     tokenID: this.tokenID,
     symbol: this.symbol,
     tokenURI: this.tokenURI,
-    name: this.name,
-    image: this.image,
     royalty: this.royalty,
     category: this.category,
     collectionID: this.collectionID,
