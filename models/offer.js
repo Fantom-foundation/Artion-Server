@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose')
 
 const Offer = mongoose.Schema({
   creator: { type: String },
@@ -8,6 +8,6 @@ const Offer = mongoose.Schema({
   quantity: { type: String },
   pricePerItem: { type: Number },
   deadline: { type: Number },
-});
+})
 
-mongoose.model("Offer", Offer);
+mongoose.model('Offer', Offer)

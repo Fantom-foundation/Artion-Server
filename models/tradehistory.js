@@ -1,17 +1,19 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose')
 
 const TradeHistory = mongoose.Schema(
   {
-    erc721address: { type: String, required: true },
+    collectionAddress: { type: String, required: true },
     from: { type: String, required: true },
     to: { type: String, required: true },
     tokenID: { type: Number, required: true },
     price: { type: Number, required: true },
+    value: { type: Number, default: 1 },
     saleDate: { type: Date, default: new Date() },
+    isAuction: { type: Boolean, default: false },
   },
   {
     timestamps: true,
-  }
-);
+  },
+)
 
-mongoose.model("TradeHistory", TradeHistory);
+mongoose.model('TradeHistory', TradeHistory)

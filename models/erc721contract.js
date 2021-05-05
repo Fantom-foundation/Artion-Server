@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose')
 
 const ERC721CONTRACT = mongoose.Schema(
   {
@@ -9,7 +9,7 @@ const ERC721CONTRACT = mongoose.Schema(
   },
   {
     timestamps: true,
-  }
-);
+  },
+)
 
-mongoose.model("ERC721CONTRACT", ERC721CONTRACT);
+mongoose.model('ERC721CONTRACT', ERC721CONTRACT)
