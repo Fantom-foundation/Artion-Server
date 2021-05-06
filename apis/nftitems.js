@@ -4,6 +4,11 @@ const mongoose = require("mongoose");
 const ERC721TOKEN = mongoose.model("ERC721TOKEN");
 const ERC1155TOKEN = mongoose.model("ERC1155TOKEN");
 const Category = mongoose.model("Category");
+const Collection = mongoose.model("Collection");
+
+const Listing = mongoose.model("Listing");
+const Offer = mongoose.model("Offer");
+const Bid = mongoose.model("Bid");
 
 const contractutils = require("../services/contract.utils");
 
@@ -67,36 +72,94 @@ router.post("/getTokenURI", async (req, res) => {
 });
 
 router.post("/fetchTokens", async (req, res) => {
-  let transferFilter = {};
   let step = parseInt(req.body.step);
-  let minter = null;
-  let owner = null;
+  let minters = req.body.collectionAddresses;
+  if (!minters) minters = [];
+  let wallet = req.body.address;
+  let category = req.body.category;
+  let filters = req.body.filterby;
+  let sortby = req.body.sortby;
 
-  try {
-    minter = req.body.contractAddress;
-  } catch (error) {}
-  try {
-    owner = req.body.address;
-  } catch (error) {}
+  let categoryFilter = {
+    ...(category ? { categories: category } : {}),
+  };
 
-  if (owner) {
-    if (minter) {
-      transferFilter = { collectionAddress: { $in: minter }, to: owner };
-    } else {
-      transferFilter = { to: owner };
+  let collections = await Collection.find(categoryFilter).select(
+    "erc721Address"
+  );
+  collections = collections.map((c) => c.erc721Address);
+  collections = [...minters, ...collections];
+  if (collections == []) collections = null;
+
+  let statusFilters = null;
+  if (filters.length > 0) {
+    if (filters.includes("hadBid")) {
+      let bids = await Bid.find({ minter: { $in: collections } }).select([
+        "minter",
+        "tokenID",
+      ]);
     }
-  } else {
-    if (minter) {
-      transferFilter = { collectionAddress: { $in: minter } };
+    if (filters.includes("listed")) {
+      let lists = await Listing.find({ minter: { $in: collections } }).select([
+        "minter",
+        "tokenID",
+      ]);
+    }
+    if (filters.includes("offer")) {
+      let offers = await Offer.find({ nft: { $minter: collections } }).select([
+        "nft",
+        "tokenID",
+      ]);
     }
   }
 
-  let tokens = (await ERC721TOKEN.find()).slice(step * 36, (step + 1) * 36);
+  let sort = {};
+  switch (sortby) {
+    case "price": {
+      sort = { price: 1 };
+      break;
+    }
+    case "lastSalePrice": {
+      sort = { lastSalePrice: 1 };
+      break;
+    }
+    case "viewed": {
+      sort = { viewed: 1 };
+      break;
+    }
+    case "listedAt": {
+      sort = { listedAt: 1 };
+      break;
+    }
+    case "soldAt": {
+      sort = { soldAt: 1 };
+      break;
+    }
+    case "saleEndsAt": {
+      sort = { saleEndsAt: 1 };
+    }
+  }
+
+  let filter_721 = {
+    ...(collections.length > 0
+      ? { contractAddress: { $in: collections } }
+      : {}),
+    ...(wallet ? { owner: wallet } : {}),
+  };
+  let allTokens_721 = await ERC721TOKEN.find(filter_721).sort(sort);
+  let allTokens_721_Total = allTokens_721.length;
+
+  let tokens_721 = allTokens_721.slice(step * 20, (step + 1) * 20);
+
+  let filter_1155 = {
+    ...(minters ? { contractAddress: { $in: minters } } : {}),
+    ...(wallet ? { owner: wallet } : {}),
+  };
   return res.json({
-    status: "success",
+    data: "success",
     data: {
-      tokens: tokens,
-      totalTokenCounts: tokens.length,
+      tokens: tokens_721,
+      total: allTokens_721_Total,
     },
   });
 });
