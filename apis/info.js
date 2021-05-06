@@ -2,15 +2,13 @@ const router = require("express").Router();
 const mongoose = require("mongoose");
 const ERC721TOKEN = mongoose.model("ERC721TOKEN");
 const ERC721CONTRACT = mongoose.model("ERC721CONTRACT");
-
 const ERC1155CONTRACT = mongoose.model("ERC1155CONTRACT");
 const ERC1155TOKEN = mongoose.model("ERC1155TOKEN");
-
 const Collection = mongoose.model("Collection");
+const Auction = mongoose.model("Auction");
 
-const contractutils = require("../services/contract.utils");
 // list the newly minted 10 tokens
-router.get("/getNewestTokens", async (req, res) => {
+router.get("/getNewestTokens", async (_, res) => {
   let tokens_721 = await ERC721TOKEN.find().sort({ createdAt: 1 }).limit(10);
   let tokens_1155 = await ERC1155TOKEN.find().sort({ createdAt: 1 }).limit(10);
   let tokens = new Array();
@@ -22,7 +20,21 @@ router.get("/getNewestTokens", async (req, res) => {
   });
 });
 
-router.get("/getCollections", async (req, res) => {
+router.get("/getNewestAuctions", async (_, res) => {
+  let auctions = await Auction.find().sort({ endTime: 1 }).limit(10);
+  if (auctions)
+    return res.json({
+      status: "success",
+      data: auctions,
+    });
+  else
+    return res.json({
+      status: "success",
+      data: [],
+    });
+});
+
+router.get("/getCollections", async (_, res) => {
   let collections_721 = await ERC721CONTRACT.find();
   let collections_1155 = await ERC1155CONTRACT.find();
 
@@ -41,7 +53,6 @@ router.get("/getCollections", async (req, res) => {
     let collection = allCollections.find(
       (col) => col.erc721Address.toLowerCase() == contract.address.toLowerCase()
     );
-    console.log(collection);
 
     if (collection) {
       console.log("collection of address ", contract.address);

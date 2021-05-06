@@ -28,6 +28,7 @@ require("./models/listing");
 require("./models/notification");
 require("./models/offer");
 require("./models/tradehistory");
+require("./models/auction");
 
 app.use(bodyParser.json());
 app.options("*", cors()); // include before other routes
