@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const Collection = mongoose.Schema({
-  erc721Address: { type: String, required: true },
+  erc721Address: { type: String, required: true, index: true },
   collectionName: { type: String, required: true },
   description: { type: String, required: true },
   categories: [{ type: String }],

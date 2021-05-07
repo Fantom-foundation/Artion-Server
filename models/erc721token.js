@@ -1,10 +1,10 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
 const ERC721TOKEN = mongoose.Schema(
   {
     contractAddress: { type: String, required: true },
     tokenID: { type: Number, required: true },
-    tokenURI: { type: String, required: true },
+    tokenURI: { type: String, required: true, index: true },
     symbol: { type: String },
     owner: { type: String, required: true },
     royalty: { type: Number, default: 0 },
@@ -19,8 +19,8 @@ const ERC721TOKEN = mongoose.Schema(
   },
   {
     timestamps: true,
-  },
-)
+  }
+);
 
 //*** --- function for response JSON for record list request
 ERC721TOKEN.methods.toERC721TOKENJson = function () {
@@ -39,7 +39,7 @@ ERC721TOKEN.methods.toERC721TOKENJson = function () {
     listedAt: this.listedAt,
     soldAt: this.soldAt,
     saleEndsAt: this.saleEndsAt,
-  }
-}
+  };
+};
 
-mongoose.model('ERC721TOKEN', ERC721TOKEN)
+mongoose.model("ERC721TOKEN", ERC721TOKEN);
