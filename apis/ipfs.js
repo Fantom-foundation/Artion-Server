@@ -171,7 +171,7 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
     } else {
       let imgData = fields.image;
       let name = fields.name;
-      let address = fields.address;
+      let address = fields.account;
       let royalty = fields.royalty;
       let description = fields.description;
       let category = fields.category;
@@ -203,7 +203,7 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
 
       // remove file once pinned
       try {
-        // fs.unlinkSync(uploadPath + imageFileName);
+        fs.unlinkSync(uploadPath + imageFileName);
       } catch (error) {
         console.log("failed to unlink");
         console.log(error);
