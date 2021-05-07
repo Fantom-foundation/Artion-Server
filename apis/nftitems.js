@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const mongoose = require("mongoose");
+const auth = require("./middleware/auth");
 
 const ERC721TOKEN = mongoose.model("ERC721TOKEN");
 const ERC1155TOKEN = mongoose.model("ERC1155TOKEN");
@@ -22,7 +23,7 @@ router.post("/savenewtoken", auth, async (req, res) => {
       });
     } else {
       let contractAddress = fields.contractAddress;
-      let type = parseInt(fields.tokenType);
+      let tokenType = parseInt(fields.tokenType);
       if (tokenType == 721) {
         let newToken = new ERC721TOKEN();
         newToken.contractAddress = contractAddress;
