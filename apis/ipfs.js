@@ -163,6 +163,8 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
   let form = new formidable.IncomingForm();
   form.parse(req, async (err, fields, files) => {
     if (err) {
+      console.log("form parse failed");
+      console.log(err);
       return res.status(400).json({
         status: "failed",
       });
@@ -187,6 +189,8 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
         "base64",
         (err) => {
           if (err) {
+            console.log("save image failed");
+            console.log(err);
             return res.status(400).json({
               status: "failed to save an image file",
               err,
@@ -200,11 +204,15 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
         name,
         symbol
       );
+      console.log(filePinStatus);
 
       // remove file once pinned
       try {
         fs.unlinkSync(uploadPath + imageFileName);
-      } catch (error) {}
+      } catch (error) {
+        console.log("failed to unlink");
+        console.log(error);
+      }
 
       let now = new Date();
       let currentTime = now.toTimeString();
@@ -223,6 +231,7 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
       };
 
       let jsonPinStatus = await pinJsonToIPFS(metaData);
+      console.log(jsonPinStatus);
       return res.send({
         status: "success",
         uploadedCounts: 2,
