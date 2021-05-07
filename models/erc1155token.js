@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const ERC1155TOKEN = mongoose.Schema({
   contractAddress: { type: String, required: true },
   tokenID: { type: Number, required: true },
-  tokenURI: { type: String, required: true, index: true },
+  tokenURI: { type: String, required: true, index: { unique: true } },
   symbol: { type: String },
   owner: { type: Map },
   supply: { type: Number, default: 1 },

@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const ERC721CONTRACT = mongoose.Schema(
   {
-    address: { type: String, required: true, index: true },
+    address: { type: String, required: true, index: { unique: true } },
     name: { type: String, required: true },
     symbol: { type: String, required: true },
     isVerified: { type: Boolean, default: false },

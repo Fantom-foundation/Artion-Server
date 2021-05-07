@@ -4,7 +4,7 @@ const ERC721TOKEN = mongoose.Schema(
   {
     contractAddress: { type: String, required: true },
     tokenID: { type: Number, required: true },
-    tokenURI: { type: String, required: true, index: true },
+    tokenURI: { type: String, required: true, index: { unique: true } },
     symbol: { type: String },
     owner: { type: String, required: true },
     royalty: { type: Number, default: 0 },

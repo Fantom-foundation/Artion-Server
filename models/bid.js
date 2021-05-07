@@ -6,5 +6,6 @@ const Bid = mongoose.Schema({
   bidder: { type: String, required: true },
   bid: { type: Number, required: true },
 });
+Bid.index({ minter: 1, tokenID: -1 }, { unique: true });
 
 mongoose.model("Bid", Bid);
