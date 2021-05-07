@@ -98,7 +98,7 @@ router.get("/fetchAllCollections", auth, async (req, res) => {
 router.post("/isValidated", auth, async (req, res) => {
   try {
     let erc721Address = req.body.erc721Address;
-    let request = `https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${erc721Address}&apikey=${ftmScanApiKey}`;
+    let request = `https://api.ftmscan.com/api?module=contract&action=getsourcecode&address=${erc721Address}&apikey=${ftmScanApiKey}`;
     let response = await axios.get(request);
     if (
       response.status != "1" ||
