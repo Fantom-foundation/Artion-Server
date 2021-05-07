@@ -72,8 +72,8 @@ router.get("/getCollections", async (_, res) => {
     } else {
       allContracts.push({
         address: contract.address,
-        name: contract.name,
-        symbol: contract.symbol,
+        name: contract.name != "name" ? contract.name : "",
+        symbol: contract.symbol != "symbol" ? contract.symbol : "",
         isVerified: false,
       });
     }

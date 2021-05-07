@@ -91,27 +91,42 @@ router.post("/fetchTokens", async (req, res) => {
   collections = [...minters, ...collections];
   if (collections == []) collections = null;
 
-  let statusFilters = null;
-  if (filters.length > 0) {
-    if (filters.includes("hadBid")) {
-      let bids = await Bid.find({ minter: { $in: collections } }).select([
-        "minter",
-        "tokenID",
-      ]);
+  let statusFilters = {
+    ...(collections.length > 0 ? { minter: { $in: collections } } : {}),
+  };
+  let statusMinters = [];
+  let statusTkIDs = [];
+  try {
+    if (filters.length > 0) {
+      if (filters.includes("hadBid")) {
+        let bids = await Bid.find(statusFilters).select(["minter", "tokenID"]);
+        let bidMinters = bids.map((bid) => bid.minter);
+        let bidTkIDs = bids.map((bid) => bid.tokenID);
+        statusMinters = [...bidMinters];
+        statusTkIDs = [...bidTkIDs];
+      }
+      if (filters.includes("listed")) {
+        let lists = await Listing.find(statusFilters).select([
+          "minter",
+          "tokenID",
+        ]);
+        let listMinters = lists.map((list) => list.minter);
+        let listTkIDs = lists.map((list) => list.tokenID);
+        statusMinters = [...statusMinters, ...listMinters];
+        statusTkIDs = [...statusTkIDs, ...listTkIDs];
+      }
+      if (filters.includes("offer")) {
+        let offers = await Offer.find(statusFilters).select([
+          "minter",
+          "tokenID",
+        ]);
+        let offerMinters = offers.map((offer) => offer.minter);
+        let offerTkIDs = offers.map((offer) => offer.tokenID);
+        statusMinters = [...statusMinters, ...offerMinters];
+        statusTkIDs = [...statusTkIDs, ...offerTkIDs];
+      }
     }
-    if (filters.includes("listed")) {
-      let lists = await Listing.find({ minter: { $in: collections } }).select([
-        "minter",
-        "tokenID",
-      ]);
-    }
-    if (filters.includes("offer")) {
-      let offers = await Offer.find({ nft: { $minter: collections } }).select([
-        "nft",
-        "tokenID",
-      ]);
-    }
-  }
+  } catch (error) {}
 
   let sort = {};
   switch (sortby) {
