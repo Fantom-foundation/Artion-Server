@@ -183,21 +183,16 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
       let imageFileName =
         address + name.replace(" ", "") + category + "." + extension;
       imgData = imgData.replace(`data:image\/${extension};base64,`, "");
-      await fs.writeFile(
-        uploadPath + imageFileName,
-        imgData,
-        "base64",
-        (err) => {
-          if (err) {
-            console.log("save image failed");
-            console.log(err);
-            return res.status(400).json({
-              status: "failed to save an image file",
-              err,
-            });
-          }
+      fs.writeFile(uploadPath + imageFileName, imgData, "base64", (err) => {
+        if (err) {
+          console.log("save image failed");
+          console.log(err);
+          return res.status(400).json({
+            status: "failed to save an image file",
+            err,
+          });
         }
-      );
+      });
       let filePinStatus = await pinFileToIPFS(
         imageFileName,
         address,
@@ -208,7 +203,7 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
 
       // remove file once pinned
       try {
-        fs.unlinkSync(uploadPath + imageFileName);
+        // fs.unlinkSync(uploadPath + imageFileName);
       } catch (error) {
         console.log("failed to unlink");
         console.log(error);
