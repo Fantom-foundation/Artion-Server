@@ -29,6 +29,7 @@ router.post("/savenewtoken", auth, async (req, res) => {
         let newToken = new ERC721TOKEN();
         newToken.contractAddress = contractAddress;
         newToken.tokenID = fields.tokenID;
+        newToken.owner = fields.account;
         newToken.tokenURI = fields.jsonHash;
         newToken.symbol = fields.symbol;
         newToken.royalty = fields.royalty;
