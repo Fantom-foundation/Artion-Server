@@ -21,7 +21,10 @@ const ERC721TOKEN = mongoose.Schema(
     timestamps: true,
   }
 );
-ERC721TOKEN.index({ tokenURI: 1, tokenID: -1 }, { unique: true });
+ERC721TOKEN.index(
+  { tokenURI: 1, tokenID: -1, contractAddress: -1 },
+  { unique: true }
+);
 
 //*** --- function for response JSON for record list request
 ERC721TOKEN.methods.toERC721TOKENJson = function () {
