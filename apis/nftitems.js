@@ -122,19 +122,20 @@ router.post("/fetchTokens", async (req, res) => {
     minters = contracts.map((contract) => contract.contractAddress);
   }
 
-  let categoryFilter = {
-    ...(category ? { categories: category } : {}),
-  };
+  let collections = [];
+  if (category) {
+    let categoryFilter = {
+      ...(category ? { categories: category } : {}),
+    };
+    collections = await Collection.find(categoryFilter).select("erc721Address");
+    collections = collections.map((c) => c.erc721Address);
+  }
 
-  let collections = await Collection.find(categoryFilter).select(
-    "erc721Address"
-  );
-  collections = collections.map((c) => c.erc721Address);
   collections = [...minters, ...collections];
   if (collections == []) collections = null;
 
   let statusFilters = {
-    ...(collections.length > 0 ? { minter: { $in: collections } } : {}),
+    ...(collections ? { minter: { $in: collections } } : {}),
   };
   let statusMinters = [];
   let statusTkIDs = [];
