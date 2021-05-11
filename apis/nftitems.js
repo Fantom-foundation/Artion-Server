@@ -122,7 +122,7 @@ router.post("/fetchTokens", async (req, res) => {
   let sortby = req.body.sortby;
 
   let collections = [];
-  if (category) {
+  if (category != undefined) {
     let categoryFilter = {
       ...(category ? { categories: category } : {}),
     };
