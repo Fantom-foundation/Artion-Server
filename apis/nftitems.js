@@ -113,14 +113,13 @@ router.post("/getTokenURI", async (req, res) => {
 router.post("/fetchTokens", async (req, res) => {
   let step = parseInt(req.body.step);
   let minters = req.body.collectionAddresses;
+  if (!minters) {
+    minters = [];
+  }
   let wallet = req.body.address;
   let category = req.body.category;
   let filters = req.body.filterby;
   let sortby = req.body.sortby;
-  if (!minters) {
-    let contracts = await ERC721TOKEN.find({});
-    minters = contracts.map((contract) => contract.contractAddress);
-  }
 
   let collections = [];
   if (category) {
