@@ -128,6 +128,8 @@ router.post("/fetchTokens", async (req, res) => {
     };
     collections = await Collection.find(categoryFilter).select("erc721Address");
     collections = collections.map((c) => c.erc721Address);
+    console.log("categoried collection");
+    console.log(category);
   }
 
   collections = [...minters, ...collections];
