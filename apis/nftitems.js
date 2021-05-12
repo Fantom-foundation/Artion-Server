@@ -124,6 +124,7 @@ router.post("/fetchTokens", async (req, res) => {
   }
   let wallet = req.body.address;
   if (wallet) wallet = toLowerCase(wallet);
+  console.log(`wallet is ${wallet}`);
   let category = req.body.category;
   let filters = req.body.filterby;
   let sortby = req.body.sortby;
