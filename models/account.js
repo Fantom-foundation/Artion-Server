@@ -7,10 +7,6 @@ const Account = mongoose.Schema(
       required: true,
       index: {
         unique: true,
-        collation: {
-          locale: "en",
-          strength: 2,
-        },
       },
     },
     alias: { type: String, required: true },
