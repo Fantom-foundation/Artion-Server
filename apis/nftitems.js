@@ -223,6 +223,7 @@ router.post("/fetchTokens", async (req, res) => {
     ...(minters ? { contractAddress: { $in: minters } } : {}),
     ...(wallet ? { owner: wallet } : {}),
   };
+  console.log(allTokens_721);
   return res.json({
     data: "success",
     data: {
