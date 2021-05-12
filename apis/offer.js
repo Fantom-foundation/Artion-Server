@@ -8,7 +8,7 @@ const toLowerCase = require("../utils/utils");
 
 router.post("/getOffers", async (req, res) => {
   let nft = req.body.contractAddress;
-  nft = toLowerCase(address);
+  nft = toLowerCase(nft);
   let tokenID = req.body.tokenID;
   console.log(nft, tokenID);
 

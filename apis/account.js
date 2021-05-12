@@ -138,7 +138,7 @@ router.post("/accountdetails", auth, async (req, res) => {
         });
       } else {
         let newAccount = new Account();
-        newAccount.address = address.toLowerCase();
+        newAccount.address = address;
         newAccount.alias = alias;
         newAccount.email = email;
         newAccount.bio = bio;

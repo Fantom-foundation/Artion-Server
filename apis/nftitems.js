@@ -25,7 +25,7 @@ router.post("/savenewtoken", auth, async (req, res) => {
       });
     } else {
       let contractAddress = fields.contractAddress;
-      contractAddress = toLowerCase(address);
+      contractAddress = toLowerCase(contractAddress);
       let tokenType = parseInt(fields.tokenType);
       if (tokenType == 721) {
         let newToken = new ERC721TOKEN();
@@ -56,7 +56,7 @@ router.post("/savenewtoken", auth, async (req, res) => {
 router.post("/increaseViews", async (req, res) => {
   try {
     let contractAddress = req.body.contractAddress;
-    contractAddress = toLowerCase(address);
+    contractAddress = toLowerCase(contractAddress);
     let tokenID = req.body.tokenID;
     let tokenType = await Category.findOne({
       minterAddress: contractAddress,
@@ -121,7 +121,7 @@ router.post("/fetchTokens", async (req, res) => {
     minters = [];
   }
   let wallet = req.body.address;
-  wallet = toLowerCase(address);
+  wallet = toLowerCase(wallet);
   let category = req.body.category;
   let filters = req.body.filterby;
   let sortby = req.body.sortby;
