@@ -4,8 +4,11 @@ const mongoose = require("mongoose");
 
 const Offer = mongoose.model("Offer");
 
+const toLowerCase = require("../utils/utils");
+
 router.post("/getOffers", async (req, res) => {
   let nft = req.body.contractAddress;
+  nft = toLowerCase(address);
   let tokenID = req.body.tokenID;
   console.log(nft, tokenID);
 

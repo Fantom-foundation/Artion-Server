@@ -4,9 +4,12 @@ const mongoose = require("mongoose");
 
 const Listing = mongoose.model("Listing");
 
+const toLowerCase = require("../utils/utils");
+
 router.post("/getListings", auth, async (req, res) => {
   try {
     let owner = req.body.address;
+    owner = toLowerCase(address);
     let listings = await Listing.find({ owner: owner });
     return res.json({
       status: "success",

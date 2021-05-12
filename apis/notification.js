@@ -4,9 +4,12 @@ const mongoose = require("mongoose");
 
 const Notification = mongoose.model("Notification");
 
+const toLowerCase = require("../utils/utils");
+
 router.post("/getnotifications", auth, async (req, res) => {
   try {
     let address = req.body.address;
+    address = toLowerCase(address);
     let notifications = await Notification.find({ address: address });
     return res.json({
       status: "success",
@@ -22,6 +25,7 @@ router.post("/getnotifications", auth, async (req, res) => {
 router.post("/emptynotifications", auth, async (req, res) => {
   try {
     let address = req.body.address;
+    address = toLowerCase(address);
     await Notification.delete({ address: address });
     return res.json({
       status: "success",
@@ -36,6 +40,7 @@ router.post("/emptynotifications", auth, async (req, res) => {
 router.post("/addnotification", auth, async (req, res) => {
   try {
     let address = req.body.address;
+    address = toLowerCase(address);
     let content = req.body.content;
     let notification = await Notification.find({ address: address });
     if (notification) {

@@ -13,6 +13,7 @@ const Offer = mongoose.model("Offer");
 const Bid = mongoose.model("Bid");
 
 const contractutils = require("../services/contract.utils");
+const toLowerCase = require("../utils/utils");
 
 // save a new token -- returns a json of newly added token
 router.post("/savenewtoken", auth, async (req, res) => {
@@ -24,6 +25,7 @@ router.post("/savenewtoken", auth, async (req, res) => {
       });
     } else {
       let contractAddress = fields.contractAddress;
+      contractAddress = toLowerCase(address);
       let tokenType = parseInt(fields.tokenType);
       if (tokenType == 721) {
         let newToken = new ERC721TOKEN();
@@ -54,6 +56,7 @@ router.post("/savenewtoken", auth, async (req, res) => {
 router.post("/increaseViews", async (req, res) => {
   try {
     let contractAddress = req.body.contractAddress;
+    contractAddress = toLowerCase(address);
     let tokenID = req.body.tokenID;
     let tokenType = await Category.findOne({
       minterAddress: contractAddress,
@@ -96,6 +99,7 @@ router.post("/increaseViews", async (req, res) => {
 router.post("/getTokenURI", async (req, res) => {
   try {
     let address = req.body.contractAddress;
+    address = toLowerCase(address);
     let tokenID = req.body.tokenID;
     let uri = await contractutils.getTokenInfo(address, tokenID);
     return res.json({
@@ -117,6 +121,7 @@ router.post("/fetchTokens", async (req, res) => {
     minters = [];
   }
   let wallet = req.body.address;
+  wallet = toLowerCase(address);
   let category = req.body.category;
   let filters = req.body.filterby;
   let sortby = req.body.sortby;

@@ -16,6 +16,8 @@ const pinata = pinataSDK(
 const jwt = require("jsonwebtoken");
 const jwt_secret = process.env.JWT_SECRET;
 
+const toLowerCase = require("../utils/utils");
+
 const extractAddress = (req, res) => {
   let authorization = req.headers.authorization.split(" ")[1],
     decoded;
@@ -33,6 +35,7 @@ const uploadPath = "/home/jason/nft-marketplace/nifty-server/uploads/";
 
 const pinAccountAvatar = async (account, imgData, userName, address, res) => {
   // check wether the account is new or already existing one -> unpin the file
+  let address = toLowerCase(address);
   if (account) {
     let hash = account.imageHash;
     try {
@@ -94,6 +97,7 @@ router.post("/accountdetails", auth, async (req, res) => {
       });
     }
     let address = extractAddress(req, res);
+    address = toLowerCase(address);
     let alias = fields.alias;
     let email = fields.email;
     let bio = fields.bio;
@@ -134,7 +138,7 @@ router.post("/accountdetails", auth, async (req, res) => {
         });
       } else {
         let newAccount = new Account();
-        newAccount.address = address;
+        newAccount.address = address.toLowerCase();
         newAccount.alias = alias;
         newAccount.email = email;
         newAccount.bio = bio;
@@ -153,6 +157,7 @@ router.post("/accountdetails", auth, async (req, res) => {
 
 router.get("/getaccountinfo", auth, async (req, res) => {
   let address = extractAddress(req);
+  address = toLowerCase(address);
   let account = await Account.findOne({ address: address });
   if (account) {
     return res.json({
@@ -170,6 +175,7 @@ router.get("/getaccountinfo", auth, async (req, res) => {
 
 router.post("/getuseraccountinfo", async (req, res) => {
   let address = req.body.address;
+  address = toLowerCase(address);
   let account = await Account.findOne({ address: address });
   if (account) {
     return res.json({

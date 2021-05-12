@@ -2,6 +2,8 @@ const router = require("express").Router();
 const Web3 = require("web3");
 const validator = require("../utils/index");
 
+const toLowerCase = require("../utils/utils");
+
 const web3 = new Web3(
   new Web3.providers.HttpProvider("https://rpcapi.fantom.network")
 );
@@ -10,6 +12,7 @@ let token = "1";
 
 router.post("/isERC721Contract", async (req, res) => {
   let address = req.body.address;
+  address = toLowerCase(address);
   try {
     let isValid = await erc721validator.token(1, address, token);
     if (isValid == true)

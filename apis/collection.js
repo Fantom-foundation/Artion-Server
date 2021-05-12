@@ -7,10 +7,13 @@ const auth = require("./middleware/auth");
 
 const Collection = mongoose.model("Collection");
 
+const toLowerCase = require("../utils/utils");
+
 const ftmScanApiKey = process.env.FTM_SCAN_API_KEY;
 
 router.post("/collectiondetails", auth, async (req, res) => {
   let erc721Address = req.body.erc721Address;
+  erc721Address = toLowerCase(address);
   let collectionName = req.body.collectionName;
   let description = req.body.description;
   let categories = req.body.categories;
@@ -75,6 +78,7 @@ router.post("/collectiondetails", auth, async (req, res) => {
 
 router.post("/searchCollection", auth, async (req, res) => {
   let erc721Address = req.body.erc721Address;
+  erc721Address = toLowerCase(address);
   let collection = await Collection.findOne({ erc721Address: erc721Address });
   if (collection)
     return res.send({
@@ -98,6 +102,7 @@ router.get("/fetchAllCollections", auth, async (req, res) => {
 router.post("/isValidated", auth, async (req, res) => {
   try {
     let erc721Address = req.body.erc721Address;
+    erc721Address = toLowerCase(address);
     let request = `https://api.ftmscan.com/api?module=contract&action=getsourcecode&address=${erc721Address}&apikey=${ftmScanApiKey}`;
     let response = await axios.get(request);
     if (
