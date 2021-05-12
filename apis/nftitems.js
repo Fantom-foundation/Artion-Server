@@ -205,7 +205,9 @@ router.post("/fetchTokens", async (req, res) => {
       : {}),
     ...(wallet ? { owner: wallet } : {}),
   };
-  let allTokens_721 = await ERC721TOKEN.find(filter_721).sort(sort);
+  let allTokens_721 = await ERC721TOKEN.find(filter_721)
+    .sort({ tokenURI: -1 })
+    .sort(sort);
   let allTokens_721_Total = allTokens_721.length;
 
   let tokens_721 = allTokens_721.slice(step * 20, (step + 1) * 20);
