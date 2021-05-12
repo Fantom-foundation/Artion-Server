@@ -222,7 +222,7 @@ router.post("/fetchTokens", async (req, res) => {
     .sort(sort);
   let allTokens_721_Total = allTokens_721.length;
 
-  let tokens_721 = allTokens_721.slice(step * 20, (step + 1) * 20);
+  let tokens_721 = allTokens_721.slice(step * 36, (step + 1) * 36);
 
   let filter_1155 = {
     ...(minters ? { contractAddress: { $in: minters } } : {}),
