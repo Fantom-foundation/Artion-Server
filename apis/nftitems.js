@@ -209,12 +209,14 @@ router.post("/fetchTokens", async (req, res) => {
     }
   }
 
+  console.log("721 filter is ");
   let filter_721 = {
     ...(collections.length > 0
       ? { contractAddress: { $in: collections } }
       : {}),
     ...(wallet ? { owner: wallet } : {}),
   };
+  console.log(filter_721);
   let allTokens_721 = await ERC721TOKEN.find(filter_721)
     .sort({ createdAt: -1 })
     .sort(sort);
