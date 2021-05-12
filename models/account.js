@@ -2,7 +2,12 @@ const mongoose = require("mongoose");
 
 const Account = mongoose.Schema(
   {
-    address: { type: String, required: true, index: { unique: true } },
+    address: {
+      type: String,
+      required: true,
+      index: { unique: true },
+      collation: { locale: "en", strength: 2 },
+    },
     alias: { type: String, required: true },
     email: { type: String, required: true },
     bio: { type: String, required: true },
