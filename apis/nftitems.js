@@ -220,7 +220,7 @@ router.post("/fetchTokens", async (req, res) => {
   console.log("sort");
   console.log(sort);
   let allTokens_721 = await ERC721TOKEN.find(filter_721)
-    // .sort({ createdAt: -1 })
+    .find({ tokenID: { $in: statusTkIDs } })
     .sort(sort);
   let allTokens_721_Total = allTokens_721.length;
 
