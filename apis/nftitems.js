@@ -177,7 +177,9 @@ router.post("/fetchTokens", async (req, res) => {
         statusTkIDs = [...statusTkIDs, ...offerTkIDs];
       }
     }
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+  }
 
   let sort = {};
   switch (sortby) {
