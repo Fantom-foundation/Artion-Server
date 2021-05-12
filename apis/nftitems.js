@@ -185,27 +185,27 @@ router.post("/fetchTokens", async (req, res) => {
   let sort = {};
   switch (sortby) {
     case "price": {
-      sort = { price: 1 };
+      sort = { price: -1 };
       break;
     }
     case "lastSalePrice": {
-      sort = { lastSalePrice: 1 };
+      sort = { lastSalePrice: -1 };
       break;
     }
     case "viewed": {
-      sort = { viewed: 1 };
+      sort = { viewed: -1 };
       break;
     }
     case "listedAt": {
-      sort = { listedAt: 1 };
+      sort = { listedAt: -1 };
       break;
     }
     case "soldAt": {
-      sort = { soldAt: 1 };
+      sort = { soldAt: -1 };
       break;
     }
     case "saleEndsAt": {
-      sort = { saleEndsAt: 1 };
+      sort = { saleEndsAt: -1 };
     }
   }
 
