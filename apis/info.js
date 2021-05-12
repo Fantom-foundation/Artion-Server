@@ -7,6 +7,8 @@ const ERC1155TOKEN = mongoose.model("ERC1155TOKEN");
 const Collection = mongoose.model("Collection");
 const Auction = mongoose.model("Auction");
 
+const toLowerCase = require("../utils/utils");
+
 // list the newly minted 10 tokens
 router.get("/getNewestTokens", async (_, res) => {
   let tokens_721 = await ERC721TOKEN.find().sort({ createdAt: 1 }).limit(10);

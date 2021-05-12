@@ -9,6 +9,8 @@ const auth = require("./middleware/auth");
 
 const pinataSDK = require("@pinata/sdk");
 
+const toLowerCase = require("../utils/utils");
+
 const ipfsUri = "https://gateway.pinata.cloud/ipfs/";
 
 const uploadPath = "/home/jason/nft-marketplace/nifty-server/uploads/";
