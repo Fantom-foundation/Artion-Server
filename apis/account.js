@@ -35,7 +35,7 @@ const uploadPath = "/home/jason/nft-marketplace/nifty-server/uploads/";
 
 const pinAccountAvatar = async (account, imgData, userName, address, res) => {
   // check wether the account is new or already existing one -> unpin the file
-  let address = toLowerCase(address);
+  address = toLowerCase(address);
   if (account) {
     let hash = account.imageHash;
     try {

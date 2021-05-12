@@ -172,6 +172,7 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
       let imgData = fields.image;
       let name = fields.name;
       let address = fields.account;
+      address = toLowerCase(address);
       let royalty = fields.royalty;
       let description = fields.description;
       let category = fields.category;
@@ -249,6 +250,7 @@ router.post("/uploadBundleImage2Server", auth, async (req, res) => {
       let name = fields.name;
       let description = fields.description;
       let address = fields.address;
+      address = toLowerCase(address);
       let extension = imgData.substring(
         "data:image/".length,
         imgData.indexOf(";base64")
@@ -319,6 +321,7 @@ router.post("/uploadCollectionImage2Server", auth, async (req, res) => {
       let imgData = fields.imgData;
       let name = fields.collectionName;
       let address = fields.erc721Address;
+      address = toLowerCase(address);
       let extension = imgData.substring(
         "data:image/".length,
         imgData.indexOf(";base64")
