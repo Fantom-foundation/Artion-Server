@@ -217,6 +217,8 @@ router.post("/fetchTokens", async (req, res) => {
     ...(wallet ? { owner: wallet } : {}),
   };
   console.log(filter_721);
+  console.log("sort");
+  console.log(sort);
   let allTokens_721 = await ERC721TOKEN.find(filter_721)
     .sort({ createdAt: -1 })
     .sort(sort);
