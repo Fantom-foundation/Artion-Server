@@ -119,6 +119,8 @@ router.post("/fetchTokens", async (req, res) => {
   let minters = req.body.collectionAddresses;
   if (!minters) {
     minters = [];
+  } else {
+    minters = minters.map((minter) => toLowerCase(minter));
   }
   let wallet = req.body.address;
   if (wallet) wallet = toLowerCase(wallet);
@@ -132,7 +134,7 @@ router.post("/fetchTokens", async (req, res) => {
       ...(category ? { categories: category } : {}),
     };
     collections = await Collection.find(categoryFilter).select("erc721Address");
-    collections = collections.map((c) => c.erc721Address);
+    collections = collections.map((c) => toLowerCase(c.erc721Address));
     console.log("categoried collection");
     console.log(category);
   }
