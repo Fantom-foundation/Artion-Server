@@ -99,6 +99,15 @@ router.get("/fetchAllCollections", auth, async (req, res) => {
   });
 });
 
+router.post("/getCollectionInfo", async (req, res) => {
+  let address = toLowerCase(req.body.contractAddress);
+  let collection = await Collection.findOne({ erc721Address: address });
+  return res.json({
+    status: "success",
+    data: collection,
+  });
+});
+
 router.post("/isValidated", auth, async (req, res) => {
   try {
     let erc721Address = req.body.erc721Address;
