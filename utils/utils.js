@@ -1,5 +1,5 @@
 const toLowerCase = (val) => {
-  return val.toLowerCase;
+  return val.toLowerCase();
 };
 
 module.exports = toLowerCase;
