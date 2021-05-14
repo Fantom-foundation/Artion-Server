@@ -27,7 +27,7 @@ Account.methods.toAccountJSON = function () {
     alias: this.alias,
     email: this.email,
     bio: this.bio,
-    imgHash: this.imgHash,
+    imageHash: this.imageHash,
   };
 };
 
