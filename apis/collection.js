@@ -44,7 +44,7 @@ router.post("/collectiondetails", auth, async (req, res) => {
     if (_collection)
       return res.send({
         status: "success",
-        data: _collection,
+        data: _collection.toJson(),
       });
     else
       return res.send({
@@ -67,7 +67,7 @@ router.post("/collectiondetails", auth, async (req, res) => {
     if (newCollection)
       return res.send({
         status: "success",
-        data: newCollection,
+        data: newCollection.toJson(),
       });
     else
       return res.send({
@@ -83,7 +83,7 @@ router.post("/searchCollection", auth, async (req, res) => {
   if (collection)
     return res.send({
       status: "success",
-      data: collection,
+      data: collection.toJson(),
     });
   else
     return res.send({

@@ -15,44 +15,6 @@ const Bid = mongoose.model("Bid");
 const contractutils = require("../services/contract.utils");
 const toLowerCase = require("../utils/utils");
 
-// save a new token -- returns a json of newly added token
-router.post("/savenewtoken", auth, async (req, res) => {
-  let form = new formidable.IncomingForm();
-  form.parse(req, async (err, fields, files) => {
-    if (err) {
-      return res.status(400).json({
-        status: "failed",
-      });
-    } else {
-      let contractAddress = fields.contractAddress;
-      contractAddress = toLowerCase(contractAddress);
-      let tokenType = parseInt(fields.tokenType);
-      if (tokenType == 721) {
-        let newToken = new ERC721TOKEN();
-        newToken.contractAddress = contractAddress;
-        newToken.tokenID = fields.tokenID;
-        newToken.owner = fields.account;
-        newToken.tokenURI = fields.jsonHash;
-        newToken.symbol = fields.symbol;
-        newToken.royalty = fields.royalty;
-        newToken.category = fields.category;
-        newToken.imageHash = fields.imageHash;
-        newToken.jsonHash = fields.jsonHash;
-        let now = new Date();
-        newToken.createdAt = now;
-
-        let _newToken = await newToken.save();
-        return res.send({
-          status: "success",
-          data: _newToken.toJSON(),
-        });
-      } else {
-        // handle 1155 creation here
-      }
-    }
-  });
-});
-
 router.post("/increaseViews", async (req, res) => {
   try {
     let contractAddress = req.body.contractAddress;
@@ -223,7 +185,15 @@ router.post("/fetchTokens", async (req, res) => {
     .find({
       ...(statusTkIDs.length > 0 ? { tokenID: { $in: statusTkIDs } } : {}),
     })
-    .sort(sort);
+    .sort(sort)
+    .select([
+      "contractAddress",
+      "tokenID",
+      "owner",
+      "tokenURI",
+      "price",
+      "viewed",
+    ]);
   let allTokens_721_Total = allTokens_721.length;
 
   let tokens_721 = allTokens_721.slice(step * 36, (step + 1) * 36);

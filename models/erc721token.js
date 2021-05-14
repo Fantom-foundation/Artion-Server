@@ -26,23 +26,14 @@ ERC721TOKEN.index(
   { unique: true }
 );
 
-//*** --- function for response JSON for record list request
-ERC721TOKEN.methods.toERC721TOKENJson = function () {
+ERC721TOKEN.methods.toSimpleJson = function () {
   return {
     contractAddress: this.contractAddress,
     tokenID: this.tokenID,
-    symbol: this.symbol,
     owner: this.owner,
     tokenURI: this.tokenURI,
-    royalty: this.royalty,
-    category: this.category,
-    collectionID: this.collectionID,
-    lastSalePrice: this.lastSalePrice,
+    price: this.price,
     viewed: this.viewed,
-    createdAt: this.createdAt,
-    listedAt: this.listedAt,
-    soldAt: this.soldAt,
-    saleEndsAt: this.saleEndsAt,
   };
 };
 

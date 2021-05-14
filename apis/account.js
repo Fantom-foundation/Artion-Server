@@ -31,7 +31,6 @@ const extractAddress = (req, res) => {
 };
 
 const uploadPath = "/home/jason/nft-marketplace/nifty-server/uploads/";
-// const uploadPath = "uploads/";
 
 const pinAccountAvatar = async (account, imgData, userName, address, res) => {
   // check wether the account is new or already existing one -> unpin the file
@@ -48,7 +47,7 @@ const pinAccountAvatar = async (account, imgData, userName, address, res) => {
   );
   let fileName = `${userName}${address}.${extension}`;
   let base64Data = imgData.replace(`data:image\/${extension};base64,`, "");
-  await fs.writeFile(uploadPath + fileName, base64Data, "base64", (err) => {
+  fs.writeFile(uploadPath + fileName, base64Data, "base64", (err) => {
     if (err) {
       return res.status(400).json({
         status: "failed to save an image 1",
@@ -134,7 +133,7 @@ router.post("/accountdetails", auth, async (req, res) => {
         let _account = await account.save();
         return res.json({
           status: "success",
-          data: _account,
+          data: _account.toAccountJSON(),
         });
       } else {
         let newAccount = new Account();
@@ -146,7 +145,7 @@ router.post("/accountdetails", auth, async (req, res) => {
         let _account = await newAccount.save();
         return res.json({
           status: "success",
-          data: _account,
+          data: _account.toAccountJSON(),
         });
       }
     }
@@ -162,7 +161,7 @@ router.get("/getaccountinfo", auth, async (req, res) => {
   if (account) {
     return res.json({
       status: "success",
-      data: account,
+      data: account.toAccountJSON(),
     });
   } else {
     return res.status(400).json({
@@ -180,7 +179,7 @@ router.post("/getuseraccountinfo", async (req, res) => {
   if (account) {
     return res.json({
       status: "success",
-      data: account,
+      data: account.toAccountJSON(),
     });
   } else {
     return res.status(400).json({

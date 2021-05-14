@@ -6,8 +6,10 @@ const ERC1155CONTRACT = mongoose.model("ERC1155CONTRACT");
 const ERC1155TOKEN = mongoose.model("ERC1155TOKEN");
 const Collection = mongoose.model("Collection");
 const Auction = mongoose.model("Auction");
+const Account = mongoose.model("Account");
 
 const toLowerCase = require("../utils/utils");
+const auth = require("./middleware/auth");
 
 // list the newly minted 10 tokens
 router.get("/getNewestTokens", async (_, res) => {
@@ -84,6 +86,12 @@ router.get("/getCollections", async (_, res) => {
     status: "success",
     data: allContracts,
   });
+});
+
+router.post("/searchNames", auth, async (req, res) => {
+  let name = req.body.name
+  // get tokens
+  let tokens = await ERC721TOKEN.find({})
 });
 
 module.exports = router;

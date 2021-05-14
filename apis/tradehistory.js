@@ -11,7 +11,7 @@ router.post("/getTradeHistory", async (req, res) => {
   let history = await TradeHistory.find({
     erc721address: { $regex: new RegExp(erc721address, "i") },
     tokenID: tokenID,
-  });
+  }).select(["from", "to", "tokenID", "price", "saleDate", "isAuction"]);
   return res.send({
     status: "success",
     data: history,

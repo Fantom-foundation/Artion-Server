@@ -28,7 +28,6 @@ Account.methods.toAccountJSON = function () {
     email: this.email,
     bio: this.bio,
     imgHash: this.imgHash,
-    assetTkIds: this.bundleIDs,
   };
 };
 

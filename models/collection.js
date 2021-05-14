@@ -14,4 +14,20 @@ const Collection = mongoose.Schema({
   telegram: { type: String },
 });
 
+Collection.methods.toJson = function () {
+  return {
+    erc721Address: this.erc721Address,
+    collectionName: this.collectionName,
+    description: this.description,
+    categories: this.categories,
+    logoImageHash: this.logoImageHash,
+    siteUrl: this.siteUrl,
+    discord: this.discord,
+    twitterHandle: this.twitterHandle,
+    instagramHandle: this.instagramHandle,
+    mediumHandle: this.mediumHandle,
+    telegram: this.telegram,
+  };
+};
+
 mongoose.model("Collection", Collection);
