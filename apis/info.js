@@ -88,10 +88,29 @@ router.get("/getCollections", async (_, res) => {
   });
 });
 
-router.post("/searchNames", auth, async (req, res) => {
-  let name = req.body.name
-  // get tokens
-  let tokens = await ERC721TOKEN.find({})
+router.post("/searchNames", async (req, res) => {
+  try {
+    let name = req.body.name;
+    // get account
+    let accounts = await Account.find({ alias: { $regex: name } })
+      .select(["address", "imageHash"])
+      .limit(3);
+    let collections = await Collection.find({
+      collectionName: { $regex: name },
+    })
+      .select(["erc721Address", "collectionName", "logoImageHash"])
+      .limit(3);
+    let tokens = await ERC721TOKEN.find({ symbol: { $regex: name } })
+      .select(["contractAddress", "tokenID", "tokenURI", "symbol"])
+      .limit(3);
+    let data = { accounts, collections, tokens };
+    return res.json({
+      status: "success",
+      data: data,
+    });
+  } catch (error) {
+    return res.json([]);
+  }
 });
 
 module.exports = router;
