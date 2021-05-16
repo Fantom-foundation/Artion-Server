@@ -116,7 +116,10 @@ router.post("/fetchTokens", async (req, res) => {
         let bids = await Bid.find(statusFilters).select(["minter", "tokenID"]);
         let bidMinters = bids.map((bid) => bid.minter);
         let bidTkIDs = bids.map((bid) => bid.tokenID);
-        statusMinters = [...bidMinters];
+        // statusMinters = [...bidMinters];
+        statusMinters = bidMinters.filter((bidMinter) =>
+          statusMinters.includes(bidMinter)
+        );
         statusTkIDs = [...bidTkIDs];
       }
       if (filters.includes("listed")) {
@@ -126,7 +129,10 @@ router.post("/fetchTokens", async (req, res) => {
         ]);
         let listMinters = lists.map((list) => list.minter);
         let listTkIDs = lists.map((list) => list.tokenID);
-        statusMinters = [...statusMinters, ...listMinters];
+        // statusMinters = [...statusMinters, ...listMinters];
+        statusMinters = listMinters.filter((listMinter) =>
+          statusMinters.includes(listMinter)
+        );
         statusTkIDs = [...statusTkIDs, ...listTkIDs];
       }
       if (filters.includes("offer")) {
@@ -136,7 +142,10 @@ router.post("/fetchTokens", async (req, res) => {
         ]);
         let offerMinters = offers.map((offer) => offer.minter);
         let offerTkIDs = offers.map((offer) => offer.tokenID);
-        statusMinters = [...statusMinters, ...offerMinters];
+        // statusMinters = [...statusMinters, ...offerMinters];
+        statusMinters = offerMinters.filter((offerMinter) =>
+          statusMinters.includes(offerMinter)
+        );
         statusTkIDs = [...statusTkIDs, ...offerTkIDs];
       }
     }
