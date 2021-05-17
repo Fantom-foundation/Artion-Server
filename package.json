@@ -19,7 +19,7 @@
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "emailvalid": "^1.0.3",
-    "ethers": "^5.0.32",
+    "ethers": "^5.1.4",
     "express": "^4.17.1",
     "firebase": "^8.2.7",
     "firebase-admin": "^9.5.0",
