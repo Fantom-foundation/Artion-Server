@@ -31,6 +31,7 @@ const extractAddress = (req, res) => {
 };
 
 const uploadPath = "/home/jason/nft-marketplace/nifty-server/uploads/";
+const uploadPath = process.env.UPLOAD_PATH;
 
 const pinAccountAvatar = async (account, imgData, userName, address, res) => {
   // check wether the account is new or already existing one -> unpin the file
