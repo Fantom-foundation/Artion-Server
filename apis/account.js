@@ -30,7 +30,7 @@ const extractAddress = (req, res) => {
   return address;
 };
 
-const uploadPath = "/home/jason/nft-marketplace/nifty-server/uploads/";
+// const uploadPath = "/home/jason/nft-marketplace/nifty-server/uploads/";
 const uploadPath = process.env.UPLOAD_PATH;
 
 const pinAccountAvatar = async (account, imgData, userName, address, res) => {
