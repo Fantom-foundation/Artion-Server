@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const ERC1155TOKEN = mongoose.Schema({
   contractAddress: { type: String, required: true },
   tokenID: { type: Number, required: true },
-  tokenURI: { type: String, required: true, index: { unique: true } },
+  tokenURI: { type: String, required: true },
   symbol: { type: String },
   owner: { type: Map },
   supply: { type: Number, default: 1 },
@@ -16,5 +16,6 @@ const ERC1155TOKEN = mongoose.Schema({
   soldAt: { type: Date },
   saleEndsAt: { type: Date },
 });
+ERC1155TOKEN.index({ tokenID: 1, tokenURI: -1 }, { unique: true });
 
 mongoose.model("ERC1155TOKEN", ERC1155TOKEN);
