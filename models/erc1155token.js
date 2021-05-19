@@ -16,6 +16,9 @@ const ERC1155TOKEN = mongoose.Schema({
   soldAt: { type: Date },
   saleEndsAt: { type: Date },
 });
-ERC1155TOKEN.index({ tokenID: 1, tokenURI: -1 }, { unique: true });
+ERC1155TOKEN.index(
+  { contractAddress: 1, tokenID: 1, tokenURI: -1 },
+  { unique: true }
+);
 
 mongoose.model("ERC1155TOKEN", ERC1155TOKEN);
