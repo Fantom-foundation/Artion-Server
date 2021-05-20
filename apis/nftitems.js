@@ -308,7 +308,7 @@ router.post("/fetchTokens", async (req, res) => {
 
     /* */
     let _allTokens = [...allTokens_721, ...allTokens_1155];
-    __allTokens = sortBy(_allTokens, [sortby], "desc");
+    __allTokens = sortBy(_allTokens, [sortby], "asc");
     let tokensToReturn = __allTokens.slice(step * 36, (step + 1) * 36);
     /* */
 
@@ -327,7 +327,7 @@ router.post("/fetchTokens", async (req, res) => {
 
     /* */
     let _allTokens = [...allTokens_721, ...allTokens_1155];
-    __allTokens = sortBy(_allTokens, [sortby], "desc");
+    __allTokens = sortBy(_allTokens, [sortby], "asc");
     let tokensToReturn = __allTokens.slice(step * 36, (step + 1) * 36);
     /* */
     return res.json({
