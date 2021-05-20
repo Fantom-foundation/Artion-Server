@@ -275,7 +275,7 @@ router.post("/fetchTokens", async (req, res) => {
   console.log("sort");
   console.log(sort);
   let allTokens_721 = await ERC721TOKEN.find(filter_721)
-    .sort(sort)
+    // .sort(sort)
     .select([
       "contractAddress",
       "tokenID",
@@ -335,7 +335,7 @@ router.post("/fetchTokens", async (req, res) => {
       data: {
         tokens: tokensToReturn,
         // tokens: tokens_721,
-        total: tokensToReturn.length,
+        total: _allTokens.length,
       },
     });
   }
