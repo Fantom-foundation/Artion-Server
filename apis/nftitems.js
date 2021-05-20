@@ -100,16 +100,21 @@ router.post("/fetchTokens", async (req, res) => {
     };
     collections = await Collection.find(categoryFilter).select("erc721Address");
     collections = collections.map((c) => toLowerCase(c.erc721Address));
+    if (collections.length == 0) {
+      return res.json({
+        status: "success",
+        data: [],
+      });
+    }
     console.log("categoried collection");
     console.log(collections);
     console.log(category);
   }
 
   collections = [...minters, ...collections];
-  if (collections == []) collections = null;
 
   let statusFilters = {
-    ...(collections ? { minter: { $in: collections } } : {}),
+    ...(collections.length > 0 ? { minter: { $in: collections } } : {}),
   };
   let statusMinters = [];
   let statusTkIDs = [];
@@ -124,6 +129,12 @@ router.post("/fetchTokens", async (req, res) => {
           bidMinters.includes(statusMinter)
         );
         statusMinters = minters;
+        console.log("bid minters are ");
+        console.log(bidMinters);
+        console.log("bid tk ids are ");
+        console.log(bidTkIDs);
+        console.log("status minters are ");
+        console.log(statusMinters);
         // statusMinters = bidMinters.filter((bidMinter) =>
         //   statusMinters.includes(bidMinter)
         // );
@@ -141,6 +152,12 @@ router.post("/fetchTokens", async (req, res) => {
           listMinters.includes(statusMinter)
         );
         statusMinters = minters;
+        console.log("list minters are ");
+        console.log(listMinters);
+        console.log("list tk ids are ");
+        console.log(listTkIDs);
+        console.log("status minters are ");
+        console.log(statusMinters);
         // statusMinters = listMinters.filter((listMinter) =>
         //   statusMinters.includes(listMinter)
         // );
@@ -157,6 +174,12 @@ router.post("/fetchTokens", async (req, res) => {
           offerMinters.includes(statusMinter)
         );
         statusMinters = minters;
+        console.log("offer minters are ");
+        console.log(offerMinters);
+        console.log("offer tk ids are ");
+        console.log(offerTkIDs);
+        console.log("status minters are ");
+        console.log(statusMinters);
         // statusMinters = offerMinters.filter((offerMinter) =>
         //   statusMinters.includes(offerMinter)
         // );
@@ -173,6 +196,12 @@ router.post("/fetchTokens", async (req, res) => {
           auctionMinters.includes(statusMinter)
         );
         statusMinters = minters;
+        console.log("auction minters are ");
+        console.log(auctionMinters);
+        console.log("auction tk ids are ");
+        console.log(auctionTkIDs);
+        console.log("status minters are ");
+        console.log(statusMinters);
         // statusMinters = auctionMinters.filter((auctionMinter) =>
         //   statusMinters.includes(auctionMinter)
         // );
