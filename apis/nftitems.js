@@ -295,32 +295,45 @@ router.post("/fetchTokens", async (req, res) => {
   console.log(filter_1155);
 
   if (wallet) {
-    let allTokens_1155 = await ERC1155TOKEN.find(filter_1155).sort(sort);
-    let myTokens = [];
-    allTokens_1155.map((tk_1155) => {
-      let ownerMap = tk_1155.owner;
-      if (ownerMap.has(wallet)) myTokens.push(tk_1155);
-    });
-    let token_1155 = myTokens;
-    let allTokens_1155_Total = allTokens_1155.length;
+    let allTokens_1155 = await ERC1155TOKEN.find(filter_1155);
+    // let myTokens = [];
+    // allTokens_1155.map((tk_1155) => {
+    //   let ownerMap = tk_1155.owner;
+    //   if (ownerMap.has(wallet)) myTokens.push(tk_1155);
+    // });
+    // let token_1155 = myTokens;
+    // let allTokens_1155_Total = allTokens_1155.length;
+
+    /* */
+    let _allTokens = [...allTokens_721, ...allTokens_1155];
+    _allTokens = _.sortBy(_allTokens, sortby);
+    let tokensToReturn = _allTokens.slice(step * 36, (step + 1) * 36);
+    /* */
+
     return res.json({
       data: "success",
       data: {
-        tokens: { token_721: tokens_721, tokens_1155: token_1155 },
+        tokens: tokensToReturn,
         // tokens: tokens_721,
-        total: allTokens_721_Total + allTokens_1155_Total,
+        total: _allTokens.length,
       },
     });
   } else {
     let allTokens_1155 = await ERC1155TOKEN.find(filter_1155).sort(sort);
-    let token_1155 = allTokens_1155.slice(step * 10, (step + 1) * 10);
-    let allTokens_1155_Total = allTokens_1155.length;
+    // let token_1155 = allTokens_1155.slice(step * 10, (step + 1) * 10);
+    // let allTokens_1155_Total = allTokens_1155.length;
+
+    /* */
+    let _allTokens = [...allTokens_721, ...allTokens_1155];
+    _allTokens = _.sortBy(_allTokens, sortby);
+    let tokensToReturn = _allTokens.slice(step * 36, (step + 1) * 36);
+    /* */
     return res.json({
       data: "success",
       data: {
-        tokens: { token_721: tokens_721, tokens_1155: token_1155 },
+        tokens: tokensToReturn,
         // tokens: tokens_721,
-        total: allTokens_721_Total + allTokens_1155_Total,
+        total: tokensToReturn.length,
       },
     });
   }
