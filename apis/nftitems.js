@@ -288,8 +288,10 @@ router.post("/fetchTokens", async (req, res) => {
 
   let filter_1155 = {
     ...(minters ? { contractAddress: { $in: minters } } : {}),
-    ...(wallet ? { owner: wallet } : {}),
+    // ...(wallet ? { owner: wallet } : {}),
   };
+  let allTokens1155 = await ERC1155TOKEN.find(filter_1155);
+  console.log(allTokens1155);
   return res.json({
     data: "success",
     data: {
