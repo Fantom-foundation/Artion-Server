@@ -287,7 +287,9 @@ router.post("/fetchTokens", async (req, res) => {
   let tokens_721 = allTokens_721.slice(step * 36, (step + 1) * 36);
 
   let filter_1155 = {
-    ...(minters ? { contractAddress: { $in: minters } } : {}),
+    ...(collections.length > 0
+      ? { contractAddress: { $in: [...collections] } }
+      : {}),
     // ...(wallet ? { owner: wallet } : {}),
   };
   console.log("1155 filter is ");
