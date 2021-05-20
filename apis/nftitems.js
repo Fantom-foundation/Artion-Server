@@ -114,7 +114,7 @@ router.post("/fetchTokens", async (req, res) => {
   let statusTkIDs = [];
   try {
     if (filters.length > 0) {
-      if (filters.includes("hadBid")) {
+      if (filters.includes("hasBids")) {
         let bids = await Bid.find(statusFilters).select(["minter", "tokenID"]);
         let bidMinters = bids.map((bid) => bid.minter);
         let bidTkIDs = bids.map((bid) => bid.tokenID);
@@ -128,7 +128,7 @@ router.post("/fetchTokens", async (req, res) => {
         // );
         statusTkIDs = [...statusTkIDs, ...bidTkIDs];
       }
-      if (filters.includes("listed")) {
+      if (filters.includes("buyNow")) {
         let lists = await Listing.find(statusFilters).select([
           "minter",
           "tokenID",
@@ -145,7 +145,7 @@ router.post("/fetchTokens", async (req, res) => {
         // );
         statusTkIDs = [...statusTkIDs, ...listTkIDs];
       }
-      if (filters.includes("offer")) {
+      if (filters.includes("hasOffers")) {
         let offers = await Offer.find(statusFilters).select([
           "minter",
           "tokenID",
@@ -161,7 +161,7 @@ router.post("/fetchTokens", async (req, res) => {
         // );
         statusTkIDs = [...statusTkIDs, ...offerTkIDs];
       }
-      if (filters.includes("auction")) {
+      if (filters.includes("onAuction")) {
         let auctions = await Auction.find(statusFilters).select([
           "minter",
           "tokenID",
@@ -210,6 +210,11 @@ router.post("/fetchTokens", async (req, res) => {
   }
 
   console.log("721 filter is ");
+  // update collections here
+  let _collections = collections.filter((collection) =>
+    statusMinters.includes(collection)
+  );
+  collections = _collections;
   let filter_721 = {
     ...(collections.length > 0
       ? { contractAddress: { $in: collections } }
