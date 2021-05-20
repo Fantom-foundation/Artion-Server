@@ -66,11 +66,30 @@ router.post("/getTokenURI", async (req, res) => {
     let address = req.body.contractAddress;
     address = toLowerCase(address);
     let tokenID = req.body.tokenID;
-    let uri = await contractutils.getTokenInfo(address, tokenID);
-    return res.json({
-      status: "success",
-      data: uri,
-    });
+    let type = await Category.findOne({ minterAddress: address });
+    type = parseInt(type.type);
+    let uri = "";
+    if (type == 721) {
+      let tk = await ERC721TOKEN.findOne({
+        contractAddress: address,
+        tokenID: tokenID,
+      });
+      uri = tk.tokenURI;
+      return res.json({
+        status: "success",
+        data: uri,
+      });
+    } else {
+      let tk = await ERC1155TOKEN.findOne({
+        contractAddress: address,
+        tokenID: tokenID,
+      });
+      uri = tk.tokenURI;
+      return res.json({
+        status: "success",
+        data: uri,
+      });
+    }
   } catch (error) {
     return res.status(400).json({
       status: "failed",
