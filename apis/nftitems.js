@@ -251,6 +251,8 @@ router.post("/fetchTokens", async (req, res) => {
     );
     collections = _collections;
   }
+  console.log("collection before 721 filter is ");
+  console.log(collections);
   let filter_721 = {
     ...(collections.length > 0
       ? { contractAddress: { $in: collections } }
