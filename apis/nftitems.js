@@ -308,8 +308,8 @@ router.post("/fetchTokens", async (req, res) => {
 
     /* */
     let _allTokens = [...allTokens_721, ...allTokens_1155];
-    _allTokens = sortBy(_allTokens, sortby, "desc");
-    let tokensToReturn = _allTokens.slice(step * 36, (step + 1) * 36);
+    __allTokens = sortBy(_allTokens, sortby, "desc");
+    let tokensToReturn = __allTokens.slice(step * 36, (step + 1) * 36);
     /* */
 
     return res.json({
@@ -317,7 +317,7 @@ router.post("/fetchTokens", async (req, res) => {
       data: {
         tokens: tokensToReturn,
         // tokens: tokens_721,
-        total: _allTokens.length,
+        total: __allTokens.length,
       },
     });
   } else {
@@ -327,15 +327,15 @@ router.post("/fetchTokens", async (req, res) => {
 
     /* */
     let _allTokens = [...allTokens_721, ...allTokens_1155];
-    _allTokens = sortBy(_allTokens, sortby, "desc");
-    let tokensToReturn = _allTokens.slice(step * 36, (step + 1) * 36);
+    __allTokens = sortBy(_allTokens, sortby, "desc");
+    let tokensToReturn = __allTokens.slice(step * 36, (step + 1) * 36);
     /* */
     return res.json({
       data: "success",
       data: {
         tokens: tokensToReturn,
         // tokens: tokens_721,
-        total: _allTokens.length,
+        total: __allTokens.length,
       },
     });
   }
