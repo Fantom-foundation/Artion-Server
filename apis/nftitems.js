@@ -308,7 +308,7 @@ router.post("/fetchTokens", async (req, res) => {
 
     /* */
     let _allTokens = [...allTokens_721, ...allTokens_1155];
-    _allTokens = sortBy(_allTokens, sortby);
+    _allTokens = sortBy(_allTokens, sortby, "asc");
     let tokensToReturn = _allTokens.slice(step * 36, (step + 1) * 36);
     /* */
 
@@ -321,13 +321,13 @@ router.post("/fetchTokens", async (req, res) => {
       },
     });
   } else {
-    let allTokens_1155 = await ERC1155TOKEN.find(filter_1155).sort(sort);
+    let allTokens_1155 = await ERC1155TOKEN.find(filter_1155);
     // let token_1155 = allTokens_1155.slice(step * 10, (step + 1) * 10);
     // let allTokens_1155_Total = allTokens_1155.length;
 
     /* */
     let _allTokens = [...allTokens_721, ...allTokens_1155];
-    _allTokens = sortBy(_allTokens, sortby);
+    _allTokens = sortBy(_allTokens, sortby, "asc");
     let tokensToReturn = _allTokens.slice(step * 36, (step + 1) * 36);
     /* */
     return res.json({
