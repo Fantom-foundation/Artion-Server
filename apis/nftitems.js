@@ -231,15 +231,15 @@ router.post("/fetchTokens", async (req, res) => {
       break;
     }
     case "listedAt": {
-      sort = { listedAt: -1 };
+      sort = { listedAt: 1 };
       break;
     }
     case "soldAt": {
-      sort = { soldAt: -1 };
+      sort = { soldAt: 1 };
       break;
     }
     case "saleEndsAt": {
-      sort = { saleEndsAt: -1 };
+      sort = { saleEndsAt: 1 };
     }
   }
 
