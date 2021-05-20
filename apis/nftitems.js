@@ -254,7 +254,8 @@ router.post("/fetchTokens", async (req, res) => {
     //   collections = _collections;
     // }
     collections = statusMinters;
-  } else
+  }
+  if ((statusMinters.length == 0) & (filters != undefined))
     return res.json({
       status: "success",
       data: [],
