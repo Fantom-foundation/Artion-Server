@@ -101,6 +101,7 @@ router.post("/fetchTokens", async (req, res) => {
     collections = await Collection.find(categoryFilter).select("erc721Address");
     collections = collections.map((c) => toLowerCase(c.erc721Address));
     console.log("categoried collection");
+    console.log(collections);
     console.log(category);
   }
 
@@ -211,10 +212,12 @@ router.post("/fetchTokens", async (req, res) => {
 
   console.log("721 filter is ");
   // update collections here
-  let _collections = collections.filter((collection) =>
-    statusMinters.includes(collection)
-  );
-  collections = _collections;
+  if (statusMinters.length != 0) {
+    let _collections = collections.filter((collection) =>
+      statusMinters.includes(collection)
+    );
+    collections = _collections;
+  }
   let filter_721 = {
     ...(collections.length > 0
       ? { contractAddress: { $in: collections } }

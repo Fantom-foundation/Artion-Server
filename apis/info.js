@@ -47,8 +47,8 @@ router.get("/getCollections", async (_, res) => {
   all.push(...collections_1155);
   let allCollections = await Collection.find({});
 
-  console.log("all collections are ");
-  console.log(allCollections);
+  // console.log("all collections are ");
+  // console.log(allCollections);
 
   let allContracts = new Array();
 
@@ -59,7 +59,7 @@ router.get("/getCollections", async (_, res) => {
     );
 
     if (collection) {
-      console.log("collection of address ", contract.address);
+      // console.log("collection of address ", contract.address);
       allContracts.push({
         address: collection.erc721Address,
         collectionName: collection.collectionName,
