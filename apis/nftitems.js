@@ -254,7 +254,11 @@ router.post("/fetchTokens", async (req, res) => {
     //   collections = _collections;
     // }
     collections = statusMinters;
-  }
+  } else
+    return res.json({
+      status: "success",
+      data: [],
+    });
   console.log("collection before 721 filter is ");
   console.log(collections);
   let filter_721 = {
