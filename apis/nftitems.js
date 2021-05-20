@@ -283,6 +283,7 @@ router.post("/fetchTokens", async (req, res) => {
       "tokenURI",
       "price",
       "viewed",
+      "supply",
     ]);
   let allTokens_721_Total = allTokens_721.length;
 
