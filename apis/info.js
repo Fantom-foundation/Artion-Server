@@ -93,7 +93,7 @@ router.post("/searchNames", async (req, res) => {
     let name = req.body.name;
     // get account
     let accounts = await Account.find({ alias: { $regex: name } })
-      .select(["address", "imageHash"])
+      .select(["address", "imageHash", "alias"])
       .limit(3);
     let collections = await Collection.find({
       collectionName: { $regex: name },
