@@ -13,6 +13,8 @@ const Offer = mongoose.model("Offer");
 const Bid = mongoose.model("Bid");
 const Auction = mongoose.model("Auction");
 
+const sortBy = require("lodash.sortby");
+
 const contractutils = require("../services/contract.utils");
 const toLowerCase = require("../utils/utils");
 
