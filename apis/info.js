@@ -47,6 +47,8 @@ router.get("/getCollections", async (_, res) => {
   all.push(...collections_1155);
   let allCollections = await Collection.find({});
 
+  let savedAddresses = [];
+
   // console.log("all collections are ");
   // console.log(allCollections);
 
@@ -59,27 +61,32 @@ router.get("/getCollections", async (_, res) => {
     );
 
     if (collection) {
-      // console.log("collection of address ", contract.address);
-      allContracts.push({
-        address: collection.erc721Address,
-        collectionName: collection.collectionName,
-        description: collection.description,
-        categories: collection.categories,
-        logoImageHash: collection.logoImageHash,
-        siteUrl: collection.siteUrl,
-        discord: collection.discord,
-        twitterHandle: collection.twitterHandle,
-        mediumHandle: collection.mediumHandle,
-        telegram: collection.telegram,
-        isVerified: true,
-      });
+      if (!savedAddresses.includes(collection.erc721Address)) {
+        savedAddresses.push(collection.erc721Address);
+        allContracts.push({
+          address: collection.erc721Address,
+          collectionName: collection.collectionName,
+          description: collection.description,
+          categories: collection.categories,
+          logoImageHash: collection.logoImageHash,
+          siteUrl: collection.siteUrl,
+          discord: collection.discord,
+          twitterHandle: collection.twitterHandle,
+          mediumHandle: collection.mediumHandle,
+          telegram: collection.telegram,
+          isVerified: true,
+        });
+      }
     } else {
-      allContracts.push({
-        address: contract.address,
-        name: contract.name != "name" ? contract.name : "",
-        symbol: contract.symbol != "symbol" ? contract.symbol : "",
-        isVerified: false,
-      });
+      if (!savedAddresses.includes(contract.address)) {
+        savedAddresses.push(contract.address);
+        allContracts.push({
+          address: contract.address,
+          name: contract.name != "name" ? contract.name : "",
+          symbol: contract.symbol != "symbol" ? contract.symbol : "",
+          isVerified: false,
+        });
+      }
     }
   }
   return res.json({
