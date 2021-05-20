@@ -290,20 +290,42 @@ router.post("/fetchTokens", async (req, res) => {
     ...(collections.length > 0
       ? { contractAddress: { $in: [...collections] } }
       : {}),
-    // ...(wallet ? { owner: wallet } : {}),
   };
   console.log("1155 filter is ");
   console.log(filter_1155);
-  let allTokens1155 = await ERC1155TOKEN.find(filter_1155);
+
+  if (wallet) {
+    let allTokens_1155 = await ERC1155TOKEN.find(filter_1155).sort(sort);
+    let myTokens = [];
+    allTokens_1155.map((tk_1155) => {
+      let ownerMap = tk_1155.owner;
+      if (ownerMap.has(wallet)) myTokens.push(tk_1155);
+    });
+    let token_1155 = myTokens;
+    let allTokens_1155_Total = allTokens_1155.length;
+    return res.json({
+      data: "success",
+      data: {
+        tokens: { token_721: tokens_721, tokens_1155: token_1155 },
+        // tokens: tokens_721,
+        total: allTokens_721_Total + allTokens_1155_Total,
+      },
+    });
+  } else {
+    let allTokens_1155 = await ERC1155TOKEN.find(filter_1155).sort(sort);
+    let token_1155 = allTokens_1155.slice(step * 10, (step + 1) * 10);
+    let allTokens_1155_Total = allTokens_1155.length;
+    return res.json({
+      data: "success",
+      data: {
+        tokens: { token_721: tokens_721, tokens_1155: token_1155 },
+        // tokens: tokens_721,
+        total: allTokens_721_Total + allTokens_1155_Total,
+      },
+    });
+  }
   console.log("all 1155 tokens are ");
   console.log(allTokens1155);
-  return res.json({
-    data: "success",
-    data: {
-      tokens: tokens_721,
-      total: allTokens_721_Total,
-    },
-  });
 });
 
 module.exports = router;
