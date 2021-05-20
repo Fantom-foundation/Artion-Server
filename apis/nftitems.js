@@ -246,10 +246,14 @@ router.post("/fetchTokens", async (req, res) => {
   console.log("721 filter is ");
   // update collections here
   if (statusMinters.length != 0) {
-    let _collections = collections.filter((collection) =>
-      statusMinters.includes(collection)
-    );
-    collections = _collections;
+    // if (collections.length == 0) collections = statusMinters;
+    // else {
+    //   let _collections = collections.filter((collection) =>
+    //     statusMinters.includes(collection)
+    //   );
+    //   collections = _collections;
+    // }
+    collections = statusMinters;
   }
   console.log("collection before 721 filter is ");
   console.log(collections);
@@ -264,9 +268,6 @@ router.post("/fetchTokens", async (req, res) => {
   console.log("sort");
   console.log(sort);
   let allTokens_721 = await ERC721TOKEN.find(filter_721)
-    // .find({
-    //   ...(statusTkIDs.length > 0 ? { tokenID: { $in: statusTkIDs } } : {}),
-    // })
     .sort(sort)
     .select([
       "contractAddress",
