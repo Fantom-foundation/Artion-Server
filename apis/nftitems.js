@@ -11,6 +11,7 @@ const Collection = mongoose.model("Collection");
 const Listing = mongoose.model("Listing");
 const Offer = mongoose.model("Offer");
 const Bid = mongoose.model("Bid");
+const Auction = mongoose.model("Auction");
 
 const contractutils = require("../services/contract.utils");
 const toLowerCase = require("../utils/utils");
@@ -91,6 +92,7 @@ router.post("/fetchTokens", async (req, res) => {
   let filters = req.body.filterby;
   let sortby = req.body.sortby;
 
+  console.log(filters);
   let collections = [];
   if (category != undefined) {
     let categoryFilter = {
@@ -116,11 +118,15 @@ router.post("/fetchTokens", async (req, res) => {
         let bids = await Bid.find(statusFilters).select(["minter", "tokenID"]);
         let bidMinters = bids.map((bid) => bid.minter);
         let bidTkIDs = bids.map((bid) => bid.tokenID);
-        // statusMinters = [...bidMinters];
-        statusMinters = bidMinters.filter((bidMinter) =>
-          statusMinters.includes(bidMinter)
+
+        let minters = statusMinters.filter((statusMinter) =>
+          bidMinters.includes(statusMinter)
         );
-        statusTkIDs = [...bidTkIDs];
+        statusMinters = minters;
+        // statusMinters = bidMinters.filter((bidMinter) =>
+        //   statusMinters.includes(bidMinter)
+        // );
+        statusTkIDs = [...statusTkIDs, ...bidTkIDs];
       }
       if (filters.includes("listed")) {
         let lists = await Listing.find(statusFilters).select([
@@ -129,10 +135,14 @@ router.post("/fetchTokens", async (req, res) => {
         ]);
         let listMinters = lists.map((list) => list.minter);
         let listTkIDs = lists.map((list) => list.tokenID);
-        // statusMinters = [...statusMinters, ...listMinters];
-        statusMinters = listMinters.filter((listMinter) =>
-          statusMinters.includes(listMinter)
+
+        let minters = statusMinters.filter((statusMinter) =>
+          listMinters.includes(statusMinter)
         );
+        statusMinters = minters;
+        // statusMinters = listMinters.filter((listMinter) =>
+        //   statusMinters.includes(listMinter)
+        // );
         statusTkIDs = [...statusTkIDs, ...listTkIDs];
       }
       if (filters.includes("offer")) {
@@ -142,11 +152,30 @@ router.post("/fetchTokens", async (req, res) => {
         ]);
         let offerMinters = offers.map((offer) => offer.minter);
         let offerTkIDs = offers.map((offer) => offer.tokenID);
-        // statusMinters = [...statusMinters, ...offerMinters];
-        statusMinters = offerMinters.filter((offerMinter) =>
-          statusMinters.includes(offerMinter)
+        let minters = statusMinters.filter((statusMinter) =>
+          offerMinters.includes(statusMinter)
         );
+        statusMinters = minters;
+        // statusMinters = offerMinters.filter((offerMinter) =>
+        //   statusMinters.includes(offerMinter)
+        // );
         statusTkIDs = [...statusTkIDs, ...offerTkIDs];
+      }
+      if (filters.includes("auction")) {
+        let auctions = await Auction.find(statusFilters).select([
+          "minter",
+          "tokenID",
+        ]);
+        let auctionMinters = auctions.map((auction) => auction.minter);
+        let auctionTkIDs = auctions.map((auction) => auction.tokenID);
+        let minters = statusMinters.filter((statusMinter) =>
+          auctionMinters.includes(statusMinter)
+        );
+        statusMinters = minters;
+        // statusMinters = auctionMinters.filter((auctionMinter) =>
+        //   statusMinters.includes(auctionMinter)
+        // );
+        statusTkIDs = [...statusTkIDs, ...auctionTkIDs];
       }
     }
   } catch (error) {
