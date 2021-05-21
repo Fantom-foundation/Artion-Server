@@ -14,7 +14,7 @@ router.post("/getOffers", async (req, res) => {
 
   try {
     let offers = await Offer.find({
-      nft: { $regex: new RegExp(nft, "i") },
+      minter: { $regex: new RegExp(nft, "i") },
       tokenID: tokenID,
     });
     console.log("offers");
