@@ -9,13 +9,13 @@ const toLowerCase = require("../utils/utils");
 router.post("/getOffers", async (req, res) => {
   let nft = req.body.contractAddress;
   nft = toLowerCase(nft);
-  let tokenID = req.body.tokenID;
+  let tokenID = parseInt(req.body.tokenID);
   console.log(nft, tokenID);
 
   try {
     let offers = await Offer.find({
       nft: { $regex: new RegExp(nft, "i") },
-      tokenId: tokenID,
+      tokenID: tokenID,
     });
     console.log("offers");
     console.log(offers);
