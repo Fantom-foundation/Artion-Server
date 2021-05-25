@@ -95,17 +95,27 @@ router.post("/searchNames", async (req, res) => {
   try {
     let name = req.body.name;
     // get account
-    let accounts = await Account.find({ alias: { $regex: name } })
+    let accounts = await Account.find({
+      alias: { $regex: name, $options: "i" },
+    })
       .select(["address", "imageHash", "alias"])
       .limit(3);
     let collections = await Collection.find({
-      collectionName: { $regex: name },
+      collectionName: { $regex: name, $options: "i" },
     })
       .select(["erc721Address", "collectionName", "logoImageHash"])
       .limit(3);
-    let tokens = await ERC721TOKEN.find({ symbol: { $regex: name } })
-      .select(["contractAddress", "tokenID", "tokenURI", "symbol"])
+    let tokens_721 = await ERC721TOKEN.find({
+      name: { $regex: name, $options: "i" },
+    })
+      .select(["contractAddress", "tokenID", "tokenURI", "name"])
       .limit(3);
+    let tokens_1155 = await ERC1155TOKEN.find({
+      name: { $regex: name, $options: "i" },
+    })
+      .select(["contractAddress", "tokenID", "tokenURI", "name"])
+      .limit(3);
+    let tokens = [...tokens_721, ...tokens_1155];
     let data = { accounts, collections, tokens };
     return res.json({
       status: "success",
