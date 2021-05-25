@@ -155,10 +155,6 @@ router.post("/fetchTokens", async (req, res) => {
         let bidMinters = bids.map((bid) => bid.minter);
         let bidTkIDs = bids.map((bid) => bid.tokenID);
 
-        // let minters = statusMinters.filter((statusMinter) =>
-        //   bidMinters.includes(statusMinter)
-        // );
-        // statusMinters = minters;
         statusMinters = [...statusMinters, ...bidMinters];
         console.log("bid minters are ");
         console.log(bidMinters);
@@ -166,9 +162,7 @@ router.post("/fetchTokens", async (req, res) => {
         console.log(bidTkIDs);
         console.log("status minters are ");
         console.log(statusMinters);
-        // statusMinters = bidMinters.filter((bidMinter) =>
-        //   statusMinters.includes(bidMinter)
-        // );
+
         statusTkIDs = [...statusTkIDs, ...bidTkIDs];
       }
       if (filters.includes("buyNow")) {
@@ -179,10 +173,6 @@ router.post("/fetchTokens", async (req, res) => {
         let listMinters = lists.map((list) => list.minter);
         let listTkIDs = lists.map((list) => list.tokenID);
 
-        // let minters = statusMinters.filter((statusMinter) =>
-        //   listMinters.includes(statusMinter)
-        // );
-        // statusMinters = minters;
         statusMinters = [...statusMinters, ...listMinters];
         console.log("list minters are ");
         console.log(listMinters);
@@ -190,9 +180,7 @@ router.post("/fetchTokens", async (req, res) => {
         console.log(listTkIDs);
         console.log("status minters are ");
         console.log(statusMinters);
-        // statusMinters = listMinters.filter((listMinter) =>
-        //   statusMinters.includes(listMinter)
-        // );
+
         statusTkIDs = [...statusTkIDs, ...listTkIDs];
       }
       if (filters.includes("hasOffers")) {
@@ -202,10 +190,7 @@ router.post("/fetchTokens", async (req, res) => {
         ]);
         let offerMinters = offers.map((offer) => offer.minter);
         let offerTkIDs = offers.map((offer) => offer.tokenID);
-        // let minters = statusMinters.filter((statusMinter) =>
-        //   offerMinters.includes(statusMinter)
-        // );
-        // statusMinters = minters;
+
         statusMinters = [...statusMinters, ...offerMinters];
         console.log("offer minters are ");
         console.log(offerMinters);
@@ -213,9 +198,7 @@ router.post("/fetchTokens", async (req, res) => {
         console.log(offerTkIDs);
         console.log("status minters are ");
         console.log(statusMinters);
-        // statusMinters = offerMinters.filter((offerMinter) =>
-        //   statusMinters.includes(offerMinter)
-        // );
+
         statusTkIDs = [...statusTkIDs, ...offerTkIDs];
       }
       if (filters.includes("onAuction")) {
@@ -225,10 +208,7 @@ router.post("/fetchTokens", async (req, res) => {
         ]);
         let auctionMinters = auctions.map((auction) => auction.minter);
         let auctionTkIDs = auctions.map((auction) => auction.tokenID);
-        // let minters = statusMinters.filter((statusMinter) =>
-        //   auctionMinters.includes(statusMinter)
-        // );
-        // statusMinters = minters;
+
         statusMinters = [...statusMinters, ...auctionMinters];
         console.log("auction minters are ");
         console.log(auctionMinters);
@@ -236,15 +216,11 @@ router.post("/fetchTokens", async (req, res) => {
         console.log(auctionTkIDs);
         console.log("status minters are ");
         console.log(statusMinters);
-        // statusMinters = auctionMinters.filter((auctionMinter) =>
-        //   statusMinters.includes(auctionMinter)
-        // );
+
         statusTkIDs = [...statusTkIDs, ...auctionTkIDs];
       }
     }
-  } catch (error) {
-    // console.log(error);
-  }
+  } catch (error) {}
 
   let sort = {};
   switch (sortby) {
@@ -276,13 +252,6 @@ router.post("/fetchTokens", async (req, res) => {
   console.log("721 filter is ");
   // update collections here
   if (statusMinters.length != 0) {
-    // if (collections.length == 0) collections = statusMinters;
-    // else {
-    //   let _collections = collections.filter((collection) =>
-    //     statusMinters.includes(collection)
-    //   );
-    //   collections = _collections;
-    // }
     collections = statusMinters;
   }
   if ((statusMinters.length == 0) & (filters != undefined))
@@ -302,16 +271,14 @@ router.post("/fetchTokens", async (req, res) => {
   console.log(filter_721);
   console.log("sort");
   console.log(sort);
-  let allTokens_721 = await ERC721TOKEN.find(filter_721)
-    // .sort(sort)
-    .select([
-      "contractAddress",
-      "tokenID",
-      "owner",
-      "tokenURI",
-      "price",
-      "viewed",
-    ]);
+  let allTokens_721 = await ERC721TOKEN.find(filter_721).select([
+    "contractAddress",
+    "tokenID",
+    "owner",
+    "tokenURI",
+    "price",
+    "viewed",
+  ]);
   let allTokens_721_Total = allTokens_721.length;
 
   let tokens_721 = allTokens_721.slice(step * 36, (step + 1) * 36);
@@ -331,11 +298,7 @@ router.post("/fetchTokens", async (req, res) => {
       let ownerMap = tk_1155.owner;
       if (ownerMap.has(wallet)) myTokens.push(tk_1155);
     });
-    // let token_1155 = myTokens;
-    // let allTokens_1155_Total = allTokens_1155.length;
 
-    /* */
-    // let _allTokens = [...allTokens_721, ...allTokens_1155];
     let _allTokens = [...allTokens_721, ...myTokens];
     let tmp = sortBy(_allTokens, [sortby], "asc");
     let __allTokens = tmp.reverse();
@@ -352,8 +315,6 @@ router.post("/fetchTokens", async (req, res) => {
     });
   } else {
     let allTokens_1155 = await ERC1155TOKEN.find(filter_1155);
-    // let token_1155 = allTokens_1155.slice(step * 10, (step + 1) * 10);
-    // let allTokens_1155_Total = allTokens_1155.length;
 
     /* */
     let _allTokens = [...allTokens_721, ...allTokens_1155];
@@ -373,8 +334,6 @@ router.post("/fetchTokens", async (req, res) => {
       },
     });
   }
-  console.log("all 1155 tokens are ");
-  console.log(allTokens1155);
 });
 
 const extractAddress = (data) => {

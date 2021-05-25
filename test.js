@@ -1,4 +1,5 @@
 const ethers = require("ethers");
+const axios = require("axios");
 
 let address = "0xb6D6Daf7859E1647DA1ccA631035f00Ea8E790e2";
 let rpc = "https://rpc.fantom.network";
@@ -38,4 +39,12 @@ const fetchTransferHistory = async () => {
   return history;
 };
 
-fetchTransferHistory();
+const test = async () => {
+  let res = await axios.get(
+    "https://gateway.pinata.cloud/ipfs/QmUr3mWjENsYhADFN8PPPqojjj2RALuUEtMfcSkMLCanJZ/puppy_data/2.json"
+  );
+  let name = res.data.name;
+  console.log(name);
+};
+
+test();

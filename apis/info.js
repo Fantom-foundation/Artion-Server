@@ -48,10 +48,6 @@ router.get("/getCollections", async (_, res) => {
   let allCollections = await Collection.find({});
 
   let savedAddresses = [];
-
-  // console.log("all collections are ");
-  // console.log(allCollections);
-
   let allContracts = new Array();
 
   for (let i = 0; i < all.length; ++i) {

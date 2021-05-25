@@ -79,7 +79,6 @@ const pinAccountAvatar = async (account, imgData, userName, address, res) => {
     } catch (error) {}
     return result.IpfsHash;
   } catch (error) {
-    console.log(error);
     return res.status(400).json({
       status: "failed to save an image 2",
     });
