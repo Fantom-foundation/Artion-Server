@@ -7,6 +7,9 @@ const Listing = mongoose.model("Listing");
 const toLowerCase = require("../utils/utils");
 
 router.post("/getListings", auth, async (req, res) => {
+  00
+
+  
   try {
     let owner = req.body.address;
     owner = toLowerCase(address);

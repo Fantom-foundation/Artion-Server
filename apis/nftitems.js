@@ -1,7 +1,9 @@
 const router = require("express").Router();
+
+const ethers = require("ethers");
+
 const mongoose = require("mongoose");
 const auth = require("./middleware/auth");
-const formidable = require("formidable");
 
 const ERC721TOKEN = mongoose.model("ERC721TOKEN");
 const ERC1155TOKEN = mongoose.model("ERC1155TOKEN");
@@ -15,8 +17,15 @@ const Auction = mongoose.model("Auction");
 
 const sortBy = require("lodash.sortby");
 
+const _721_ABI = require("../constants/erc721abi");
+
 const contractutils = require("../services/contract.utils");
 const toLowerCase = require("../utils/utils");
+
+const provider = new ethers.providers.JsonRpcProvider(
+  _721_ABI.RPC,
+  _721_ABI.CHAINID
+);
 
 router.post("/increaseViews", async (req, res) => {
   try {
@@ -317,16 +326,17 @@ router.post("/fetchTokens", async (req, res) => {
 
   if (wallet) {
     let allTokens_1155 = await ERC1155TOKEN.find(filter_1155);
-    // let myTokens = [];
-    // allTokens_1155.map((tk_1155) => {
-    //   let ownerMap = tk_1155.owner;
-    //   if (ownerMap.has(wallet)) myTokens.push(tk_1155);
-    // });
+    let myTokens = [];
+    allTokens_1155.map((tk_1155) => {
+      let ownerMap = tk_1155.owner;
+      if (ownerMap.has(wallet)) myTokens.push(tk_1155);
+    });
     // let token_1155 = myTokens;
     // let allTokens_1155_Total = allTokens_1155.length;
 
     /* */
-    let _allTokens = [...allTokens_721, ...allTokens_1155];
+    // let _allTokens = [...allTokens_721, ...allTokens_1155];
+    let _allTokens = [...allTokens_721, ...myTokens];
     let tmp = sortBy(_allTokens, [sortby], "asc");
     let __allTokens = tmp.reverse();
     let tokensToReturn = __allTokens.slice(step * 36, (step + 1) * 36);
@@ -350,6 +360,9 @@ router.post("/fetchTokens", async (req, res) => {
     let tmp = sortBy(_allTokens, [sortby], "asc");
     let __allTokens = tmp.reverse();
     let tokensToReturn = __allTokens.slice(step * 36, (step + 1) * 36);
+    console.log("tokens to return");
+    console.log(tokensToReturn);
+    console.log(tokensToReturn.length);
     /* */
     return res.json({
       data: "success",
@@ -363,5 +376,47 @@ router.post("/fetchTokens", async (req, res) => {
   console.log("all 1155 tokens are ");
   console.log(allTokens1155);
 });
+
+const extractAddress = (data) => {
+  let length = data.length;
+  return data.substring(0, 2) + data.substring(length - 40);
+};
+
+router.post("/transfer721History", async (req, res) => {
+  try {
+    let tokenID = parseInt(req.body.tokenID);
+    let address = toLowerCase(req.body.address);
+    let history = await fetchTransferHistory721(address, tokenID);
+    return res.json({
+      status: "success",
+      data: history,
+    });
+  } catch (error) {
+    return res.json({
+      status: "failed",
+    });
+  }
+});
+
+const fetchTransferHistory721 = async (address, tokenID) => {
+  let evts = await provider.getLogs({
+    address: address,
+    fromBlock: 0,
+    topics: [
+      ethers.utils.id("Transfer(address,address,uint256)"),
+      null,
+      null,
+      ethers.utils.hexZeroPad(tokenID, 32),
+    ],
+  });
+
+  let history = [];
+  evts.map((evt) => {
+    let from = extractAddress(evt.topics[1]);
+    let to = extractAddress(evt.topics[2]);
+    history.push([from, to]);
+  });
+  return history;
+};
 
 module.exports = router;
