@@ -357,7 +357,7 @@ router.post("/fetchTokens", async (req, res) => {
     let allTokens_1155 = await ERC1155TOKEN.find(filter_1155);
 
     /* */
-    let _allTokens = [...allTokens_721, ...myTokens];
+    let _allTokens = [...allTokens_721, ...allTokens_1155];
     // let tmp = sortBy(_allTokens, [sortby], "asc");
     let tmp = [];
     switch (sortby) {
