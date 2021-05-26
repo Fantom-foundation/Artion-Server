@@ -369,7 +369,7 @@ router.post("/fetchTokens", async (req, res) => {
               return x.createdAt || new Date(1970, 1, 1);
             },
           ],
-          ["desc"]
+          ["asc"]
         );
         break;
       }
@@ -381,7 +381,7 @@ router.post("/fetchTokens", async (req, res) => {
               return x.price || 0;
             },
           ],
-          ["desc"]
+          ["asc"]
         );
         break;
       }
@@ -393,7 +393,7 @@ router.post("/fetchTokens", async (req, res) => {
               return x.lastSalePrice || 0;
             },
           ],
-          ["desc"]
+          ["asc"]
         );
         break;
       }
@@ -405,7 +405,7 @@ router.post("/fetchTokens", async (req, res) => {
               return x.viewed || 0;
             },
           ],
-          ["desc"]
+          ["asc"]
         );
         break;
       }
@@ -417,7 +417,7 @@ router.post("/fetchTokens", async (req, res) => {
               return x.listedAt || new Date(1970, 1, 1);
             },
           ],
-          ["desc"]
+          ["asc"]
         );
         break;
       }
@@ -429,7 +429,7 @@ router.post("/fetchTokens", async (req, res) => {
               return x.soldAt || new Date(1970, 1, 1);
             },
           ],
-          ["desc"]
+          ["asc"]
         );
         break;
       }
@@ -441,7 +441,7 @@ router.post("/fetchTokens", async (req, res) => {
               return x.saleEndsAt || new Date(1970, 1, 1);
             },
           ],
-          ["desc"]
+          ["asc"]
         );
         break;
       }
