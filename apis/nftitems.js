@@ -275,17 +275,15 @@ router.post("/fetchTokens", async (req, res) => {
   console.log(filter_721);
   console.log("sort");
   console.log(sort);
-  let allTokens_721 = await ERC721TOKEN.find(filter_721).select([
-    "contractAddress",
-    "tokenID",
-    "owner",
-    "tokenURI",
-    "price",
-    "viewed",
-  ]);
-  let allTokens_721_Total = allTokens_721.length;
-
-  let tokens_721 = allTokens_721.slice(step * 36, (step + 1) * 36);
+  // let allTokens_721 = await ERC721TOKEN.find(filter_721).select([
+  //   "contractAddress",
+  //   "tokenID",
+  //   "owner",
+  //   "tokenURI",
+  //   "price",
+  //   "viewed",
+  // ]);
+  let allTokens_721 = await ERC721TOKEN.find(filter_721);
 
   let filter_1155 = {
     ...(collections.length > 0
@@ -313,7 +311,6 @@ router.post("/fetchTokens", async (req, res) => {
       data: "success",
       data: {
         tokens: tokensToReturn,
-        // tokens: tokens_721,
         total: __allTokens.length,
       },
     });
