@@ -174,16 +174,14 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
       let name = fields.name;
       let address = fields.account;
       address = toLowerCase(address);
-      let royalty = fields.royalty;
       let description = fields.description;
-      let category = fields.category;
       let symbol = fields.symbol;
       let extension = imgData.substring(
         "data:image/".length,
         imgData.indexOf(";base64")
       );
       let imageFileName =
-        address + name.replace(" ", "") + category + "." + extension;
+        address + name.replace(" ", "") + symbol + "." + extension;
       imgData = imgData.replace(`data:image\/${extension};base64,`, "");
       fs.writeFile(uploadPath + imageFileName, imgData, "base64", (err) => {
         if (err) {
@@ -221,9 +219,8 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
         properties: {
           symbol: symbol,
           address: address,
-          royalty: royalty,
-          category: category,
           createdAt: currentTime,
+          collection: "Fantom Powered Artion Collection",
         },
       };
 
