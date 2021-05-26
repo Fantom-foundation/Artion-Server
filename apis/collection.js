@@ -108,7 +108,7 @@ router.post("/searchCollection", auth, async (req, res) => {
 });
 
 router.get("/fetchAllCollections", auth, async (req, res) => {
-  let all = await Collection.find();
+  let all = await Collection.find().sort({ collectionName: 1 });
   return res.json({
     status: "success",
     data: all,

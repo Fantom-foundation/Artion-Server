@@ -28,6 +28,7 @@ const fetchTransferHistory = async () => {
       null,
     ],
   });
+  console.log(evts);
 
   let history = [];
   evts.map((evt) => {
@@ -35,7 +36,7 @@ const fetchTransferHistory = async () => {
     let to = extractAddress(evt.topics[2]);
     history.push([from, to]);
   });
-  console.log(history);
+  //   console.log(history);
   return history;
 };
 
@@ -47,4 +48,14 @@ const test = async () => {
   console.log(name);
 };
 
-test();
+// test();
+// fetchTransferHistory();
+
+const blockTest = async () => {
+  let block = await provider.getBlock(6946024);
+  let blockTime = block.timestamp;
+  blockTime = new Date(blockTime * 1000);
+  console.log(blockTime);
+};
+
+blockTest();

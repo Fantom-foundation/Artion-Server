@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const { sortBy } = require("lodash");
 const mongoose = require("mongoose");
 const ERC721TOKEN = mongoose.model("ERC721TOKEN");
 const ERC721CONTRACT = mongoose.model("ERC721CONTRACT");
@@ -45,6 +46,7 @@ router.get("/getCollections", async (_, res) => {
   let all = new Array();
   all.push(...collections_721);
   all.push(...collections_1155);
+  all = sortBy(all, "name", "desc");
   let allCollections = await Collection.find({});
 
   let savedAddresses = [];
