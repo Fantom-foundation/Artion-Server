@@ -16,6 +16,7 @@ const Bid = mongoose.model("Bid");
 const Auction = mongoose.model("Auction");
 
 const sortBy = require("lodash.sortby");
+const orderBy = require("lodash.orderby");
 
 const _721_ABI = require("../constants/erc721abi");
 
@@ -222,38 +223,6 @@ router.post("/fetchTokens", async (req, res) => {
     }
   } catch (error) {}
 
-  let sort = {};
-  switch (sortby) {
-    case "createdAt": {
-      sort = { createdAt: -1 };
-      break;
-    }
-    case "price": {
-      sort = { price: -1 };
-      break;
-    }
-    case "lastSalePrice": {
-      sort = { lastSalePrice: -1 };
-      break;
-    }
-    case "viewed": {
-      sort = { viewed: -1 };
-      break;
-    }
-    case "listedAt": {
-      sort = { listedAt: -1 };
-      break;
-    }
-    case "soldAt": {
-      sort = { soldAt: -1 };
-      break;
-    }
-    case "saleEndsAt": {
-      sort = { saleEndsAt: -1 };
-    }
-  }
-
-  console.log("721 filter is ");
   // update collections here
   if (statusMinters.length != 0) {
     collections = statusMinters;
@@ -272,9 +241,6 @@ router.post("/fetchTokens", async (req, res) => {
     ...(statusTkIDs.length > 0 ? { tokenID: { $in: [...statusTkIDs] } } : {}),
     ...(wallet ? { owner: wallet } : {}),
   };
-  console.log(filter_721);
-  console.log("sort");
-  console.log(sort);
   let allTokens_721 = await ERC721TOKEN.find(filter_721);
 
   let filter_1155 = {
@@ -282,8 +248,6 @@ router.post("/fetchTokens", async (req, res) => {
       ? { contractAddress: { $in: [...collections] } }
       : {}),
   };
-  console.log("1155 filter is ");
-  console.log(filter_1155);
 
   if (wallet) {
     let allTokens_1155 = await ERC1155TOKEN.find(filter_1155);
@@ -298,7 +262,7 @@ router.post("/fetchTokens", async (req, res) => {
     let tmp = [];
     switch (sortby) {
       case "createdAt": {
-        tmp = sortBy(
+        tmp = orderBy(
           _allTokens,
           ({ createdAt }) => createdAt || new Date(1970, 1, 1),
           ["desc"]
@@ -306,21 +270,21 @@ router.post("/fetchTokens", async (req, res) => {
         break;
       }
       case "price": {
-        tmp = sortBy(_allTokens, ({ price }) => price || 0, ["desc"]);
+        tmp = orderBy(_allTokens, ({ price }) => price || 0, ["desc"]);
         break;
       }
       case "lastSalePrice": {
-        tmp = sortBy(_allTokens, ({ lastSalePrice }) => lastSalePrice || 0, [
+        tmp = orderBy(_allTokens, ({ lastSalePrice }) => lastSalePrice || 0, [
           "desc",
         ]);
         break;
       }
       case "viewed": {
-        tmp = sortBy(_allTokens, ({ viewed }) => viewed || 0, ["desc"]);
+        tmp = orderBy(_allTokens, ({ viewed }) => viewed || 0, ["desc"]);
         break;
       }
       case "listedAt": {
-        tmp = sortBy(
+        tmp = orderBy(
           _allTokens,
           ({ listedAt }) => listedAt || new Date(1970, 1, 1),
           ["desc"]
@@ -328,7 +292,7 @@ router.post("/fetchTokens", async (req, res) => {
         break;
       }
       case "soldAt": {
-        tmp = sortBy(
+        tmp = orderBy(
           _allTokens,
           ({ soldAt }) => soldAt || new Date(1970, 1, 1),
           ["desc"]
@@ -336,7 +300,7 @@ router.post("/fetchTokens", async (req, res) => {
         break;
       }
       case "saleEndsAt": {
-        tmp = sortBy(
+        tmp = orderBy(
           _allTokens,
           ({ saleEndsAt }) => saleEndsAt || new Date(1970, 1, 1),
           ["desc"]
@@ -364,7 +328,7 @@ router.post("/fetchTokens", async (req, res) => {
     let tmp = [];
     switch (sortby) {
       case "createdAt": {
-        tmp = sortBy(
+        tmp = orderBy(
           _allTokens,
           [
             (x) => {
@@ -376,7 +340,7 @@ router.post("/fetchTokens", async (req, res) => {
         break;
       }
       case "price": {
-        tmp = sortBy(
+        tmp = orderBy(
           _allTokens,
           [
             (x) => {
@@ -388,7 +352,7 @@ router.post("/fetchTokens", async (req, res) => {
         break;
       }
       case "lastSalePrice": {
-        tmp = sortBy(
+        tmp = orderBy(
           _allTokens,
           [
             (x) => {
@@ -400,7 +364,7 @@ router.post("/fetchTokens", async (req, res) => {
         break;
       }
       case "viewed": {
-        tmp = sortBy(
+        tmp = orderBy(
           _allTokens,
           [
             (x) => {
@@ -412,7 +376,7 @@ router.post("/fetchTokens", async (req, res) => {
         break;
       }
       case "listedAt": {
-        tmp = sortBy(
+        tmp = orderBy(
           _allTokens,
           [
             (x) => {
@@ -424,7 +388,7 @@ router.post("/fetchTokens", async (req, res) => {
         break;
       }
       case "soldAt": {
-        tmp = sortBy(
+        tmp = orderBy(
           _allTokens,
           [
             (x) => {
@@ -436,7 +400,7 @@ router.post("/fetchTokens", async (req, res) => {
         break;
       }
       case "saleEndsAt": {
-        tmp = sortBy(
+        tmp = orderBy(
           _allTokens,
           [
             (x) => {
@@ -450,9 +414,6 @@ router.post("/fetchTokens", async (req, res) => {
     }
     let __allTokens = tmp;
     let tokensToReturn = __allTokens.slice(step * 36, (step + 1) * 36);
-    console.log("tokens to return");
-    console.log(tokensToReturn);
-    console.log(tokensToReturn.length);
     /* */
     return res.json({
       data: "success",
