@@ -342,7 +342,7 @@ router.post("/fetchTokens", async (req, res) => {
         break;
       }
     }
-    // let __allTokens = tmp.reverse();
+    let __allTokens = tmp;
     let tokensToReturn = __allTokens.slice(step * 36, (step + 1) * 36);
     /* */
 
@@ -406,7 +406,7 @@ router.post("/fetchTokens", async (req, res) => {
         break;
       }
     }
-    // let __allTokens = tmp.reverse();
+    let __allTokens = tmp;
     let tokensToReturn = __allTokens.slice(step * 36, (step + 1) * 36);
     console.log("tokens to return");
     console.log(tokensToReturn);
