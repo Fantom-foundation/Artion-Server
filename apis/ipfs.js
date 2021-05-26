@@ -161,8 +161,10 @@ router.get("/test", auth, async (req, res) => {
 });
 
 router.post("/uploadImage2Server", auth, async (req, res) => {
-  let form = new formidable.IncomingForm();
-  form.maxFieldsSize = 300 * 1024 * 1024;
+  let form = new formidable.IncomingForm({
+    maxFileSize: 200 * 1024 * 1024,
+    maxFieldsSize: 300 * 1024 * 1024,
+  });
   form.parse(req, async (err, fields, files) => {
     if (err) {
       console.log("form parse failed");
