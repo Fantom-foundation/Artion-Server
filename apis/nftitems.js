@@ -294,7 +294,55 @@ router.post("/fetchTokens", async (req, res) => {
     });
 
     let _allTokens = [...allTokens_721, ...myTokens];
-    let tmp = sortBy(_allTokens, [sortby], "asc");
+    // let tmp = sortBy(_allTokens, [sortby], "asc");
+    let tmp = [];
+    switch (sortby) {
+      case "createdAt": {
+        tmp = sortBy(
+          _allTokens,
+          ({ sortby }) => sortby || new Date(1970, 1, 1),
+          ["desc"]
+        );
+        break;
+      }
+      case "price": {
+        tmp = sortBy(_allTokens, ({ sortby }) => sortby || 0, ["desc"]);
+        break;
+      }
+      case "lastSalePrice": {
+        tmp = sortBy(_allTokens, ({ sortby }) => sortby || 0, ["desc"]);
+        break;
+      }
+      case "viewed": {
+        tmp = sortBy(_allTokens, ({ sortby }) => sortby || 0, ["desc"]);
+        break;
+        break;
+      }
+      case "listedAt": {
+        tmp = sortBy(
+          _allTokens,
+          ({ sortby }) => sortby || new Date(1970, 1, 1),
+          ["desc"]
+        );
+        break;
+      }
+      case "soldAt": {
+        tmp = sortBy(
+          _allTokens,
+          ({ sortby }) => sortby || new Date(1970, 1, 1),
+          ["desc"]
+        );
+        break;
+      }
+      case "saleEndsAt": {
+        tmp = sortBy(
+          _allTokens,
+          ({ sortby }) => sortby || new Date(1970, 1, 1),
+          ["desc"]
+        );
+        break;
+      }
+    }
     let __allTokens = tmp.reverse();
     let tokensToReturn = __allTokens.slice(step * 36, (step + 1) * 36);
     /* */
