@@ -275,14 +275,6 @@ router.post("/fetchTokens", async (req, res) => {
   console.log(filter_721);
   console.log("sort");
   console.log(sort);
-  // let allTokens_721 = await ERC721TOKEN.find(filter_721).select([
-  //   "contractAddress",
-  //   "tokenID",
-  //   "owner",
-  //   "tokenURI",
-  //   "price",
-  //   "viewed",
-  // ]);
   let allTokens_721 = await ERC721TOKEN.find(filter_721);
 
   let filter_1155 = {
