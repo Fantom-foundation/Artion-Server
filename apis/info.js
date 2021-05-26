@@ -109,12 +109,12 @@ router.post("/searchNames", async (req, res) => {
       name: { $regex: name, $options: "i" },
     })
       .select(["contractAddress", "tokenID", "tokenURI", "name"])
-      .limit(3);
+      .limit(5);
     let tokens_1155 = await ERC1155TOKEN.find({
       name: { $regex: name, $options: "i" },
     })
       .select(["contractAddress", "tokenID", "tokenURI", "name"])
-      .limit(3);
+      .limit(5);
     let tokens = [...tokens_721, ...tokens_1155];
     let data = { accounts, collections, tokens };
     return res.json({
