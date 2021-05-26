@@ -316,6 +316,69 @@ router.post("/fetchTokens", async (req, res) => {
       case "viewed": {
         tmp = sortBy(_allTokens, ({ sortby }) => sortby || 0, ["desc"]);
         break;
+      }
+      case "listedAt": {
+        tmp = sortBy(
+          _allTokens,
+          ({ sortby }) => sortby || new Date(1970, 1, 1),
+          ["desc"]
+        );
+        break;
+      }
+      case "soldAt": {
+        tmp = sortBy(
+          _allTokens,
+          ({ sortby }) => sortby || new Date(1970, 1, 1),
+          ["desc"]
+        );
+        break;
+      }
+      case "saleEndsAt": {
+        tmp = sortBy(
+          _allTokens,
+          ({ sortby }) => sortby || new Date(1970, 1, 1),
+          ["desc"]
+        );
+        break;
+      }
+    }
+    // let __allTokens = tmp.reverse();
+    let tokensToReturn = __allTokens.slice(step * 36, (step + 1) * 36);
+    /* */
+
+    return res.json({
+      data: "success",
+      data: {
+        tokens: tokensToReturn,
+        total: __allTokens.length,
+      },
+    });
+  } else {
+    let allTokens_1155 = await ERC1155TOKEN.find(filter_1155);
+
+    /* */
+    let _allTokens = [...allTokens_721, ...myTokens];
+    // let tmp = sortBy(_allTokens, [sortby], "asc");
+    let tmp = [];
+    switch (sortby) {
+      case "createdAt": {
+        tmp = sortBy(
+          _allTokens,
+          ({ sortby }) => sortby || new Date(1970, 1, 1),
+          ["desc"]
+        );
+        break;
+      }
+      case "price": {
+        tmp = sortBy(_allTokens, ({ sortby }) => sortby || 0, ["desc"]);
+        break;
+      }
+      case "lastSalePrice": {
+        tmp = sortBy(_allTokens, ({ sortby }) => sortby || 0, ["desc"]);
+        break;
+      }
+      case "viewed": {
+        tmp = sortBy(_allTokens, ({ sortby }) => sortby || 0, ["desc"]);
         break;
       }
       case "listedAt": {
@@ -343,24 +406,7 @@ router.post("/fetchTokens", async (req, res) => {
         break;
       }
     }
-    let __allTokens = tmp.reverse();
-    let tokensToReturn = __allTokens.slice(step * 36, (step + 1) * 36);
-    /* */
-
-    return res.json({
-      data: "success",
-      data: {
-        tokens: tokensToReturn,
-        total: __allTokens.length,
-      },
-    });
-  } else {
-    let allTokens_1155 = await ERC1155TOKEN.find(filter_1155);
-
-    /* */
-    let _allTokens = [...allTokens_721, ...allTokens_1155];
-    let tmp = sortBy(_allTokens, [sortby], "asc");
-    let __allTokens = tmp.reverse();
+    // let __allTokens = tmp.reverse();
     let tokensToReturn = __allTokens.slice(step * 36, (step + 1) * 36);
     console.log("tokens to return");
     console.log(tokensToReturn);
