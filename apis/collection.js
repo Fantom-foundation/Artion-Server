@@ -9,10 +9,29 @@ const auth = require("./middleware/auth");
 const toLowerCase = require("../utils/utils");
 const ftmScanApiKey = process.env.FTM_SCAN_API_KEY;
 const isValidERC1155 = require("../utils/1155_validator");
+const isvalidERC721 = require("../services/validator");
 
 router.post("/collectiondetails", auth, async (req, res) => {
   let erc721Address = req.body.erc721Address;
   erc721Address = toLowerCase(erc721Address);
+
+  // validate to see whether the contract is either 721 or 1155, otherwise, reject
+
+  try {
+    let is721 = await isvalidERC721(erc721Address);
+    if (!is721) {
+      let is1155 = await isValidERC1155(erc721Address);
+      if (!is1155)
+        return res.status(400).json({
+          status: "failed",
+        });
+    }
+  } catch (error) {
+    return res.status(400).json({
+      status: "failed",
+    });
+  }
+
   let collectionName = req.body.collectionName;
   let description = req.body.description;
   let categories = req.body.categories;
