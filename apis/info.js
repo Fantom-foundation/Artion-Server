@@ -9,6 +9,7 @@ const Collection = mongoose.model("Collection");
 const Auction = mongoose.model("Auction");
 const Account = mongoose.model("Account");
 const ERC1155HOLDING = mongoose.model("ERC1155HOLDING");
+const Category = mongoose.model("Category");
 
 const toLowerCase = require("../utils/utils");
 const auth = require("./middleware/auth");
@@ -129,9 +130,32 @@ router.post("/searchNames", async (req, res) => {
   }
 });
 
-router.post("/get1155info", async (res, res) => {
+router.post("/getTokenType", async (req, res) => {
   try {
-    let collection = toLowerCase(res.body.address);
+    let address = toLowerCase(req.body.address);
+    let category = await Category.findOne({ minterAddress: address });
+    if (category) {
+      return res.json({
+        status: "success",
+        data: parseInt(category.type),
+      });
+    } else {
+      return res.json({
+        status: "success",
+        data: 721,
+      });
+    }
+  } catch (error) {
+    return res.json({
+      status: "success",
+      data: 721,
+    });
+  }
+});
+
+router.post("/get1155info", async (req, res) => {
+  try {
+    let collection = toLowerCase(req.body.address);
     let tokenID = parseInt(req.body.tokenID);
     let holdings = await ERC1155HOLDING.find({
       contractAddress: collection,
