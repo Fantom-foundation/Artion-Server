@@ -7,6 +7,7 @@ const auth = require("./middleware/auth");
 
 const ERC721TOKEN = mongoose.model("ERC721TOKEN");
 const ERC1155TOKEN = mongoose.model("ERC1155TOKEN");
+const ERC1155HOLDING = mongoose.model("ERC1155HOLDING");
 const Category = mongoose.model("Category");
 const Collection = mongoose.model("Collection");
 
@@ -223,13 +224,18 @@ router.post("/fetchTokens", async (req, res) => {
   };
 
   if (wallet) {
-    let allTokens_1155 = await ERC1155TOKEN.find(filter_1155);
-    let myTokens = [];
-    allTokens_1155.map((tk_1155) => {
-      let ownerMap = tk_1155.owner;
-      if (ownerMap.has(wallet)) myTokens.push(tk_1155);
-    });
+    let holdings = await ERC1155HOLDING.find({ holderAddress: wallet });
 
+    let myTokens = [];
+    let allTokens_1155 = await ERC1155TOKEN.find(filter_1155);
+    holdings.map((holding) => {
+      let _tk = allTokens_1155.filter(
+        (_1155Token) =>
+          _1155Token.contractAddress == holding.contractAddress &&
+          _1155Token.tokenID == holding.tokenID
+      );
+      if (_tk.length > 0) myTokens.push(_tk[0]);
+    });
     let _allTokens = [...allTokens_721, ...myTokens];
     let tmp = [];
     switch (sortby) {
@@ -296,7 +302,6 @@ router.post("/fetchTokens", async (req, res) => {
 
     /* */
     let _allTokens = [...allTokens_721, ...allTokens_1155];
-    // let tmp = sortBy(_allTokens, [sortby], "asc");
     let tmp = [];
     switch (sortby) {
       case "createdAt": {
