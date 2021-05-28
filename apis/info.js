@@ -130,9 +130,9 @@ router.post("/searchNames", async (req, res) => {
   }
 });
 
-router.post("/getTokenType", async (req, res) => {
+router.get("/getTokenType", async (req, res) => {
   try {
-    let address = toLowerCase(req.body.address);
+    let address = toLowerCase(req.params.address);
     let category = await Category.findOne({ minterAddress: address });
     if (category) {
       return res.json({
@@ -153,10 +153,27 @@ router.post("/getTokenType", async (req, res) => {
   }
 });
 
-router.post("/get1155info", async (req, res) => {
+router.get("/getOwnership", async (req, res) => {
   try {
-    let collection = toLowerCase(req.body.address);
-    let tokenID = parseInt(req.body.tokenID);
+    let collection = toLowerCase(req.params.address);
+    let tokenID = parseInt(req.params.tokenID);
+    let holdings = await ERC1155HOLDING.find({
+      contractAddress: collection,
+      tokenID: tokenID,
+    }).select(["holderAddress", "supplyPerHolder"]);
+    return res.json({
+      status: "success",
+      data: holdings,
+    });
+  } catch (error) {
+    return res.json([]);
+  }
+});
+
+router.get("/get1155info", async (req, res) => {
+  try {
+    let collection = toLowerCase(req.params.address);
+    let tokenID = parseInt(req.params.tokenID);
     let holdings = await ERC1155HOLDING.find({
       contractAddress: collection,
       tokenID: tokenID,
