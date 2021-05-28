@@ -8,6 +8,7 @@ const ERC1155TOKEN = mongoose.model("ERC1155TOKEN");
 const Collection = mongoose.model("Collection");
 const Auction = mongoose.model("Auction");
 const Account = mongoose.model("Account");
+const ERC1155HOLDING = mongoose.model("ERC1155HOLDING");
 
 const toLowerCase = require("../utils/utils");
 const auth = require("./middleware/auth");
@@ -122,6 +123,32 @@ router.post("/searchNames", async (req, res) => {
     return res.json({
       status: "success",
       data: data,
+    });
+  } catch (error) {
+    return res.json([]);
+  }
+});
+
+router.post("/get1155info", async (res, res) => {
+  try {
+    let collection = toLowerCase(res.body.address);
+    let tokenID = parseInt(req.body.tokenID);
+    let holdings = await ERC1155HOLDING.find({
+      contractAddress: collection,
+      tokenID: tokenID,
+    });
+    let count = holdings.length;
+    let token = await ERC1155TOKEN.findOne({
+      contractAddress: collection,
+      tokenID: tokenID,
+    });
+    let totalSupply = token.supply;
+    return res.json({
+      status: "success",
+      data: {
+        holders: count,
+        totalSupply: totalSupply,
+      },
     });
   } catch (error) {
     return res.json([]);
