@@ -11,7 +11,7 @@ const Account = mongoose.Schema(
     },
     alias: { type: String, required: true },
     email: { type: String, required: true },
-    bio: { type: String, required: true },
+    bio: { type: String },
     imageHash: { type: String },
     bundleIDs: [{ type: String }],
   },
