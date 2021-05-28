@@ -130,7 +130,7 @@ router.post("/searchNames", async (req, res) => {
   }
 });
 
-router.get("/getTokenType", async (req, res) => {
+router.get("/getTokenType/:address", async (req, res) => {
   try {
     let address = toLowerCase(req.params.address);
     let category = await Category.findOne({ minterAddress: address });
@@ -153,7 +153,7 @@ router.get("/getTokenType", async (req, res) => {
   }
 });
 
-router.get("/getOwnership", async (req, res) => {
+router.get("/getOwnership/:address/:tokenID", async (req, res) => {
   try {
     let collection = toLowerCase(req.params.address);
     let tokenID = parseInt(req.params.tokenID);
@@ -170,7 +170,7 @@ router.get("/getOwnership", async (req, res) => {
   }
 });
 
-router.get("/get1155info", async (req, res) => {
+router.get("/get1155info/:address/:tokenID", async (req, res) => {
   try {
     let collection = toLowerCase(req.params.address);
     let tokenID = parseInt(req.params.tokenID);
