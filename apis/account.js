@@ -92,6 +92,7 @@ router.post("/accountdetails", auth, async (req, res) => {
     if (err) {
       return res.status(400).json({
         status: "failed",
+        data: 0,
       });
     }
     let address = extractAddress(req, res);
@@ -114,6 +115,7 @@ router.post("/accountdetails", auth, async (req, res) => {
       } else {
         return res.status(400).json({
           status: "failed",
+          data: 1,
         });
       }
     } else {
