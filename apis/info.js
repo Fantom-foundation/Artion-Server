@@ -161,9 +161,31 @@ router.get("/getOwnership/:address/:tokenID", async (req, res) => {
       contractAddress: collection,
       tokenID: tokenID,
     }).select(["holderAddress", "supplyPerHolder"]);
+
+    let users = [];
+    let promise = holdings.map(async (hold) => {
+      let account = await Account.findOne({
+        address: hold.holderAddress,
+      });
+      if (account) {
+        users.push({
+          address: account.address,
+          alias: account.alias,
+          imageHash: account.imageHash,
+          supply: hold.supplyPerHolder,
+        });
+      } else {
+        users.push({
+          address: hold.holderAddress,
+          supply: hold.supplyPerHolder,
+        });
+      }
+    });
+    await Promise.all(promise);
+
     return res.json({
       status: "success",
-      data: holdings,
+      data: users,
     });
   } catch (error) {
     return res.json([]);
