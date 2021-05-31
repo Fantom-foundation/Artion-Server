@@ -392,19 +392,13 @@ router.post("/transfer721History", async (req, res) => {
 
 router.post("/transfer1155History", async (req, res) => {
   try {
-    try {
-      let tokenID = parseInt(req.body.tokenID);
-      let address = toLowerCase(req.body.address);
-      let history = await fetchTransferHistory1155(address, tokenID);
-      return res.json({
-        status: "success",
-        data: history,
-      });
-    } catch (error) {
-      return res.json({
-        status: "failed",
-      });
-    }
+    let tokenID = parseInt(req.body.tokenID);
+    let address = toLowerCase(req.body.address);
+    let history = await fetchTransferHistory1155(address, tokenID);
+    return res.json({
+      status: "success",
+      data: history,
+    });
   } catch (error) {
     return res.json({
       status: "failed",
@@ -460,6 +454,12 @@ const fetchTransferHistory721 = async (address, tokenID) => {
   await Promise.all(promise);
   return history;
 };
+const parseSingleTrasferData = (data) => {
+  return [
+    parseInt(data.substring(0, 66), 16),
+    parseInt(data.substring(66), 16),
+  ];
+};
 
 const fetchTransferHistory1155 = async (address, id) => {
   let singleTransferEvts = await provider.getLogs({
@@ -497,12 +497,12 @@ const fetchTransferHistory1155 = async (address, id) => {
   // process single transfer event logs
   let singplePromise = singleTransferEvts.map(async (evt) => {
     let data = evt.data;
+    data = parseSingleTrasferData(data);
     let tokenID = data[0];
     if (parseInt(tokenID) == parseInt(id)) {
       let topics = evt.topics;
       let blockNumber = evt.blockNumber;
       let blockTime = await getBlockTime(blockNumber);
-      data = parseSingleTrasferData(data);
       let tokenTransferValue = data[1];
       let from = toLowerCase(extractAddress(topics[2]));
       let to = toLowerCase(extractAddress(topics[3]));
@@ -520,22 +520,25 @@ const fetchTransferHistory1155 = async (address, id) => {
   let batchPromise = batchTransferEvts.map(async (evt) => {
     let data = evt.data;
     let topics = evt.topics;
-    let from = toLowerCase(extractAddress(topics[2]));
-    let to = toLowerCase(extractAddress(topics[3]));
     let tokenIDs = parseBatchTransferData(data);
-    let blockNumber = evt.blockNumber;
-    let blockTime = null;
-    let _batchPromise = tokenIDs.map(async (tokenID) => {
-      if (!blockTime) blockTime = await getBlockTime(blockNumber);
-      if (parseInt(tokenID) == parseInt(id))
-        history.push({
-          from,
-          to,
-          blockTime,
-          tokenID,
-        });
-    });
-    await Promise.all(_batchPromise);
+    if (tokenIDs.includes(id)) {
+      let from = toLowerCase(extractAddress(topics[2]));
+      let to = toLowerCase(extractAddress(topics[3]));
+      let blockNumber = evt.blockNumber;
+      let blockTime = null;
+      let _batchPromise = tokenIDs.map(async (tokenID) => {
+        if (parseInt(tokenID) == parseInt(id)) {
+          if (blockTime == null) blockTime = await getBlockTime(blockNumber);
+          history.push({
+            from,
+            to,
+            blockTime,
+            tokenID,
+          });
+        }
+      });
+      await Promise.all(_batchPromise);
+    }
   });
   await Promise.all(batchPromise);
   // process batch transfer event logs
