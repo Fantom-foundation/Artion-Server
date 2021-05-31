@@ -506,7 +506,6 @@ const fetchTransferHistory1155 = async (address, id) => {
       let tokenTransferValue = data[1];
       let from = toLowerCase(extractAddress(topics[2]));
       let to = toLowerCase(extractAddress(topics[3]));
-
       history.push({
         from,
         to,
@@ -526,8 +525,7 @@ const fetchTransferHistory1155 = async (address, id) => {
     let tokenIDs = parseBatchTransferData(data);
     let blockNumber = null;
     let blockTime = null;
-    tokenIDs.map((tokenID) => {
-      if (!blockNumber) blockNumber = evt.blockNumber;
+    let _batchPromise = tokenIDs.map(async (tokenID) => {
       if (!blockTime) blockTime = await getBlockTime(blockNumber);
       if (parseInt(tokenID) == parseInt(id))
         history.push({
@@ -537,6 +535,7 @@ const fetchTransferHistory1155 = async (address, id) => {
           tokenID,
         });
     });
+    await Promise.all(_batchPromise);
   });
   await Promise.all(batchPromise);
   // process batch transfer event logs
