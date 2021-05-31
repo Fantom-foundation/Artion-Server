@@ -197,9 +197,10 @@ router.post("/fetchTokens", async (req, res) => {
     }
   } catch (error) {
   } finally {
-    if (filters.length > 0 && statusTkIDs.length == 0) {
-      statusTkIDs = [-1];
-    }
+    if (filters != undefined)
+      if (filters.length > 0 && statusTkIDs.length == 0) {
+        statusTkIDs = [-1];
+      }
   }
 
   // update collections here
