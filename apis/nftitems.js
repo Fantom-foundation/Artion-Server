@@ -215,10 +215,17 @@ router.post("/fetchTokens", async (req, res) => {
   };
   let allTokens_721 = await ERC721TOKEN.find(filter_721);
 
-  let filter_1155 = {
+  // let filter_1155 = {
+  //   ...(collections.length > 0
+  //     ? { contractAddress: { $in: [...collections] } }
+  //     : {}),
+  // };
+
+  let filter_721 = {
     ...(collections.length > 0
       ? { contractAddress: { $in: [...collections] } }
       : {}),
+    ...(statusTkIDs.length > 0 ? { tokenID: { $in: [...statusTkIDs] } } : {}),
   };
 
   if (wallet) {
