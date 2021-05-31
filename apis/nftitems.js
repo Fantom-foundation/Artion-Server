@@ -24,6 +24,8 @@ const _721_ABI = require("../constants/erc721abi");
 const contractutils = require("../services/contract.utils");
 const toLowerCase = require("../utils/utils");
 
+const FETCH_COUNT_PER_TIME = 12;
+
 const provider = new ethers.providers.JsonRpcProvider(
   _721_ABI.RPC,
   _721_ABI.CHAINID
@@ -287,7 +289,10 @@ router.post("/fetchTokens", async (req, res) => {
       }
     }
     let __allTokens = tmp;
-    let tokensToReturn = __allTokens.slice(step * 36, (step + 1) * 36);
+    let tokensToReturn = __allTokens.slice(
+      step * FETCH_COUNT_PER_TIME,
+      (step + 1) * 36
+    );
     /* */
 
     return res.json({
@@ -352,7 +357,10 @@ router.post("/fetchTokens", async (req, res) => {
       }
     }
     let __allTokens = tmp;
-    let tokensToReturn = __allTokens.slice(step * 36, (step + 1) * 36);
+    let tokensToReturn = __allTokens.slice(
+      step * FETCH_COUNT_PER_TIME,
+      (step + 1) * 36
+    );
     /* */
     return res.json({
       data: "success",
