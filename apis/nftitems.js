@@ -24,7 +24,7 @@ const _721_ABI = require("../constants/erc721abi");
 const contractutils = require("../services/contract.utils");
 const toLowerCase = require("../utils/utils");
 
-const FETCH_COUNT_PER_TIME = 12;
+const FETCH_COUNT_PER_TIME = 18;
 
 const provider = new ethers.providers.JsonRpcProvider(
   _721_ABI.RPC,
