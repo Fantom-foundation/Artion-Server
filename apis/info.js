@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const { sortBy } = require("lodash");
+const orderBy = require("lodash.orderby");
 const mongoose = require("mongoose");
 const ERC721TOKEN = mongoose.model("ERC721TOKEN");
 const ERC721CONTRACT = mongoose.model("ERC721CONTRACT");
@@ -183,9 +184,10 @@ router.get("/getOwnership/:address/:tokenID", async (req, res) => {
     });
     await Promise.all(promise);
 
+    let _users = orderBy(users, "supply", "desc");
     return res.json({
       status: "success",
-      data: users,
+      data: _users,
     });
   } catch (error) {
     return res.json([]);
