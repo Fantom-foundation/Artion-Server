@@ -221,7 +221,7 @@ router.post("/fetchTokens", async (req, res) => {
   //     : {}),
   // };
 
-  let filter_721 = {
+  let filter_1155 = {
     ...(collections.length > 0
       ? { contractAddress: { $in: [...collections] } }
       : {}),
