@@ -195,7 +195,12 @@ router.post("/fetchTokens", async (req, res) => {
         statusTkIDs = [...statusTkIDs, ...auctionTkIDs];
       }
     }
-  } catch (error) {}
+  } catch (error) {
+  } finally {
+    if (filters.length > 0 && statusTkIDs.length == 0) {
+      statusTkIDs = [-1];
+    }
+  }
 
   // update collections here
   if (statusMinters.length != 0) {
