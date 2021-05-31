@@ -523,7 +523,7 @@ const fetchTransferHistory1155 = async (address, id) => {
     let from = toLowerCase(extractAddress(topics[2]));
     let to = toLowerCase(extractAddress(topics[3]));
     let tokenIDs = parseBatchTransferData(data);
-    let blockNumber = null;
+    let blockNumber = evt.blockNumber;
     let blockTime = null;
     let _batchPromise = tokenIDs.map(async (tokenID) => {
       if (!blockTime) blockTime = await getBlockTime(blockNumber);
