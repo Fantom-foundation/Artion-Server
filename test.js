@@ -11,14 +11,21 @@ const extractAddress = (data) => {
   return data.substring(0, 2) + data.substring(length - 40);
 };
 
-const fetchTransferHistory = async () => {
+const getBlockTime = async (blockNumber) => {
+  let block = await provider.getBlock(blockNumber);
+  let blockTime = block.timestamp;
+  blockTime = new Date(blockTime * 1000);
+  return blockTime;
+};
+
+const fetchTransferHistory = async (address) => {
   let evts = await provider.getLogs({
     address: address,
     fromBlock: 0,
     topics: [
       ethers.utils.id(
-        // "TransferSingle(address,address,address,uint256,uint256)"
-        "TransferBatch(address,address,address,uint256[],uint256[])"
+        "TransferSingle(address,address,address,uint256,uint256)"
+        // "TransferBatch(address,address,address,uint256[],uint256[])"
       ),
       null,
       null,
@@ -30,32 +37,14 @@ const fetchTransferHistory = async () => {
   });
   console.log(evts);
 
-  let history = [];
-  evts.map((evt) => {
-    let from = extractAddress(evt.topics[1]);
-    let to = extractAddress(evt.topics[2]);
-    history.push([from, to]);
-  });
-  //   console.log(history);
-  return history;
+  // let history = [];
+  // evts.map((evt) => {
+  //   let from = extractAddress(evt.topics[1]);
+  //   let to = extractAddress(evt.topics[2]);
+  //   history.push([from, to]);
+  // });
+  // console.log(history);
+  // return history;
 };
 
-const test = async () => {
-  let res = await axios.get(
-    "https://gateway.pinata.cloud/ipfs/QmUr3mWjENsYhADFN8PPPqojjj2RALuUEtMfcSkMLCanJZ/puppy_data/2.json"
-  );
-  let name = res.data.name;
-  console.log(name);
-};
-
-// test();
-// fetchTransferHistory();
-
-const blockTest = async () => {
-  let block = await provider.getBlock(6946024);
-  let blockTime = block.timestamp;
-  blockTime = new Date(blockTime * 1000);
-  console.log(blockTime);
-};
-
-blockTest();
+fetchTransferHistory("0xb6d6daf7859e1647da1cca631035f00ea8e790e2");

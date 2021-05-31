@@ -126,7 +126,6 @@ router.post("/fetchTokens", async (req, res) => {
   let filters = req.body.filterby;
   let sortby = req.body.sortby;
 
-  console.log(filters);
   let collections = [];
   if (category != undefined) {
     let categoryFilter = {
@@ -140,9 +139,6 @@ router.post("/fetchTokens", async (req, res) => {
         data: [],
       });
     }
-    console.log("categoried collection");
-    console.log(collections);
-    console.log(category);
   }
 
   collections = [...minters, ...collections];
@@ -419,7 +415,11 @@ const fetchTransferHistory721 = async (address, tokenID) => {
     let to = extractAddress(evt.topics[2]);
     let blockNumber = evt.blockNumber;
     let blockTime = await getBlockTime(blockNumber);
-    history.push([from, to, blockTime]);
+    history.push({
+      from,
+      to,
+      blockTime,
+    });
   });
   await Promise.all(promise);
   return history;
