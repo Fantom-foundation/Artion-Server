@@ -390,11 +390,47 @@ router.post("/transfer721History", async (req, res) => {
   }
 });
 
+router.post("/transfer1155History", async (req, res) => {
+  try {
+    try {
+      let tokenID = parseInt(req.body.tokenID);
+      let address = toLowerCase(req.body.address);
+      let history = await fetchTransferHistory1155(address, tokenID);
+      return res.json({
+        status: "success",
+        data: history,
+      });
+    } catch (error) {
+      return res.json({
+        status: "failed",
+      });
+    }
+  } catch (error) {
+    return res.json({
+      status: "failed",
+    });
+  }
+});
+
 const getBlockTime = async (blockNumber) => {
   let block = await provider.getBlock(blockNumber);
   let blockTime = block.timestamp;
   blockTime = new Date(blockTime * 1000);
   return blockTime;
+};
+
+const parseBatchTransferData = (data) => {
+  let tokenIDs = [];
+  data = data.substring(2);
+  let segments = data.length / 64;
+  let tkCount = segments / 2;
+  let tkData = data.substring(64 * 3, 64 * (tkCount + 1));
+  for (let i = 0; i < tkData.length / 64; ++i) {
+    let _tkData = tkData.substring(i * 64, (i + 1) * 64);
+    let tokenID = parseInt(_tkData.toString(), 16);
+    tokenIDs.push(tokenID);
+  }
+  return tokenIDs;
 };
 
 const fetchTransferHistory721 = async (address, tokenID) => {
@@ -425,15 +461,83 @@ const fetchTransferHistory721 = async (address, tokenID) => {
   return history;
 };
 
-router.post("/transfer1155History", async (req, res) => {
-  try {
-  } catch (error) {
-    return res.json({
-      status: "failed",
-    });
-  }
-});
+const fetchTransferHistory1155 = async (address, id) => {
+  let singleTransferEvts = await provider.getLogs({
+    address: address,
+    fromBlock: 0,
+    topics: [
+      ethers.utils.id(
+        "TransferSingle(address,address,address,uint256,uint256)"
+      ),
+      null,
+      null,
+      null,
+      null,
+      null,
+    ],
+  });
+  // console.log(singleTransferEvts);
+  let batchTransferEvts = await provider.getLogs({
+    address: address,
+    fromBlock: 0,
+    topics: [
+      ethers.utils.id(
+        "TransferBatch(address,address,address,uint256[],uint256[])"
+      ),
+      null,
+      null,
+      null,
+      null,
+      null,
+    ],
+  });
 
-const fetchTransferHistory1155 = async (address, tokenID) => {};
+  let history = [];
+
+  // process single transfer event logs
+  let singplePromise = singleTransferEvts.map(async (evt) => {
+    let data = evt.data;
+    let topics = evt.topics;
+    let blockNumber = evt.blockNumber;
+    let blockTime = await getBlockTime(blockNumber);
+    data = parseSingleTrasferData(data);
+    let tokenID = data[0];
+    let tokenTransferValue = data[1];
+    let from = toLowerCase(extractAddress(topics[2]));
+    let to = toLowerCase(extractAddress(topics[3]));
+    if (parseInt(tokenID) == parseInt(id))
+      history.push({
+        from,
+        to,
+        blockTime,
+        tokenID,
+        // value: tokenTransferValue,
+      });
+  });
+  await Promise.all(singplePromise);
+
+  let batchPromise = batchTransferEvts.map(async (evt) => {
+    let data = evt.data;
+    let topics = evt.topics;
+    let from = toLowerCase(extractAddress(topics[2]));
+    let to = toLowerCase(extractAddress(topics[3]));
+    let tokenIDs = parseBatchTransferData(data);
+    let blockNumber = evt.blockNumber;
+    let blockTime = await getBlockTime(blockNumber);
+    tokenIDs.map((tokenID) => {
+      if (parseInt(tokenID) == parseInt(id))
+        history.push({
+          from,
+          to,
+          blockTime,
+          tokenID,
+        });
+    });
+  });
+  await Promise.all(batchPromise);
+  // process batch transfer event logs
+  let _history = orderBy(history, "blockTime", "asc");
+  return _history;
+};
 
 module.exports = router;

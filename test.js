@@ -1,5 +1,7 @@
 const ethers = require("ethers");
 const axios = require("axios");
+const orderBy = require("lodash.orderby");
+const toLowerCase = require("./utils/utils");
 
 let address = "0xb6D6Daf7859E1647DA1ccA631035f00Ea8E790e2";
 let rpc = "https://rpc.fantom.network";
@@ -18,33 +20,104 @@ const getBlockTime = async (blockNumber) => {
   return blockTime;
 };
 
-const fetchTransferHistory = async (address) => {
-  let evts = await provider.getLogs({
+const parseSingleTrasferData = (data) => {
+  return [
+    parseInt(data.substring(0, 66), 16),
+    parseInt(data.substring(66), 16),
+  ];
+};
+
+const parseBatchTransferData = (data) => {
+  let tokenIDs = [];
+  data = data.substring(2);
+  let segments = data.length / 64;
+  let tkCount = segments / 2;
+  let tkData = data.substring(64 * 3, 64 * (tkCount + 1));
+  for (let i = 0; i < tkData.length / 64; ++i) {
+    let _tkData = tkData.substring(i * 64, (i + 1) * 64);
+    let tokenID = parseInt(_tkData.toString(), 16);
+    tokenIDs.push(tokenID);
+  }
+  return tokenIDs;
+};
+
+const fetchTransferHistory = async (address, id) => {
+  let singleTransferEvts = await provider.getLogs({
     address: address,
     fromBlock: 0,
     topics: [
       ethers.utils.id(
         "TransferSingle(address,address,address,uint256,uint256)"
-        // "TransferBatch(address,address,address,uint256[],uint256[])"
       ),
       null,
       null,
       null,
-      //   ethers.utils.hexZeroPad(1, 32),
       null,
       null,
     ],
   });
-  console.log(evts);
+  // console.log(singleTransferEvts);
+  let batchTransferEvts = await provider.getLogs({
+    address: address,
+    fromBlock: 0,
+    topics: [
+      ethers.utils.id(
+        "TransferBatch(address,address,address,uint256[],uint256[])"
+      ),
+      null,
+      null,
+      null,
+      null,
+      null,
+    ],
+  });
 
-  // let history = [];
-  // evts.map((evt) => {
-  //   let from = extractAddress(evt.topics[1]);
-  //   let to = extractAddress(evt.topics[2]);
-  //   history.push([from, to]);
-  // });
-  // console.log(history);
-  // return history;
+  let history = [];
+
+  // process single transfer event logs
+  let singplePromise = singleTransferEvts.map(async (evt) => {
+    let data = evt.data;
+    let topics = evt.topics;
+    let blockNumber = evt.blockNumber;
+    let blockTime = await getBlockTime(blockNumber);
+    data = parseSingleTrasferData(data);
+    let tokenID = data[0];
+    let tokenTransferValue = data[1];
+    let from = toLowerCase(extractAddress(topics[2]));
+    let to = toLowerCase(extractAddress(topics[3]));
+    if (parseInt(tokenID) == parseInt(id))
+      history.push({
+        from,
+        to,
+        blockTime,
+        tokenID,
+        // value: tokenTransferValue,
+      });
+  });
+  await Promise.all(singplePromise);
+
+  let batchPromise = batchTransferEvts.map(async (evt) => {
+    let data = evt.data;
+    let topics = evt.topics;
+    let from = toLowerCase(extractAddress(topics[2]));
+    let to = toLowerCase(extractAddress(topics[3]));
+    let tokenIDs = parseBatchTransferData(data);
+    let blockNumber = evt.blockNumber;
+    let blockTime = await getBlockTime(blockNumber);
+    tokenIDs.map((tokenID) => {
+      if (parseInt(tokenID) == parseInt(id))
+        history.push({
+          from,
+          to,
+          blockTime,
+          tokenID,
+        });
+    });
+  });
+  await Promise.all(batchPromise);
+  // process batch transfer event logs
+  let _history = orderBy(history, "blockTime", "asc");
+  return _history;
 };
 
-fetchTransferHistory("0xb6d6daf7859e1647da1cca631035f00ea8e790e2");
+fetchTransferHistory("0xb6d6daf7859e1647da1cca631035f00ea8e790e2", 1);
