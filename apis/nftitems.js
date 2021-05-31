@@ -291,7 +291,7 @@ router.post("/fetchTokens", async (req, res) => {
     let __allTokens = tmp;
     let tokensToReturn = __allTokens.slice(
       step * FETCH_COUNT_PER_TIME,
-      (step + 1) * 36
+      (step + 1) * FETCH_COUNT_PER_TIME
     );
     /* */
 
@@ -359,7 +359,7 @@ router.post("/fetchTokens", async (req, res) => {
     let __allTokens = tmp;
     let tokensToReturn = __allTokens.slice(
       step * FETCH_COUNT_PER_TIME,
-      (step + 1) * 36
+      (step + 1) * FETCH_COUNT_PER_TIME
     );
     /* */
     return res.json({
