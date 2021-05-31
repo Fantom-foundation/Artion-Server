@@ -497,15 +497,16 @@ const fetchTransferHistory1155 = async (address, id) => {
   // process single transfer event logs
   let singplePromise = singleTransferEvts.map(async (evt) => {
     let data = evt.data;
-    let topics = evt.topics;
-    let blockNumber = evt.blockNumber;
-    let blockTime = await getBlockTime(blockNumber);
-    data = parseSingleTrasferData(data);
     let tokenID = data[0];
-    let tokenTransferValue = data[1];
-    let from = toLowerCase(extractAddress(topics[2]));
-    let to = toLowerCase(extractAddress(topics[3]));
-    if (parseInt(tokenID) == parseInt(id))
+    if (parseInt(tokenID) == parseInt(id)) {
+      let topics = evt.topics;
+      let blockNumber = evt.blockNumber;
+      let blockTime = await getBlockTime(blockNumber);
+      data = parseSingleTrasferData(data);
+      let tokenTransferValue = data[1];
+      let from = toLowerCase(extractAddress(topics[2]));
+      let to = toLowerCase(extractAddress(topics[3]));
+
       history.push({
         from,
         to,
@@ -513,6 +514,7 @@ const fetchTransferHistory1155 = async (address, id) => {
         tokenID,
         // value: tokenTransferValue,
       });
+    }
   });
   await Promise.all(singplePromise);
 
@@ -522,9 +524,11 @@ const fetchTransferHistory1155 = async (address, id) => {
     let from = toLowerCase(extractAddress(topics[2]));
     let to = toLowerCase(extractAddress(topics[3]));
     let tokenIDs = parseBatchTransferData(data);
-    let blockNumber = evt.blockNumber;
-    let blockTime = await getBlockTime(blockNumber);
+    let blockNumber = null;
+    let blockTime = null;
     tokenIDs.map((tokenID) => {
+      if (!blockNumber) blockNumber = evt.blockNumber;
+      if (!blockTime) blockTime = await getBlockTime(blockNumber);
       if (parseInt(tokenID) == parseInt(id))
         history.push({
           from,
