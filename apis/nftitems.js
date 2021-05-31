@@ -394,6 +394,13 @@ router.post("/transfer721History", async (req, res) => {
   }
 });
 
+const getBlockTime = async (blockNumber) => {
+  let block = await provider.getBlock(blockNumber);
+  let blockTime = block.timestamp;
+  blockTime = new Date(blockTime * 1000);
+  return blockTime;
+};
+
 const fetchTransferHistory721 = async (address, tokenID) => {
   let evts = await provider.getLogs({
     address: address,
@@ -407,12 +414,26 @@ const fetchTransferHistory721 = async (address, tokenID) => {
   });
 
   let history = [];
-  evts.map((evt) => {
+  let promise = evts.map(async (evt) => {
     let from = extractAddress(evt.topics[1]);
     let to = extractAddress(evt.topics[2]);
-    history.push([from, to]);
+    let blockNumber = evt.blockNumber;
+    let blockTime = await getBlockTime(blockNumber);
+    history.push([from, to, blockTime]);
   });
+  await Promise.all(promise);
   return history;
 };
+
+router.post("/transfer1155History", async (req, res) => {
+  try {
+  } catch (error) {
+    return res.json({
+      status: "failed",
+    });
+  }
+});
+
+const fetchTransferHistory1155 = async (address, tokenID) => {};
 
 module.exports = router;
