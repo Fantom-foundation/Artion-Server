@@ -252,8 +252,8 @@ router.post("/fetchTokens", async (req, res) => {
           ]);
           if (tokens) {
             let minter_id_pairs = tokens.map((pair) => {
-              // let minter_id_pair = [pair.minter, pair.tokenID];
-              let minter_id_pair = pair.minter + pair.tokenID;
+              let minter_id_pair = [pair.minter, pair.tokenID];
+              // let minter_id_pair = pair.minter + pair.tokenID;
               return minter_id_pair;
             });
             statusFilteredTokens = [
@@ -270,8 +270,8 @@ router.post("/fetchTokens", async (req, res) => {
           ]);
           if (tokens) {
             let minter_id_pairs = tokens.map((pair) => {
-              // let minter_id_pair = [pair.minter, pair.tokenID];
-              let minter_id_pair = pair.minter + pair.tokenID;
+              let minter_id_pair = [pair.minter, pair.tokenID];
+              // let minter_id_pair = pair.minter + pair.tokenID;
               return minter_id_pair;
             });
             statusFilteredTokens = [
@@ -288,8 +288,8 @@ router.post("/fetchTokens", async (req, res) => {
           ]);
           if (tokens) {
             let minter_id_pairs = tokens.map((pair) => {
-              // let minter_id_pair = [pair.minter, pair.tokenID];
-              let minter_id_pair = pair.minter + pair.tokenID;
+              let minter_id_pair = [pair.minter, pair.tokenID];
+              // let minter_id_pair = pair.minter + pair.tokenID;
               return minter_id_pair;
             });
             statusFilteredTokens = [
@@ -306,8 +306,8 @@ router.post("/fetchTokens", async (req, res) => {
           ]);
           if (tokens) {
             let minter_id_pairs = tokens.map((pair) => {
-              // let minter_id_pair = [pair.minter, pair.tokenID];
-              let minter_id_pair = pair.minter + pair.tokenID;
+              let minter_id_pair = [pair.minter, pair.tokenID];
+              // let minter_id_pair = pair.minter + pair.tokenID;
               return minter_id_pair;
             });
             statusFilteredTokens = [
@@ -317,20 +317,38 @@ router.post("/fetchTokens", async (req, res) => {
           }
         }
 
-        const query = new mongoose.Query();
-        query.collection(ERC721TOKEN.collection);
-        let tmp = await query.$where(() => {
-          return statusFilteredTokens.includes(
-            this.contractAddress + this.tokenID
+        let allFilteredTokens = [];
+        let statusPromise = statusFilteredTokens.map(async (tk) => {
+          let tokenCategory = tokenTypes.filter(
+            (tokenType) => tokenType[0] == tk[0]
           );
+          tokenCategory = tokenCategory[0];
+          if (parseInt(tokenCategory[1]) == 721) {
+            let token = await ERC721TOKEN.findOne({
+              contractAddress: tk[0],
+              tokenID: tk[1],
+            });
+            if (token) allFilteredTokens.push(token);
+          } else if (parseInt(tokenCategory[1]) == 1155) {
+            let token = await ERC1155TOKEN.findOne({
+              contractAddress: tk[0],
+              tokenID: tk[1],
+            });
+            if (token) allFilteredTokens.push(token);
+          }
         });
-
-        console.log(tmp);
-
-        // now fetch
+        await Promise.all(statusPromise);
+        let sortedTokens = sortNfts(allFilteredTokens, sortby);
+        let searchResults = sortedTokens.slice(
+          step * FETCH_COUNT_PER_TIME,
+          (step + 1) * FETCH_COUNT_PER_TIME
+        );
         return res.json({
           status: "success",
-          data: [],
+          data: {
+            tokens: searchResults,
+            total: allFilteredTokens.length,
+          },
         });
       }
     } else {
