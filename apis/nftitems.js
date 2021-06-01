@@ -313,11 +313,12 @@ router.post("/fetchTokens", async (req, res) => {
           }
         }
 
-        let tmp = await ERC1155TOKEN.find({
-          contractAddress,
-          tokenID: { $in: statusFilteredTokens },
-        });
-        console.log(tmp);
+        // let tmp = await ERC1155TOKEN.find({
+        //   contractAddress,
+        //   tokenID: { $in: statusFilteredTokens },
+        // });
+        // console.log(tmp);
+        console.log(statusFilteredTokens);
 
         // now fetch
         return res.json({
