@@ -220,7 +220,8 @@ router.post("/fetchTokens", async (req, res) => {
         let tokens_721 = await ERC721TOKEN.find(collectionFilters);
         let tokens_1155 = await ERC1155TOKEN.find(collectionFilters);
         let allTokens = [...tokens_721, ...tokens_1155];
-        let sortedTokens = sortNfts(allTokens, sortby);
+        // let sortedTokens = sortNfts(allTokens, sortby);
+        let sortedTokens = allTokens;
         let searchResults = sortedTokens.slice(
           step * FETCH_COUNT_PER_TIME,
           (step + 1) * FETCH_COUNT_PER_TIME
