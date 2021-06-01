@@ -143,6 +143,10 @@ router.post("/fetchTokens", async (req, res) => {
     }
 
     console.log(collections2filter);
+    return res.json({
+      status: "success",
+      data: [],
+    });
 
     let filters = req.body.filterby; //status -> array or null
     let sortby = req.body.sortby; //sort -> string param
