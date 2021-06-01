@@ -168,14 +168,13 @@ router.post("/fetchTokens", async (req, res) => {
   // all smart contract categories - 721/1155
   let tokenTypes = await Category.find();
   tokenTypes = tokenTypes.map((tt) => [tt.minterAddress, tt.type]);
-
-  console.log("all types are ");
-  console.log(tokenTypes);
   try {
     let collections2filter = null;
     // get options from request & process
     let step = parseInt(req.body.step); // step where to fetch
     let selectedCollections = req.body.collectionAddresses; //collection addresses from request
+    let filters = req.body.filterby; //status -> array or null
+    let sortby = req.body.sortby; //sort -> string param
     if (!selectedCollections) selectedCollections = [];
     else {
       selectedCollections = selectedCollections.map((selectedCollection) =>
@@ -238,14 +237,6 @@ router.post("/fetchTokens", async (req, res) => {
     for account search
      */
     }
-
-    return res.json({
-      status: "success",
-      data: [],
-    });
-
-    let filters = req.body.filterby; //status -> array or null
-    let sortby = req.body.sortby; //sort -> string param
 
     let collections4status = null;
     if (filters != undefined) {
