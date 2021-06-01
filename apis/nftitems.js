@@ -212,6 +212,7 @@ router.post("/fetchTokens", async (req, res) => {
         /*
         when no status option 
          */
+        /* contract address filter */
         let collectionFilters = {
           ...(collections2filter != null
             ? { contractAddress: { $in: [...collections2filter] } }
@@ -236,6 +237,55 @@ router.post("/fetchTokens", async (req, res) => {
         /*
         when status option
          */
+        /* minter filter */
+        let minterFilters = {
+          ...(collections2filter != null
+            ? { miner: { $in: [...collections2filter] } }
+            : {}),
+        };
+        let statusFilteredTokens = [];
+        if (filters.includes("hasBids")) {
+          /* for buy now - pick from Bid */
+          let tokens = await Bid.find(minterFilters).select([
+            "minter",
+            "tokenID",
+          ]);
+          if(tokens)
+          let minter_id_pairs = tokens.map(token => [token.miner, token.tokenID])
+          statusFilteredTokens = [...statusFilteredTokens, ...minter_id_pairs]
+        }
+        if (filters.includes("buyNow")) {
+          /* for had bids - pick from Listing */
+          let tokens = await Listing.find(minterFilters).select([
+            "minter",
+            "tokenID",
+          ]);if(tokens)
+          let minter_id_pairs = tokens.map(token => [token.miner, token.tokenID])
+          statusFilteredTokens = [...statusFilteredTokens, ...minter_id_pairs]
+        }
+        if (filters.includes("hasOffers")) {
+          /* for has offers - pick from Offer */
+          let tokens = await Offer.find(minterFilters).select([
+            "minter",
+            "tokenID",
+          ]);
+          let minter_id_pairs = tokens.map(token => [token.miner, token.tokenID])
+          statusFilteredTokens = [...statusFilteredTokens, ...minter_id_pairs]
+        }
+        if (filters.includes("onAuction")) {
+          /* for on auction - pick from Auction */
+          let tokens = await Auction.find(minterFilters).select([
+            "minter",
+            "tokenID",
+          ]);
+          let minter_id_pairs = tokens.map(token => [token.miner, token.tokenID])
+          statusFilteredTokens = [...statusFilteredTokens, ...minter_id_pairs]
+        }
+        console.log(statusFilteredTokens)
+        return res.json({
+          status : "success",
+          data : []
+        })
       }
     } else {
       /*
