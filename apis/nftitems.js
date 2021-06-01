@@ -136,7 +136,9 @@ router.post("/fetchTokens", async (req, res) => {
         toLowerCase(c.erc721Address)
       );
       if (collections2filter != null) {
-        collections2filter = [...collections2filter, ...categoryCollections];
+        collections2filter = collections2filter.filter((x) =>
+          categoryCollections.includes(x)
+        );
       } else {
         collections2filter = categoryCollections;
       }
