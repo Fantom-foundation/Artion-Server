@@ -175,7 +175,7 @@ router.post("/fetchTokens", async (req, res) => {
     let selectedCollections = req.body.collectionAddresses; //collection addresses from request
     let filters = req.body.filterby; //status -> array or null
     let sortby = req.body.sortby; //sort -> string param
-    let wallet = req.body.address;
+    let wallet = req.body.address; // account address from meta mask
 
     if (!selectedCollections) selectedCollections = [];
     else {
@@ -212,23 +212,23 @@ router.post("/fetchTokens", async (req, res) => {
         /*
         when no status option 
          */
-        if (collections2filter == null) {
-          /*
-          this is the first page loading
-           */
-          let tokens_721 = await ERC721TOKEN.find();
-          let tokens_1155 = await ERC1155TOKEN.find();
-          let allTokens = [...tokens_721, ...tokens_1155];
-          let sortedTokens = sortNfts(allTokens, sortby);
-          let searchResults = sortedTokens.slice(
-            step * FETCH_COUNT_PER_TIME,
-            (step + 1) * FETCH_COUNT_PER_TIME
-          );
-          return res.json({
-            status: "success",
-            data: searchResults,
-          });
-        }
+        let collectionFilters = {
+          ...(collections2filter != null
+            ? { contractAddress: { $in: [...collections2filter] } }
+            : {}),
+        };
+        let tokens_721 = await ERC721TOKEN.find(collectionFilters);
+        let tokens_1155 = await ERC1155TOKEN.find(collectionFilters);
+        let allTokens = [...tokens_721, ...tokens_1155];
+        let sortedTokens = sortNfts(allTokens, sortby);
+        let searchResults = sortedTokens.slice(
+          step * FETCH_COUNT_PER_TIME,
+          (step + 1) * FETCH_COUNT_PER_TIME
+        );
+        return res.json({
+          status: "success",
+          data: searchResults,
+        });
       } else {
         /*
         when status option
