@@ -205,8 +205,6 @@ router.post("/fetchTokens", async (req, res) => {
         collections2filter = categoryCollections;
       }
     }
-    console.log("collections to filter");
-    console.log(collections2filter);
     /*
     for global search
      */
@@ -299,10 +297,9 @@ router.post("/fetchTokens", async (req, res) => {
             });
           }
         }
-        console.log("before unique");
-        console.log(statusFilteredTokens);
-        statusFilteredTokens = [...new Map(statusFilteredTokens)];
-        console.log(statusFilteredTokens);
+        statusFilteredTokens = statusFilteredTokens.filter(
+          ((t = {}), (a) => !(t[a] = a in t))
+        );
 
         let allFilteredTokens = [];
         let statusPromise = statusFilteredTokens.map(async (tk) => {
@@ -447,7 +444,9 @@ router.post("/fetchTokens", async (req, res) => {
             });
           }
         }
-        statusFilteredTokens = [...new Map(statusFilteredTokens)];
+        statusFilteredTokens = statusFilteredTokens.filter(
+          ((t = {}), (a) => !(t[a] = a in t))
+        );
 
         let allFilteredTokens721 = [];
         let allFilteredTokens1155 = [];
@@ -491,7 +490,6 @@ router.post("/fetchTokens", async (req, res) => {
       }
     }
   } catch (error) {
-    console.log(error);
     return res.status(400).json({
       status: "failed",
     });
