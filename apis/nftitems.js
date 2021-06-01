@@ -112,6 +112,66 @@ router.post("/getTokenURI", async (req, res) => {
 });
 
 router.post("/fetchTokens", async (req, res) => {
+  try {
+    let collections2filter = null;
+    // get options from request & process
+    let step = parseInt(req.body.step); // step where to fetch
+    let selectedCollections = req.body.collectionAddresses; //collection addresses from request
+    if (!selectedCollections) selectedCollections = [];
+    else {
+      selectedCollections = selectedCollections.map((selectedCollection) =>
+        toLowerCase(selectedCollection)
+      );
+      collections2filter = selectedCollections;
+    }
+    let category = req.body.category; //category -> array or null
+
+    let categoryCollections = null;
+
+    if (category != undefined) {
+      categoryCollections = await Collection.find({
+        categories: category,
+      }).select("erc721Address");
+      categoryCollections = categoryCollections.map((c) =>
+        toLowerCase(c.erc721Address)
+      );
+      if (collections2filter != null) {
+        collections2filter = [...collections2filter, ...categoryCollections];
+      } else {
+        collections2filter = categoryCollections;
+      }
+    }
+
+    console.log(collections2filter);
+
+    let filters = req.body.filterby; //status -> array or null
+    let sortby = req.body.sortby; //sort -> string param
+
+    let collections4status = null;
+    if (filters != undefined) {
+      if (filters.length > 0) {
+        if (filters.includes("hasBids")) {
+          //when has bid included
+          let filteredBids = await Bid.find();
+        } //when has bid included
+      }
+    }
+
+    /*
+    filter
+     */
+
+    /*
+    sort
+    */
+  } catch (error) {
+    return res.status(400).json({
+      status: "failed",
+    });
+  }
+});
+
+router.post("/fetchTokens1", async (req, res) => {
   let step = parseInt(req.body.step);
   let minters = req.body.collectionAddresses;
   if (!minters) {
