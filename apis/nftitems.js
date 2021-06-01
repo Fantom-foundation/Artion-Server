@@ -256,6 +256,7 @@ router.post("/fetchTokens", async (req, res) => {
     sort
     */
   } catch (error) {
+    console.log(error);
     return res.status(400).json({
       status: "failed",
     });
