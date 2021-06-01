@@ -254,8 +254,7 @@ router.post("/fetchTokens", async (req, res) => {
           if (tokens) {
             tokens.map((pair) => {
               let minter_id_pair = [pair.minter, pair.tokenID];
-              if (!statusFilteredTokens.includes(minter_id_pair))
-                statusFilteredTokens.push(minter_id_pair);
+              statusFilteredTokens.push(minter_id_pair);
             });
           }
         }
@@ -268,8 +267,7 @@ router.post("/fetchTokens", async (req, res) => {
           if (tokens) {
             tokens.map((pair) => {
               let minter_id_pair = [pair.minter, pair.tokenID];
-              if (!statusFilteredTokens.includes(minter_id_pair))
-                statusFilteredTokens.push(minter_id_pair);
+              statusFilteredTokens.push(minter_id_pair);
             });
           }
         }
@@ -282,8 +280,7 @@ router.post("/fetchTokens", async (req, res) => {
           if (tokens) {
             tokens.map((pair) => {
               let minter_id_pair = [pair.minter, pair.tokenID];
-              if (!statusFilteredTokens.includes(minter_id_pair))
-                statusFilteredTokens.push(minter_id_pair);
+              statusFilteredTokens.push(minter_id_pair);
             });
           }
         }
@@ -296,11 +293,12 @@ router.post("/fetchTokens", async (req, res) => {
           if (tokens) {
             tokens.map((pair) => {
               let minter_id_pair = [pair.minter, pair.tokenID];
-              if (!statusFilteredTokens.includes(minter_id_pair))
-                statusFilteredTokens.push(minter_id_pair);
+              statusFilteredTokens.push(minter_id_pair);
             });
           }
         }
+        statusFilteredTokens = [...new Map(statusFilteredTokens)];
+        console.log(statusFilteredTokens);
 
         let allFilteredTokens = [];
         let statusPromise = statusFilteredTokens.map(async (tk) => {
@@ -402,8 +400,7 @@ router.post("/fetchTokens", async (req, res) => {
           if (tokens) {
             tokens.map((pair) => {
               let minter_id_pair = [pair.minter, pair.tokenID];
-              if (!statusFilteredTokens.includes(minter_id_pair))
-                statusFilteredTokens.push(minter_id_pair);
+              statusFilteredTokens.push(minter_id_pair);
             });
           }
         }
@@ -416,8 +413,7 @@ router.post("/fetchTokens", async (req, res) => {
           if (tokens) {
             tokens.map((pair) => {
               let minter_id_pair = [pair.minter, pair.tokenID];
-              if (!statusFilteredTokens.includes(minter_id_pair))
-                statusFilteredTokens.push(minter_id_pair);
+              statusFilteredTokens.push(minter_id_pair);
             });
           }
         }
@@ -430,8 +426,7 @@ router.post("/fetchTokens", async (req, res) => {
           if (tokens) {
             tokens.map((pair) => {
               let minter_id_pair = [pair.minter, pair.tokenID];
-              if (!statusFilteredTokens.includes(minter_id_pair))
-                statusFilteredTokens.push(minter_id_pair);
+              statusFilteredTokens.push(minter_id_pair);
             });
           }
         }
@@ -444,11 +439,11 @@ router.post("/fetchTokens", async (req, res) => {
           if (tokens) {
             tokens.map((pair) => {
               let minter_id_pair = [pair.minter, pair.tokenID];
-              if (!statusFilteredTokens.includes(minter_id_pair))
-                statusFilteredTokens.push(minter_id_pair);
+              statusFilteredTokens.push(minter_id_pair);
             });
           }
         }
+        statusFilteredTokens = [...new Map(statusFilteredTokens)];
 
         let allFilteredTokens721 = [];
         let allFilteredTokens1155 = [];
