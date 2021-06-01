@@ -299,6 +299,8 @@ router.post("/fetchTokens", async (req, res) => {
             });
           }
         }
+        console.log("before unique");
+        console.log(statusFilteredTokens);
         statusFilteredTokens = [...new Map(statusFilteredTokens)];
         console.log(statusFilteredTokens);
 
