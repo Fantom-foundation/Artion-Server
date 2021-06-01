@@ -319,9 +319,10 @@ router.post("/fetchTokens", async (req, res) => {
 
         const query = new mongoose.Query();
         query.collection(ERC721TOKEN.collection);
-        let tmp = await query.$where(() => {
+        let tmp = query.$where(() => {
           statusFilteredTokens.includes(this.contractAddress + this.tokenID);
         });
+        tmp = await tmp.exec();
 
         console.log(tmp);
 
