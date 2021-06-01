@@ -175,6 +175,8 @@ router.post("/fetchTokens", async (req, res) => {
     let selectedCollections = req.body.collectionAddresses; //collection addresses from request
     let filters = req.body.filterby; //status -> array or null
     let sortby = req.body.sortby; //sort -> string param
+    let wallet = req.body.address;
+
     if (!selectedCollections) selectedCollections = [];
     else {
       selectedCollections = selectedCollections.map((selectedCollection) =>
