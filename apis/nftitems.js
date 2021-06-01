@@ -317,12 +317,13 @@ router.post("/fetchTokens", async (req, res) => {
           }
         }
 
-        // let tmp = await ERC1155TOKEN.find({
-        //   contractAddress,
-        //   tokenID: { $in: statusFilteredTokens },
-        // });
-        // console.log(tmp);
-        console.log(statusFilteredTokens);
+        const query = new mongoose.Query();
+        query.collection(ERC721TOKEN.collection);
+        let tmp = await query.$where(() => {
+          statusFilteredTokens.includes(this.contractAddress + this.tokenID);
+        });
+
+        console.log(tmp);
 
         // now fetch
         return res.json({
