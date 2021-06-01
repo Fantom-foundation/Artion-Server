@@ -227,7 +227,10 @@ router.post("/fetchTokens", async (req, res) => {
         );
         return res.json({
           status: "success",
-          data: searchResults,
+          data: {
+            tokens: searchResults,
+            total: allTokens.length,
+          },
         });
       } else {
         /*
