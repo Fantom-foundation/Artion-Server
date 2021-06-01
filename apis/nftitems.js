@@ -252,7 +252,8 @@ router.post("/fetchTokens", async (req, res) => {
           ]);
           if (tokens) {
             let minter_id_pairs = tokens.map((pair) => {
-              let minter_id_pair = [pair.minter, pair.tokenID];
+              // let minter_id_pair = [pair.minter, pair.tokenID];
+              let minter_id_pair = pair.minter + pair.tokenID;
               return minter_id_pair;
             });
             statusFilteredTokens = [
@@ -269,7 +270,8 @@ router.post("/fetchTokens", async (req, res) => {
           ]);
           if (tokens) {
             let minter_id_pairs = tokens.map((pair) => {
-              let minter_id_pair = [pair.minter, pair.tokenID];
+              // let minter_id_pair = [pair.minter, pair.tokenID];
+              let minter_id_pair = pair.minter + pair.tokenID;
               return minter_id_pair;
             });
             statusFilteredTokens = [
@@ -286,7 +288,8 @@ router.post("/fetchTokens", async (req, res) => {
           ]);
           if (tokens) {
             let minter_id_pairs = tokens.map((pair) => {
-              let minter_id_pair = [pair.minter, pair.tokenID];
+              // let minter_id_pair = [pair.minter, pair.tokenID];
+              let minter_id_pair = pair.minter + pair.tokenID;
               return minter_id_pair;
             });
             statusFilteredTokens = [
@@ -303,7 +306,8 @@ router.post("/fetchTokens", async (req, res) => {
           ]);
           if (tokens) {
             let minter_id_pairs = tokens.map((pair) => {
-              let minter_id_pair = [pair.minter, pair.tokenID];
+              // let minter_id_pair = [pair.minter, pair.tokenID];
+              let minter_id_pair = pair.minter + pair.tokenID;
               return minter_id_pair;
             });
             statusFilteredTokens = [
