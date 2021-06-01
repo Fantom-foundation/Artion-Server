@@ -176,6 +176,7 @@ router.post("/fetchTokens", async (req, res) => {
     let filters = req.body.filterby; //status -> array or null
     let sortby = req.body.sortby; //sort -> string param
     let wallet = req.body.address; // account address from meta mask
+    if (wallet) wallet = toLowerCase(wallet);
 
     if (!selectedCollections) selectedCollections = [];
     else {
@@ -251,15 +252,11 @@ router.post("/fetchTokens", async (req, res) => {
             "tokenID",
           ]);
           if (tokens) {
-            let minter_id_pairs = tokens.map((pair) => {
+            tokens.map((pair) => {
               let minter_id_pair = [pair.minter, pair.tokenID];
-              // let minter_id_pair = pair.minter + pair.tokenID;
-              return minter_id_pair;
+              if (!statusFilteredTokens.includes())
+                statusFilteredTokens.push(minter_id_pair);
             });
-            statusFilteredTokens = [
-              ...statusFilteredTokens,
-              ...minter_id_pairs,
-            ];
           }
         }
         if (filters.includes("buyNow")) {
@@ -269,15 +266,11 @@ router.post("/fetchTokens", async (req, res) => {
             "tokenID",
           ]);
           if (tokens) {
-            let minter_id_pairs = tokens.map((pair) => {
+            tokens.map((pair) => {
               let minter_id_pair = [pair.minter, pair.tokenID];
-              // let minter_id_pair = pair.minter + pair.tokenID;
-              return minter_id_pair;
+              if (!statusFilteredTokens.includes())
+                statusFilteredTokens.push(minter_id_pair);
             });
-            statusFilteredTokens = [
-              ...statusFilteredTokens,
-              ...minter_id_pairs,
-            ];
           }
         }
         if (filters.includes("hasOffers")) {
@@ -287,15 +280,11 @@ router.post("/fetchTokens", async (req, res) => {
             "tokenID",
           ]);
           if (tokens) {
-            let minter_id_pairs = tokens.map((pair) => {
+            tokens.map((pair) => {
               let minter_id_pair = [pair.minter, pair.tokenID];
-              // let minter_id_pair = pair.minter + pair.tokenID;
-              return minter_id_pair;
+              if (!statusFilteredTokens.includes())
+                statusFilteredTokens.push(minter_id_pair);
             });
-            statusFilteredTokens = [
-              ...statusFilteredTokens,
-              ...minter_id_pairs,
-            ];
           }
         }
         if (filters.includes("onAuction")) {
@@ -305,15 +294,11 @@ router.post("/fetchTokens", async (req, res) => {
             "tokenID",
           ]);
           if (tokens) {
-            let minter_id_pairs = tokens.map((pair) => {
+            tokens.map((pair) => {
               let minter_id_pair = [pair.minter, pair.tokenID];
-              // let minter_id_pair = pair.minter + pair.tokenID;
-              return minter_id_pair;
+              if (!statusFilteredTokens.includes())
+                statusFilteredTokens.push(minter_id_pair);
             });
-            statusFilteredTokens = [
-              ...statusFilteredTokens,
-              ...minter_id_pairs,
-            ];
           }
         }
 
@@ -355,25 +340,155 @@ router.post("/fetchTokens", async (req, res) => {
       /*
     for account search
      */
-    }
-
-    let collections4status = null;
-    if (filters != undefined) {
-      if (filters.length > 0) {
+      let holdings = await ERC1155HOLDING.find({
+        holderAddress: wallet,
+      });
+      let holders = holdings.map((holder) => {
+        return [holder.contractAddress, holder.tokenID];
+      });
+      if (filters == undefined) {
+        /*
+        when no status option 
+         */
+        /* contract address filter */
+        let collectionFilters721 = {
+          ...(collections2filter != null
+            ? { contractAddress: { $in: [...collections2filter] } }
+            : {}),
+          ...(wallet ? { owner: wallet } : {}),
+        };
+        let collectionFilters1155 = {
+          ...(collections2filter != null
+            ? { contractAddress: { $in: [...collections2filter] } }
+            : {}),
+        };
+        let tokens_721 = await ERC721TOKEN.find(collectionFilters721);
+        let _tokens_1155 = await ERC1155TOKEN.find(collectionFilters1155);
+        let tokens_1155 = _tokens_1155.filter((token_1155) => {
+          holders.includes([token_1155.contractAddress, token_1155.tokenID]);
+        });
+        let allTokens = [...tokens_721, ...tokens_1155];
+        let sortedTokens = sortNfts(allTokens, sortby);
+        let searchResults = sortedTokens.slice(
+          step * FETCH_COUNT_PER_TIME,
+          (step + 1) * FETCH_COUNT_PER_TIME
+        );
+        return res.json({
+          status: "success",
+          data: {
+            tokens: searchResults,
+            total: allTokens.length,
+          },
+        });
+      } else {
+        /*
+        when status option
+         */
+        /* minter filter */
+        let minterFilters = {
+          ...(collections2filter != null
+            ? { miner: { $in: [...collections2filter] } }
+            : {}),
+        };
+        let statusFilteredTokens = [];
         if (filters.includes("hasBids")) {
-          //when has bid included
-          let filteredBids = await Bid.find();
-        } //when has bid included
+          /* for buy now - pick from Bid */
+          let tokens = await Bid.find(minterFilters).select([
+            "minter",
+            "tokenID",
+          ]);
+          if (tokens) {
+            tokens.map((pair) => {
+              let minter_id_pair = [pair.minter, pair.tokenID];
+              if (!statusFilteredTokens.includes())
+                statusFilteredTokens.push(minter_id_pair);
+            });
+          }
+        }
+        if (filters.includes("buyNow")) {
+          /* for had bids - pick from Listing */
+          let tokens = await Listing.find(minterFilters).select([
+            "minter",
+            "tokenID",
+          ]);
+          if (tokens) {
+            tokens.map((pair) => {
+              let minter_id_pair = [pair.minter, pair.tokenID];
+              if (!statusFilteredTokens.includes())
+                statusFilteredTokens.push(minter_id_pair);
+            });
+          }
+        }
+        if (filters.includes("hasOffers")) {
+          /* for has offers - pick from Offer */
+          let tokens = await Offer.find(minterFilters).select([
+            "minter",
+            "tokenID",
+          ]);
+          if (tokens) {
+            tokens.map((pair) => {
+              let minter_id_pair = [pair.minter, pair.tokenID];
+              if (!statusFilteredTokens.includes())
+                statusFilteredTokens.push(minter_id_pair);
+            });
+          }
+        }
+        if (filters.includes("onAuction")) {
+          /* for on auction - pick from Auction */
+          let tokens = await Auction.find(minterFilters).select([
+            "minter",
+            "tokenID",
+          ]);
+          if (tokens) {
+            tokens.map((pair) => {
+              let minter_id_pair = [pair.minter, pair.tokenID];
+              if (!statusFilteredTokens.includes())
+                statusFilteredTokens.push(minter_id_pair);
+            });
+          }
+        }
+
+        let allFilteredTokens721 = [];
+        let allFilteredTokens1155 = [];
+        let allFilteredTokens = [];
+        let statusPromise = statusFilteredTokens.map(async (tk) => {
+          let tokenCategory = tokenTypes.filter(
+            (tokenType) => tokenType[0] == tk[0]
+          );
+          tokenCategory = tokenCategory[0];
+          if (parseInt(tokenCategory[1]) == 721) {
+            let token = await ERC721TOKEN.findOne({
+              contractAddress: tk[0],
+              tokenID: tk[1],
+            });
+            if (token) allFilteredTokens721.push(token);
+          } else if (parseInt(tokenCategory[1]) == 1155) {
+            let token = await ERC1155TOKEN.findOne({
+              contractAddress: tk[0],
+              tokenID: tk[1],
+            });
+            if (token) {
+              if (holders.includes([token.contractAddress, token.tokenID]))
+                allFilteredTokens1155.push(token);
+            }
+          }
+        });
+        await Promise.all(statusPromise);
+        allFilteredTokens = [...allFilteredTokens721, ...allFilteredTokens1155];
+        let sortedTokens = sortNfts(allFilteredTokens, sortby);
+        let searchResults = sortedTokens.slice(
+          step * FETCH_COUNT_PER_TIME,
+          (step + 1) * FETCH_COUNT_PER_TIME
+        );
+        return res.json({
+          status: "success",
+          data: {
+            tokens: searchResults,
+            total: allFilteredTokens.length,
+          },
+        });
       }
     }
-
-    /*
-    filter
-     */
-
-    /*
-    sort
-    */
   } catch (error) {
     console.log(error);
     return res.status(400).json({
