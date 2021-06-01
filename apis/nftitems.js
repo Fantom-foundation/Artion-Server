@@ -250,18 +250,33 @@ router.post("/fetchTokens", async (req, res) => {
             "minter",
             "tokenID",
           ]);
-          if(tokens)
-          let minter_id_pairs = tokens.map(token => [token.miner, token.tokenID])
-          statusFilteredTokens = [...statusFilteredTokens, ...minter_id_pairs]
+          if (tokens) {
+            let minter_id_pairs = tokens.map((pair) => {
+              let minter_id_pair = [pair.miner, pair.tokenID];
+              return minter_id_pair;
+            });
+            statusFilteredTokens = [
+              ...statusFilteredTokens,
+              ...minter_id_pairs,
+            ];
+          }
         }
         if (filters.includes("buyNow")) {
           /* for had bids - pick from Listing */
           let tokens = await Listing.find(minterFilters).select([
             "minter",
             "tokenID",
-          ]);if(tokens)
-          let minter_id_pairs = tokens.map(token => [token.miner, token.tokenID])
-          statusFilteredTokens = [...statusFilteredTokens, ...minter_id_pairs]
+          ]);
+          if (tokens) {
+            let minter_id_pairs = tokens.map((pair) => {
+              let minter_id_pair = [pair.miner, pair.tokenID];
+              return minter_id_pair;
+            });
+            statusFilteredTokens = [
+              ...statusFilteredTokens,
+              ...minter_id_pairs,
+            ];
+          }
         }
         if (filters.includes("hasOffers")) {
           /* for has offers - pick from Offer */
@@ -269,8 +284,16 @@ router.post("/fetchTokens", async (req, res) => {
             "minter",
             "tokenID",
           ]);
-          let minter_id_pairs = tokens.map(token => [token.miner, token.tokenID])
-          statusFilteredTokens = [...statusFilteredTokens, ...minter_id_pairs]
+          if (tokens) {
+            let minter_id_pairs = tokens.map((pair) => {
+              let minter_id_pair = [pair.miner, pair.tokenID];
+              return minter_id_pair;
+            });
+            statusFilteredTokens = [
+              ...statusFilteredTokens,
+              ...minter_id_pairs,
+            ];
+          }
         }
         if (filters.includes("onAuction")) {
           /* for on auction - pick from Auction */
@@ -278,14 +301,22 @@ router.post("/fetchTokens", async (req, res) => {
             "minter",
             "tokenID",
           ]);
-          let minter_id_pairs = tokens.map(token => [token.miner, token.tokenID])
-          statusFilteredTokens = [...statusFilteredTokens, ...minter_id_pairs]
+          if (tokens) {
+            let minter_id_pairs = tokens.map((pair) => {
+              let minter_id_pair = [pair.miner, pair.tokenID];
+              return minter_id_pair;
+            });
+            statusFilteredTokens = [
+              ...statusFilteredTokens,
+              ...minter_id_pairs,
+            ];
+          }
         }
-        console.log(statusFilteredTokens)
+        console.log(statusFilteredTokens);
         return res.json({
-          status : "success",
-          data : []
-        })
+          status: "success",
+          data: [],
+        });
       }
     } else {
       /*
