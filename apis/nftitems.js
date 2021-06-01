@@ -205,6 +205,8 @@ router.post("/fetchTokens", async (req, res) => {
         collections2filter = categoryCollections;
       }
     }
+    console.log("collections to filter");
+    console.log(collections2filter);
     /*
     for global search
      */
