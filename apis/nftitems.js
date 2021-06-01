@@ -111,6 +111,59 @@ router.post("/getTokenURI", async (req, res) => {
   }
 });
 
+const sortNfts = (_allTokens, sortby) => {
+  let tmp = [];
+  switch (sortby) {
+    case "createdAt": {
+      tmp = orderBy(
+        _allTokens,
+        ({ createdAt }) => createdAt || new Date(1970, 1, 1),
+        ["desc"]
+      );
+      break;
+    }
+    case "price": {
+      tmp = orderBy(_allTokens, ({ price }) => price || 0, ["desc"]);
+      break;
+    }
+    case "lastSalePrice": {
+      tmp = orderBy(_allTokens, ({ lastSalePrice }) => lastSalePrice || 0, [
+        "desc",
+      ]);
+      break;
+    }
+    case "viewed": {
+      tmp = orderBy(_allTokens, ({ viewed }) => viewed || 0, ["desc"]);
+      break;
+    }
+    case "listedAt": {
+      tmp = orderBy(
+        _allTokens,
+        ({ listedAt }) => listedAt || new Date(1970, 1, 1),
+        ["desc"]
+      );
+      break;
+    }
+    case "soldAt": {
+      tmp = orderBy(
+        _allTokens,
+        ({ soldAt }) => soldAt || new Date(1970, 1, 1),
+        ["desc"]
+      );
+      break;
+    }
+    case "saleEndsAt": {
+      tmp = orderBy(
+        _allTokens,
+        ({ saleEndsAt }) => saleEndsAt || new Date(1970, 1, 1),
+        ["desc"]
+      );
+      break;
+    }
+  }
+  return tmp;
+};
+
 router.post("/fetchTokens", async (req, res) => {
   // all smart contract categories - 721/1155
   let tokenTypes = await Category.find();
@@ -150,8 +203,42 @@ router.post("/fetchTokens", async (req, res) => {
         collections2filter = categoryCollections;
       }
     }
+    /*
+    for global search
+     */
+    if (!wallet) {
+      if (filters == undefined) {
+        /*
+        when no status option 
+         */
+        if (collections2filter == null) {
+          /*
+          this is the first page loading
+           */
+          let tokens_721 = await ERC721TOKEN.find();
+          let tokens_1155 = await ERC1155TOKEN.find();
+          let allTokens = [...tokens_721, ...tokens_1155];
+          let sortedTokens = sortNfts(allTokens, sortby);
+          let searchResults = sortedTokens.slice(
+            step * FETCH_COUNT_PER_TIME,
+            (step + 1) * FETCH_COUNT_PER_TIME
+          );
+          return res.json({
+            status: "success",
+            data: searchResults,
+          });
+        }
+      } else {
+        /*
+        when status option
+         */
+      }
+    } else {
+      /*
+    for account search
+     */
+    }
 
-    console.log(collections2filter);
     return res.json({
       status: "success",
       data: [],
