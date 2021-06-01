@@ -243,7 +243,7 @@ router.post("/fetchTokens", async (req, res) => {
         /* minter filter */
         let minterFilters = {
           ...(collections2filter != null
-            ? { miner: { $in: [...collections2filter] } }
+            ? { minter: { $in: [...collections2filter] } }
             : {}),
         };
         let statusFilteredTokens = [];
@@ -389,7 +389,7 @@ router.post("/fetchTokens", async (req, res) => {
         /* minter filter */
         let minterFilters = {
           ...(collections2filter != null
-            ? { miner: { $in: [...collections2filter] } }
+            ? { minter: { $in: [...collections2filter] } }
             : {}),
         };
         let statusFilteredTokens = [];
