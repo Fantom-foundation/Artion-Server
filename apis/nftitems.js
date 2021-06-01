@@ -254,7 +254,7 @@ router.post("/fetchTokens", async (req, res) => {
           if (tokens) {
             tokens.map((pair) => {
               let minter_id_pair = [pair.minter, pair.tokenID];
-              if (!statusFilteredTokens.includes())
+              if (!statusFilteredTokens.includes(minter_id_pair))
                 statusFilteredTokens.push(minter_id_pair);
             });
           }
@@ -268,7 +268,7 @@ router.post("/fetchTokens", async (req, res) => {
           if (tokens) {
             tokens.map((pair) => {
               let minter_id_pair = [pair.minter, pair.tokenID];
-              if (!statusFilteredTokens.includes())
+              if (!statusFilteredTokens.includes(minter_id_pair))
                 statusFilteredTokens.push(minter_id_pair);
             });
           }
@@ -282,7 +282,7 @@ router.post("/fetchTokens", async (req, res) => {
           if (tokens) {
             tokens.map((pair) => {
               let minter_id_pair = [pair.minter, pair.tokenID];
-              if (!statusFilteredTokens.includes())
+              if (!statusFilteredTokens.includes(minter_id_pair))
                 statusFilteredTokens.push(minter_id_pair);
             });
           }
@@ -296,7 +296,7 @@ router.post("/fetchTokens", async (req, res) => {
           if (tokens) {
             tokens.map((pair) => {
               let minter_id_pair = [pair.minter, pair.tokenID];
-              if (!statusFilteredTokens.includes())
+              if (!statusFilteredTokens.includes(minter_id_pair))
                 statusFilteredTokens.push(minter_id_pair);
             });
           }
@@ -313,7 +313,9 @@ router.post("/fetchTokens", async (req, res) => {
               contractAddress: tk[0],
               tokenID: tk[1],
             });
-            if (token) allFilteredTokens.push(token);
+            if (token) {
+              allFilteredTokens.push(token);
+            }
           } else if (parseInt(tokenCategory[1]) == 1155) {
             let token = await ERC1155TOKEN.findOne({
               contractAddress: tk[0],
@@ -400,7 +402,7 @@ router.post("/fetchTokens", async (req, res) => {
           if (tokens) {
             tokens.map((pair) => {
               let minter_id_pair = [pair.minter, pair.tokenID];
-              if (!statusFilteredTokens.includes())
+              if (!statusFilteredTokens.includes(minter_id_pair))
                 statusFilteredTokens.push(minter_id_pair);
             });
           }
@@ -414,7 +416,7 @@ router.post("/fetchTokens", async (req, res) => {
           if (tokens) {
             tokens.map((pair) => {
               let minter_id_pair = [pair.minter, pair.tokenID];
-              if (!statusFilteredTokens.includes())
+              if (!statusFilteredTokens.includes(minter_id_pair))
                 statusFilteredTokens.push(minter_id_pair);
             });
           }
@@ -428,7 +430,7 @@ router.post("/fetchTokens", async (req, res) => {
           if (tokens) {
             tokens.map((pair) => {
               let minter_id_pair = [pair.minter, pair.tokenID];
-              if (!statusFilteredTokens.includes())
+              if (!statusFilteredTokens.includes(minter_id_pair))
                 statusFilteredTokens.push(minter_id_pair);
             });
           }
@@ -442,7 +444,7 @@ router.post("/fetchTokens", async (req, res) => {
           if (tokens) {
             tokens.map((pair) => {
               let minter_id_pair = [pair.minter, pair.tokenID];
-              if (!statusFilteredTokens.includes())
+              if (!statusFilteredTokens.includes(minter_id_pair))
                 statusFilteredTokens.push(minter_id_pair);
             });
           }
