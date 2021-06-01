@@ -460,12 +460,14 @@ router.post("/fetchTokens", async (req, res) => {
             let token = await ERC721TOKEN.findOne({
               contractAddress: tk[0],
               tokenID: tk[1],
+              owner: wallet,
             });
             if (token) allFilteredTokens721.push(token);
           } else if (parseInt(tokenCategory[1]) == 1155) {
             let token = await ERC1155TOKEN.findOne({
               contractAddress: tk[0],
               tokenID: tk[1],
+              owner: wallet,
             });
             if (token) {
               if (holders.includes([token.contractAddress, token.tokenID]))
