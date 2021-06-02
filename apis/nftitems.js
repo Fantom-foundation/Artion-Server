@@ -164,6 +164,14 @@ const sortNfts = (_allTokens, sortby) => {
   return tmp;
 };
 
+const isIncludedInArray = (array, target) => {
+  let hash = {};
+  for (let i = 0; i < array.length; ++i) {
+    hash[array[i]] = i;
+  }
+  return hash.hasOwnProperty(target);
+};
+
 router.post("/fetchTokens", async (req, res) => {
   // all smart contract categories - 721/1155
   let tokenTypes = await Category.find();
@@ -365,8 +373,14 @@ router.post("/fetchTokens", async (req, res) => {
         };
         let tokens_721 = await ERC721TOKEN.find(collectionFilters721);
         let _tokens_1155 = await ERC1155TOKEN.find(collectionFilters1155);
-        let tokens_1155 = _tokens_1155.filter((token_1155) => {
-          holders.includes([token_1155.contractAddress, token_1155.tokenID]);
+        let tokens_1155 = [];
+        _tokens_1155.map((token_1155) => {
+          // holders.includes([token_1155.contractAddress, token_1155.tokenID]);
+          let isIncluded = isIncludedInArray(holders, [
+            token_1155.contractAddress,
+            token_1155.tokenID,
+          ]);
+          if (isIncluded) tokens_1155.push(token_1155);
         });
         let allTokens = [...tokens_721, ...tokens_1155];
         let sortedTokens = sortNfts(allTokens, sortby);
@@ -469,7 +483,13 @@ router.post("/fetchTokens", async (req, res) => {
               tokenID: tk[1],
             });
             if (token) {
-              if (holders.includes([token.contractAddress, token.tokenID]))
+              // if (holders.includes([token.contractAddress, token.tokenID]))
+              if (
+                isIncludedInArray(holders, [
+                  token.contractAddress,
+                  token.tokenID,
+                ])
+              )
                 allFilteredTokens1155.push(token);
             }
           }
