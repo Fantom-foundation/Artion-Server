@@ -7,13 +7,17 @@ const ERC721CONTRACT = mongoose.model("ERC721CONTRACT");
 const ERC1155CONTRACT = mongoose.model("ERC1155CONTRACT");
 const ERC1155TOKEN = mongoose.model("ERC1155TOKEN");
 const Collection = mongoose.model("Collection");
-const Auction = mongoose.model("Auction");
 const Account = mongoose.model("Account");
 const ERC1155HOLDING = mongoose.model("ERC1155HOLDING");
 const Category = mongoose.model("Category");
+const Bid = mongoose.model("Bid");
+const Offer = mongoose.model("Offer");
+const Listing = mongoose.model("Listing");
+const Auction = mongoose.model("Auction");
 
 const toLowerCase = require("../utils/utils");
 const auth = require("./middleware/auth");
+const { route } = require("./nftitems");
 
 // list the newly minted 10 tokens
 router.get("/getNewestTokens", async (_, res) => {
@@ -220,4 +224,125 @@ router.get("/get1155info/:address/:tokenID", async (req, res) => {
   }
 });
 
+const getTokenType = (contractAddress, tokenTypes) => {
+  let tokenCategory = tokenTypes.filter(
+    (tokenType) => tokenType[0] == contractAddress
+  );
+  tokenCategory = tokenCategory[0];
+  return parseInt(tokenCategory[1]);
+};
+
+router.get("/getAccountActivity/:address", async (req, res) => {
+  let tokenTypes = await Category.find();
+  tokenTypes = tokenTypes.map((tt) => [tt.minterAddress, tt.type]);
+
+  let address = toLowerCase(req.params.address);
+
+  let bids = [];
+  let offers = [];
+  let listings = [];
+
+  let bidsFromAccount = await Bid.find({
+    bidder: address,
+  });
+  let offersFromAccount = await Offer.find({
+    creator: address,
+  });
+  let listsFromAccount = await Listing.find({
+    owner: address,
+  });
+  if (bidsFromAccount) {
+    let bidsPromise = bidsFromAccount.map(async (bfa) => {
+      let type = getTokenType(bfa.minter, tokenTypes);
+      let token = null;
+      if (type == 721) {
+        token = await ERC721TOKEN.findOne({
+          contractAddress: bfa.minter,
+          tokenID: bfa.tokenID,
+        });
+      } else {
+        token = await ERC1155TOKEN.findOne({
+          contractAddress: bfa.minter,
+          tokenID: bfa.tokenID,
+        });
+      }
+      if (token)
+        bids.push({
+          contractAddress: token.contractAddress,
+          name: token.name,
+          tokenURI: token.tokenURI,
+          owner: token.owner,
+          price: bfa.bid,
+          createdAt: bfa._id.getTimestamp(),
+        });
+    });
+    await Promise.all(bidsPromise);
+  }
+  if (offersFromAccount) {
+    let offersPromise = offersFromAccount.map(async (ofa) => {
+      let type = getTokenType(ofa.minter, tokenTypes);
+      let token = null;
+      if (type == 721) {
+        token = await ERC721TOKEN.findOne({
+          contractAddress: ofa.minter,
+          tokenID: ofa.tokenID,
+        });
+      } else {
+        token = await ERC1155TOKEN.findOne({
+          contractAddress: ofa.minter,
+          tokenID: ofa.tokenID,
+        });
+      }
+      if (token)
+        offers.push({
+          contractAddress: token.contractAddress,
+          name: token.name,
+          tokenURI: token.tokenURI,
+          owner: token.owner,
+          price: ofa.pricePerItem,
+          createdAt: ofa._id.getTimestamp(),
+        });
+    });
+    await Promise.all(offersPromise);
+  }
+  if (listsFromAccount) {
+    let listsPromise = listsFromAccount.map(async (lfa) => {
+      let type = getTokenType(lfa.minter, tokenTypes);
+      let token = null;
+      if (type == 721) {
+        token = await ERC721TOKEN.findOne({
+          contractAddress: lfa.minter,
+          tokenID: lfa.tokenID,
+        });
+      } else {
+        token = await ERC1155TOKEN.findOne({
+          contractAddress: lfa.minter,
+          tokenID: lfa.tokenID,
+        });
+      }
+      if (token)
+        listings.push({
+          contractAddress: token.contractAddress,
+          name: token.name,
+          tokenURI: token.tokenURI,
+          owner: token.owner,
+          price: lfa.price,
+          createdAt: lfa._id.getTimestamp(),
+        });
+    });
+    await Promise.all(listsPromise);
+  }
+  return res.json({
+    status: "success",
+    data: {
+      bids,
+      offers,
+      listings,
+    },
+  });
+});
+
+router.get("/getActivityFromOthers/:address", async(req,res) => {
+  
+})
 module.exports = router;

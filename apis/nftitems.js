@@ -467,7 +467,6 @@ router.post("/fetchTokens", async (req, res) => {
             let token = await ERC1155TOKEN.findOne({
               contractAddress: tk[0],
               tokenID: tk[1],
-              owner: wallet,
             });
             if (token) {
               if (holders.includes([token.contractAddress, token.tokenID]))
