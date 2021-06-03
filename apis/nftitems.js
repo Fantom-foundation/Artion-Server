@@ -483,7 +483,6 @@ router.post("/fetchTokens", async (req, res) => {
               tokenID: tk[1],
             });
             if (token) {
-              // if (holders.includes([token.contractAddress, token.tokenID]))
               if (
                 isIncludedInArray(holders, [
                   token.contractAddress,

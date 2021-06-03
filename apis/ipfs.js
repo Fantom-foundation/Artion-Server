@@ -4,12 +4,30 @@ const formidable = require("formidable");
 const router = require("express").Router();
 const mongoose = require("mongoose");
 const Bundle = mongoose.model("Bundle");
+const Account = mongoose.model("Account");
+
+const jwt = require("jsonwebtoken");
+const jwt_secret = process.env.JWT_SECRET;
 
 const auth = require("./middleware/auth");
 
 const pinataSDK = require("@pinata/sdk");
 
 const toLowerCase = require("../utils/utils");
+const { Account } = require("coinbase");
+
+const extractAddress = (req, res) => {
+  let authorization = req.headers.authorization.split(" ")[1],
+    decoded;
+  try {
+    decoded = jwt.verify(authorization, jwt_secret);
+  } catch (e) {
+    return res.status(401).send("unauthorized");
+  }
+  let address = decoded.data;
+  address = toLowerCase(address);
+  return address;
+};
 
 const ipfsUri = "https://gateway.pinata.cloud/ipfs/";
 
@@ -53,6 +71,28 @@ const pinBundleFileToIPFS = async (fileName, name, address) => {
         bundleName: name,
         address: address,
       },
+    },
+    pinataOptions: {
+      cidVersion: 0,
+    },
+  };
+  const readableStreamForFile = fs.createReadStream(uploadPath + fileName);
+
+  try {
+    let result = await pinata.pinFileToIPFS(readableStreamForFile, options);
+    return result;
+  } catch (error) {
+    console.log(error);
+    return "failed to pin file to ipfs";
+  }
+};
+
+// pin banner image
+const pinBannerFileToIPFS = async (fileName, address) => {
+  const options = {
+    pinataMetadata: {
+      name: address,
+      keyvalues: {},
     },
     pinataOptions: {
       cidVersion: 0,
@@ -175,8 +215,12 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
     } else {
       let imgData = fields.image;
       let name = fields.name;
-      let address = fields.account;
-      address = toLowerCase(address);
+      // let address = fields.account;
+      // address = toLowerCase(address);
+
+      /* change getting address from auth token */
+      let address = extractAddress(req, res);
+
       let description = fields.description;
       let symbol = fields.symbol;
       let extension = imgData.substring(
@@ -310,6 +354,67 @@ router.post("/uploadBundleImage2Server", auth, async (req, res) => {
   });
 });
 
+const generateRandomName = () => {
+  return (
+    Math.random().toString(36).substring(2, 15) +
+    Math.random().toString(36).substring(2, 15)
+  );
+};
+// pin banner image
+router.post("/uploadBannerImage2Server", auth, async (req, res) => {
+  let form = new formidable.IncomingForm();
+  form.parse(req, async (err, fields, files) => {
+    if (err) {
+      return res.status(400).json({
+        status: "failedParsingForm",
+      });
+    } else {
+      let imgData = fields.imgData;
+      // let address = fields.address;
+      // address = toLowerCase(address);
+
+      /* change getting address from auth token */
+      let address = extractAddress(req, res);
+      let name = generateRandomName();
+
+      let extension = imgData.substring(
+        "data:image/".length,
+        imgData.indexOf(";base64")
+      );
+      let imageFileName = address + name.replace(" ", "") + "." + extension;
+      imgData = imgData.replace(`data:image\/${extension};base64,`, "");
+      fs.writeFile(uploadPath + imageFileName, imgData, "base64", (err) => {
+        if (err) {
+          return res.status(400).json({
+            status: "failed to save an image file",
+            err,
+          });
+        }
+      });
+
+      let filePinStatus = await pinBannerFileToIPFS(imageFileName, address);
+      // remove file once pinned
+
+      try {
+        let account = await Account.findOne({
+          address: address,
+        });
+        if (account) {
+          account.bannerhash = ipfsUri + filePinStatus.IpfsHash;
+          await account.save();
+        }
+      } catch (error) {}
+      try {
+        fs.unlinkSync(uploadPath + imageFileName);
+      } catch (error) {}
+      return res.json({
+        status: "success",
+        data: filePinStatus,
+      });
+    }
+  });
+});
+
 // pin collection image
 router.post("/uploadCollectionImage2Server", auth, async (req, res) => {
   let form = new formidable.IncomingForm();
@@ -321,27 +426,26 @@ router.post("/uploadCollectionImage2Server", auth, async (req, res) => {
     } else {
       let imgData = fields.imgData;
       let name = fields.collectionName;
-      let address = fields.erc721Address;
-      address = toLowerCase(address);
+      // let address = fields.erc721Address;
+      // address = toLowerCase(address);
+
+      // change getting address from auth token
+      let address = extractAddress(req, res);
+
       let extension = imgData.substring(
         "data:image/".length,
         imgData.indexOf(";base64")
       );
       let imageFileName = address + name.replace(" ", "") + "." + extension;
       imgData = imgData.replace(`data:image\/${extension};base64,`, "");
-      await fs.writeFile(
-        uploadPath + imageFileName,
-        imgData,
-        "base64",
-        (err) => {
-          if (err) {
-            return res.status(400).json({
-              status: "failed to save an image file",
-              err,
-            });
-          }
+      fs.writeFile(uploadPath + imageFileName, imgData, "base64", (err) => {
+        if (err) {
+          return res.status(400).json({
+            status: "failed to save an image file",
+            err,
+          });
         }
-      );
+      });
 
       let filePinStatus = await pinCollectionFileToIPFS(
         imageFileName,

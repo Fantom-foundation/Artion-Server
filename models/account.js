@@ -13,6 +13,7 @@ const Account = mongoose.Schema(
     email: { type: String, required: true },
     bio: { type: String },
     imageHash: { type: String },
+    bannerhash: { type: String },
     bundleIDs: [{ type: String }],
   },
   {

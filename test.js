@@ -121,12 +121,3 @@ const fetchTransferHistory = async (address, id) => {
 };
 
 // fetchTransferHistory("0xb6d6daf7859e1647da1cca631035f00ea8e790e2", 1);
-
-const arr = [
-  ["123", 1],
-  ["234", 2],
-  ["123", 1],
-];
-let test = arr.filter(((t = {}), (a) => !(t[a] = a in t)));
-
-console.log(test);

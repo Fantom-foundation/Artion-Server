@@ -27,6 +27,7 @@ const extractAddress = (req, res) => {
     return res.status(401).send("unauthorized");
   }
   let address = decoded.data;
+  address = toLowerCase(address);
   return address;
 };
 
@@ -96,7 +97,6 @@ router.post("/accountdetails", auth, async (req, res) => {
       });
     }
     let address = extractAddress(req, res);
-    address = toLowerCase(address);
     let alias = fields.alias;
     let email = fields.email;
     let bio = fields.bio;
@@ -157,7 +157,6 @@ router.post("/accountdetails", auth, async (req, res) => {
 
 router.get("/getaccountinfo", auth, async (req, res) => {
   let address = extractAddress(req);
-  address = toLowerCase(address);
   let account = await Account.findOne({ address: address });
   if (account) {
     return res.json({
