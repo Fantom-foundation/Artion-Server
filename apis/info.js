@@ -327,7 +327,7 @@ router.get("/getAccountActivity/:address", async (req, res) => {
           contractAddress: token.contractAddress,
           name: token.name,
           tokenURI: token.tokenURI,
-          owner: token.owner,
+          owner: address,
           quantity: lfa.quantity,
           price: lfa.price,
           createdAt: lfa._id.getTimestamp(),
