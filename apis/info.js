@@ -342,7 +342,57 @@ router.get("/getAccountActivity/:address", async (req, res) => {
   });
 });
 
-router.get("/getActivityFromOthers/:address", async(req,res) => {
-  
-})
+router.get("/getActivityFromOthers/:address", async (req, res) => {
+  try {
+    let address = toLowerCase(req.params.address);
+    /* get holding token [tokenID, minter] pair */
+    let holdings = [];
+    let offers = [];
+    let tmp = await ERC721TOKEN.find({
+      owner: address,
+    }).select(["contractAddress", "tokenID"]);
+    tmp.map((tk) => {
+      holdings.push([tk.tokenID, tk.contractAddress]);
+    });
+    tmp = await ERC1155HOLDING.find({
+      holderAddress: address,
+    }).select(["contractAddress", "tokenID"]);
+    tmp.map((tk) => {
+      holdings.push([tk.tokenID, tk.contractAddress]);
+    });
+
+    let promise = holdings.map(async (hold) => {
+      let offer = await Offer.findOne({
+        minter: hold[1],
+        tokenID: hold[0],
+      }).select([
+        "creator",
+        "tokenID",
+        "quantity",
+        "pricePerItem",
+        "deadline",
+        "minter",
+      ]);
+      if (offer)
+        offers.push({
+          creator: offer.creator,
+          contractAddress: offer.minter,
+          tokenID: offer.tokenID,
+          quantity: offer.quantity,
+          pricePerItem: offer.pricePerItem,
+          deadline: offer.deadline,
+          createdAt: offer._id.getTimestamp(),
+        });
+    });
+    await Promise.all(promise);
+    return res.json({
+      status: "success",
+      data: offers,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      status: "failed",
+    });
+  }
+});
 module.exports = router;
