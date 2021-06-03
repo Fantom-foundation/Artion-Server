@@ -408,7 +408,7 @@ router.post("/uploadBannerImage2Server", auth, async (req, res) => {
       } catch (error) {}
       return res.json({
         status: "success",
-        data: filePinStatus,
+        data: filePinStatus.IpfsHash,
       });
     }
   });
