@@ -13,7 +13,7 @@ const Account = mongoose.Schema(
     email: { type: String, required: true },
     bio: { type: String },
     imageHash: { type: String },
-    bannerhash: { type: String },
+    bannerHash: { type: String },
     bundleIDs: [{ type: String }],
   },
   {
@@ -29,6 +29,7 @@ Account.methods.toAccountJSON = function () {
     email: this.email,
     bio: this.bio,
     imageHash: this.imageHash,
+    bannerHash: this.bannerHash,
   };
 };
 
