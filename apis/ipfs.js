@@ -399,7 +399,7 @@ router.post("/uploadBannerImage2Server", auth, async (req, res) => {
           address: address,
         });
         if (account) {
-          account.bannerHash = ipfsUri + filePinStatus.IpfsHash;
+          account.bannerHash = filePinStatus.IpfsHash;
           await account.save();
         }
       } catch (error) {}
