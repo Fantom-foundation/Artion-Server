@@ -273,6 +273,7 @@ router.get("/getAccountActivity/:address", async (req, res) => {
           tokenURI: token.tokenURI,
           owner: token.owner,
           price: bfa.bid,
+          quantity: bfa.quantity,
           createdAt: bfa._id.getTimestamp(),
         });
     });
@@ -299,6 +300,7 @@ router.get("/getAccountActivity/:address", async (req, res) => {
           name: token.name,
           tokenURI: token.tokenURI,
           owner: token.owner,
+          quantity: ofa.quantity,
           price: ofa.pricePerItem,
           createdAt: ofa._id.getTimestamp(),
         });
@@ -326,6 +328,7 @@ router.get("/getAccountActivity/:address", async (req, res) => {
           name: token.name,
           tokenURI: token.tokenURI,
           owner: token.owner,
+          quantity: lfa.quantity,
           price: lfa.price,
           createdAt: lfa._id.getTimestamp(),
         });
