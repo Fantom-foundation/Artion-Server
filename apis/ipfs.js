@@ -14,7 +14,6 @@ const auth = require("./middleware/auth");
 const pinataSDK = require("@pinata/sdk");
 
 const toLowerCase = require("../utils/utils");
-const { Account } = require("coinbase");
 
 const extractAddress = (req, res) => {
   let authorization = req.headers.authorization.split(" ")[1],
