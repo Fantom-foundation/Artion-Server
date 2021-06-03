@@ -349,12 +349,19 @@ router.post("/fetchTokens", async (req, res) => {
       /*
     for account search
      */
+
+      let holdingSupplies = new Map();
       let holdings = await ERC1155HOLDING.find({
         holderAddress: wallet,
       });
       let holders = holdings.map((holder) => {
+        holdingSupplies.set(
+          holder.contractAddress + holder.tokenID,
+          holder.supplyPerHolder
+        );
         return [holder.contractAddress, holder.tokenID];
       });
+
       if (filters == undefined) {
         /*
         when no status option 
@@ -375,12 +382,26 @@ router.post("/fetchTokens", async (req, res) => {
         let _tokens_1155 = await ERC1155TOKEN.find(collectionFilters1155);
         let tokens_1155 = [];
         _tokens_1155.map((token_1155) => {
-          // holders.includes([token_1155.contractAddress, token_1155.tokenID]);
           let isIncluded = isIncludedInArray(holders, [
             token_1155.contractAddress,
             token_1155.tokenID,
           ]);
-          if (isIncluded) tokens_1155.push(token_1155);
+          if (isIncluded)
+            tokens_1155.push({
+              supply: token_1155.supply,
+              price: token_1155.price,
+              lastSalePrice: token_1155.lastSalePrice,
+              viewed: token_1155.viewed,
+              contractAddress: token_1155.contractAddress,
+              tokenID: token_1155.tokenID,
+              tokenURI: token_1155.tokenURI,
+              name: token_1155.name,
+              symbol: token_1155.symbol,
+              createdAt: token_1155.createdAt,
+              holderSupply: holdingSupplies.get(
+                token_1155.contractAddress + token_1155.tokenID
+              ),
+            });
         });
         let allTokens = [...tokens_721, ...tokens_1155];
         let sortedTokens = sortNfts(allTokens, sortby);
