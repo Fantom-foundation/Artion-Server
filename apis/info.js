@@ -269,6 +269,7 @@ router.get("/getAccountActivity/:address", async (req, res) => {
       if (token)
         bids.push({
           contractAddress: token.contractAddress,
+          tokenID: token.tokenID,
           name: token.name,
           tokenURI: token.tokenURI,
           owner: token.owner,
@@ -297,6 +298,7 @@ router.get("/getAccountActivity/:address", async (req, res) => {
       if (token)
         offers.push({
           contractAddress: token.contractAddress,
+          tokenID: token.tokenID,
           name: token.name,
           tokenURI: token.tokenURI,
           owner: token.owner,
@@ -325,6 +327,7 @@ router.get("/getAccountActivity/:address", async (req, res) => {
       if (token)
         listings.push({
           contractAddress: token.contractAddress,
+          tokenID: token.tokenID,
           name: token.name,
           tokenURI: token.tokenURI,
           owner: address,
