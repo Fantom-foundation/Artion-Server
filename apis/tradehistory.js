@@ -21,7 +21,7 @@ router.post("/getTradeHistory", async (req, res) => {
       "createdAt",
       "isAuction",
     ])
-    .sort("createdAt");
+    .sort({ createdAt: "desc" });
   return res.send({
     status: "success",
     data: history,
