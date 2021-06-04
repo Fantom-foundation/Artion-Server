@@ -17,7 +17,7 @@ router.post("/getTradeHistory", async (req, res) => {
     "tokenID",
     "price",
     "value",
-    "saleDate",
+    "createdAt",
     "isAuction",
   ]);
   return res.send({
