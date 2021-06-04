@@ -17,7 +17,6 @@ const Auction = mongoose.model("Auction");
 
 const toLowerCase = require("../utils/utils");
 const auth = require("./middleware/auth");
-const { route } = require("./nftitems");
 
 // list the newly minted 10 tokens
 router.get("/getNewestTokens", async (_, res) => {
