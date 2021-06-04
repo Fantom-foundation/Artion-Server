@@ -11,15 +11,17 @@ router.post("/getTradeHistory", async (req, res) => {
   let history = await TradeHistory.find({
     collectionAddress: { $regex: new RegExp(collectionAddress, "i") },
     tokenID: tokenID,
-  }).select([
-    "from",
-    "to",
-    "tokenID",
-    "price",
-    "value",
-    "createdAt",
-    "isAuction",
-  ]);
+  })
+    .select([
+      "from",
+      "to",
+      "tokenID",
+      "price",
+      "value",
+      "createdAt",
+      "isAuction",
+    ])
+    .sort("createdAt");
   return res.send({
     status: "success",
     data: history,
