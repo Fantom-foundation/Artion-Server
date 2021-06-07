@@ -265,7 +265,8 @@ router.get("/getAccountActivity/:address", async (req, res) => {
           tokenID: bfa.tokenID,
         });
       }
-      if (token)
+      if (token) {
+        let account = await getAccountInfo(token.owner);
         bids.push({
           contractAddress: token.contractAddress,
           tokenID: token.tokenID,
@@ -275,7 +276,10 @@ router.get("/getAccountActivity/:address", async (req, res) => {
           price: bfa.bid,
           quantity: bfa.quantity,
           createdAt: bfa._id.getTimestamp(),
+          alias: account ? account[0] : null,
+          image: account ? account[1] : null,
         });
+      }
     });
     await Promise.all(bidsPromise);
   }
@@ -294,7 +298,8 @@ router.get("/getAccountActivity/:address", async (req, res) => {
           tokenID: ofa.tokenID,
         });
       }
-      if (token)
+      if (token) {
+        let account = await getAccountInfo(token.owner);
         offers.push({
           contractAddress: token.contractAddress,
           tokenID: token.tokenID,
@@ -304,7 +309,10 @@ router.get("/getAccountActivity/:address", async (req, res) => {
           quantity: ofa.quantity,
           price: ofa.pricePerItem,
           createdAt: ofa._id.getTimestamp(),
+          alias: account ? account[0] : null,
+          image: account ? account[1] : null,
         });
+      }
     });
     await Promise.all(offersPromise);
   }
@@ -323,7 +331,8 @@ router.get("/getAccountActivity/:address", async (req, res) => {
           tokenID: lfa.tokenID,
         });
       }
-      if (token)
+      if (token) {
+        let account = await getAccountInfo(token.owner);
         listings.push({
           contractAddress: token.contractAddress,
           tokenID: token.tokenID,
@@ -333,7 +342,10 @@ router.get("/getAccountActivity/:address", async (req, res) => {
           quantity: lfa.quantity,
           price: lfa.price,
           createdAt: lfa._id.getTimestamp(),
+          alias: account ? account[0] : null,
+          image: account ? account[1] : null,
         });
+      }
     });
     await Promise.all(listsPromise);
   }
@@ -378,7 +390,8 @@ router.get("/getActivityFromOthers/:address", async (req, res) => {
         "deadline",
         "minter",
       ]);
-      if (offer)
+      if (offer) {
+        let account = await getAccountInfo(offer.creator);
         offers.push({
           creator: offer.creator,
           contractAddress: offer.minter,
@@ -387,7 +400,10 @@ router.get("/getActivityFromOthers/:address", async (req, res) => {
           pricePerItem: offer.pricePerItem,
           deadline: offer.deadline,
           createdAt: offer._id.getTimestamp(),
+          alias: account ? account[0] : null,
+          image: account ? account[1] : null,
         });
+      }
     });
     await Promise.all(promise);
     return res.json({
@@ -400,4 +416,17 @@ router.get("/getActivityFromOthers/:address", async (req, res) => {
     });
   }
 });
+
+const getAccountInfo = async (address) => {
+  try {
+    let account = await Account.findOne({ address: address });
+    if (account) {
+      return [account.alias, account.imageHash];
+    } else {
+      return null;
+    }
+  } catch (error) {
+    return null;
+  }
+};
 module.exports = router;
