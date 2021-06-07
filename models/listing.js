@@ -10,6 +10,6 @@ const Listing = mongoose.Schema({
   isPrivate: { type: Boolean, default: false },
   allowedAddress: { type: String },
 });
-Listing.index({ minter: 1, tokenID: -1 }, { unique: true });
+Listing.index({ minter: 1, tokenID: -1, owner: 1 }, { unique: true });
 
 mongoose.model("Listing", Listing);
