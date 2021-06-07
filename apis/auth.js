@@ -12,7 +12,7 @@ router.post("/getToken", (req, res) => {
       data: address,
     },
     jwt_secret,
-    { expiresIn: "1h" }
+    { expiresIn: "24h" }
   );
   return res.json({
     status: "success",
