@@ -206,6 +206,7 @@ router.get("/get1155info/:address/:tokenID", async (req, res) => {
     let holdings = await ERC1155HOLDING.find({
       contractAddress: collection,
       tokenID: tokenID,
+      supplyPerHolder: { $gt: 0 },
     });
     let count = holdings.length;
     let token = await ERC1155TOKEN.findOne({

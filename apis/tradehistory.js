@@ -22,7 +22,7 @@ router.post("/getTradeHistory", async (req, res) => {
       "createdAt",
       "isAuction",
     ])
-    .sort({ saleDate: "desc" });
+    .sort({ createdAt: "desc" });
   let history = [];
 
   let promise = _history.map(async (hist) => {
