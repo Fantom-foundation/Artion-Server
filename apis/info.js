@@ -168,21 +168,23 @@ router.get("/getOwnership/:address/:tokenID", async (req, res) => {
 
     let users = [];
     let promise = holdings.map(async (hold) => {
-      let account = await Account.findOne({
-        address: hold.holderAddress,
-      });
-      if (account) {
-        users.push({
-          address: account.address,
-          alias: account.alias,
-          imageHash: account.imageHash,
-          supply: hold.supplyPerHolder,
-        });
-      } else {
-        users.push({
+      if (hold.supplyPerHolder > 0) {
+        let account = await Account.findOne({
           address: hold.holderAddress,
-          supply: hold.supplyPerHolder,
         });
+        if (account) {
+          users.push({
+            address: account.address,
+            alias: account.alias,
+            imageHash: account.imageHash,
+            supply: hold.supplyPerHolder,
+          });
+        } else {
+          users.push({
+            address: hold.holderAddress,
+            supply: hold.supplyPerHolder,
+          });
+        }
       }
     });
     await Promise.all(promise);
