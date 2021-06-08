@@ -19,10 +19,10 @@ router.post("/getTradeHistory", async (req, res) => {
       "tokenID",
       "price",
       "value",
-      "createdAt",
+      "saleDate",
       "isAuction",
     ])
-    .sort({ createdAt: "desc" });
+    .sort({ saleDate: "desc" });
   let history = [];
 
   let promise = _history.map(async (hist) => {
@@ -34,7 +34,7 @@ router.post("/getTradeHistory", async (req, res) => {
       tokenID: hist.tokenID,
       price: hist.price,
       value: hist.value,
-      createdAt: hist.createdAt,
+      createdAt: hist.saleDate,
       isAuction: hist.isAuction,
       fromAlias: sender ? sender[0] : null,
       fromImage: sender ? sender[1] : null,

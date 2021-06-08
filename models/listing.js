@@ -6,7 +6,7 @@ const Listing = mongoose.Schema({
   tokenID: { type: Number, required: true },
   quantity: { type: Number, default: 1 },
   price: { type: Number, required: true },
-  startTime: { type: Date, default: new Date() },
+  startTime: { type: Date },
   isPrivate: { type: Boolean, default: false },
   allowedAddress: { type: String },
 });

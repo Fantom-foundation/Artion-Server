@@ -13,7 +13,7 @@ const ERC1155TOKEN = mongoose.Schema({
   price: { type: Number, default: 0 }, //for most expensive
   lastSalePrice: { type: Number, default: 0 }, //for highest last sale price
   viewed: { type: Number, default: 0 }, //for mostly viewed
-  createdAt: { type: Date, default: Date.now }, //for recently created
+  createdAt: { type: Date }, //for recently created
   listedAt: { type: Date }, //for recently listed
   soldAt: { type: Date }, //for recently sold
   saleEndsAt: { type: Date }, //for auction
