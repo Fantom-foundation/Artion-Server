@@ -15,6 +15,7 @@ const Listing = mongoose.model("Listing");
 const Offer = mongoose.model("Offer");
 const Bid = mongoose.model("Bid");
 const Auction = mongoose.model("Auction");
+const Account = mongoose.model("Account");
 
 const sortBy = require("lodash.sortby");
 const orderBy = require("lodash.orderby");
@@ -613,10 +614,16 @@ const fetchTransferHistory721 = async (address, tokenID) => {
     let to = extractAddress(evt.topics[2]);
     let blockNumber = evt.blockNumber;
     let blockTime = await getBlockTime(blockNumber);
+    let sender = await getAccountInfo(from);
+    let receiver = await getAccountInfo(to);
     history.push({
       from,
       to,
       createdAt: blockTime,
+      fromAlias: sender ? sender[0] : null,
+      fromImage: sender ? sender[1] : null,
+      toAlias: receiver ? receiver[0] : null,
+      toImage: receiver ? receiver[1] : null,
     });
   });
   await Promise.all(promise);
@@ -674,12 +681,18 @@ const fetchTransferHistory1155 = async (address, id) => {
       let tokenTransferValue = data[1];
       let from = toLowerCase(extractAddress(topics[2]));
       let to = toLowerCase(extractAddress(topics[3]));
+      let sender = await getAccountInfo(from);
+      let receiver = await getAccountInfo(to);
       history.push({
         from,
         to,
         createdAt: blockTime,
         tokenID,
         value: tokenTransferValue,
+        fromAlias: sender ? sender[0] : null,
+        fromImage: sender ? sender[1] : null,
+        toAlias: receiver ? receiver[0] : null,
+        toImage: receiver ? receiver[1] : null,
       });
     }
   });
@@ -692,6 +705,8 @@ const fetchTransferHistory1155 = async (address, id) => {
     if (tokenIDs.includes(id)) {
       let from = toLowerCase(extractAddress(topics[2]));
       let to = toLowerCase(extractAddress(topics[3]));
+      let sender = await getAccountInfo(from);
+      let receiver = await getAccountInfo(to);
       let blockNumber = evt.blockNumber;
       let blockTime = null;
       let _batchPromise = tokenIDs.map(async (tokenID) => {
@@ -702,6 +717,10 @@ const fetchTransferHistory1155 = async (address, id) => {
             to,
             createdAt: blockTime,
             tokenID,
+            fromAlias: sender ? sender[0] : null,
+            fromImage: sender ? sender[1] : null,
+            toAlias: receiver ? receiver[0] : null,
+            toImage: receiver ? receiver[1] : null,
           });
         }
       });
@@ -712,6 +731,19 @@ const fetchTransferHistory1155 = async (address, id) => {
   // process batch transfer event logs
   let _history = orderBy(history, "blockTime", "asc");
   return _history;
+};
+
+const getAccountInfo = async (address) => {
+  try {
+    let account = await Account.findOne({ address: address });
+    if (account) {
+      return [account.alias, account.imageHash];
+    } else {
+      return null;
+    }
+  } catch (error) {
+    return null;
+  }
 };
 
 module.exports = router;
