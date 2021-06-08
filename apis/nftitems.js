@@ -616,6 +616,7 @@ const fetchTransferHistory721 = async (address, tokenID) => {
     history.push({
       from,
       to,
+      createdAt,
       blockTime,
     });
   });
@@ -677,7 +678,7 @@ const fetchTransferHistory1155 = async (address, id) => {
       history.push({
         from,
         to,
-        blockTime,
+        createdAt: blockTime,
         tokenID,
         // value: tokenTransferValue,
       });
