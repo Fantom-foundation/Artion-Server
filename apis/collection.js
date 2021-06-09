@@ -24,6 +24,7 @@ router.post("/collectiondetails", auth, async (req, res) => {
       if (!is1155)
         return res.status(400).json({
           status: "failed",
+          data: "Invalid NFT Collection Address",
         });
     }
   } catch (error) {

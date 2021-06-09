@@ -30,6 +30,8 @@ require("./models/offer");
 require("./models/tradehistory");
 require("./models/auction");
 require("./models/erc1155holding");
+require("./models/banneduser");
+require("./models/bannenft");
 
 app.use(bodyParser.json());
 app.options("*", cors()); // include before other routes
