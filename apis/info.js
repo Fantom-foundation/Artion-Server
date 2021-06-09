@@ -88,7 +88,7 @@ router.get("/getCollections", async (_, res) => {
           address: contract.address,
           name: contract.name != "name" ? contract.name : "",
           symbol: contract.symbol != "symbol" ? contract.symbol : "",
-          isVerified: false,
+          isVerified: contract.isVerified,
         });
       }
     }
