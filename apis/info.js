@@ -79,6 +79,7 @@ router.get("/getCollections", async (_, res) => {
           mediumHandle: collection.mediumHandle,
           telegram: collection.telegram,
           isVerified: true,
+          isVisible: true,
         });
       }
     } else {
@@ -88,7 +89,8 @@ router.get("/getCollections", async (_, res) => {
           address: contract.address,
           name: contract.name != "name" ? contract.name : "",
           symbol: contract.symbol != "symbol" ? contract.symbol : "",
-          isVerified: contract.isVerified,
+          isVerified: false,
+          isVisible: contract.isVerified,
         });
       }
     }
