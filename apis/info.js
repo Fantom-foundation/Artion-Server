@@ -81,18 +81,17 @@ router.get("/getCollections", async (_, res) => {
           isVerified: true,
         });
       }
+    } else {
+      if (!savedAddresses.includes(contract.address)) {
+        savedAddresses.push(contract.address);
+        allContracts.push({
+          address: contract.address,
+          name: contract.name != "name" ? contract.name : "",
+          symbol: contract.symbol != "symbol" ? contract.symbol : "",
+          isVerified: false,
+        });
+      }
     }
-    // else {
-    //   if (!savedAddresses.includes(contract.address)) {
-    //     savedAddresses.push(contract.address);
-    //     allContracts.push({
-    //       address: contract.address,
-    //       name: contract.name != "name" ? contract.name : "",
-    //       symbol: contract.symbol != "symbol" ? contract.symbol : "",
-    //       isVerified: false,
-    //     });
-    //   }
-    // }
   }
   return res.json({
     status: "success",
