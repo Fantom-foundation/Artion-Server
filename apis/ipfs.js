@@ -401,6 +401,11 @@ router.post("/uploadBannerImage2Server", auth, async (req, res) => {
         if (account) {
           account.bannerHash = filePinStatus.IpfsHash;
           await account.save();
+        } else {
+          let _account = new Account();
+          _account.address = address;
+          _account.bannerHash = filePinStatus.IpfsHash;
+          await _account.save();
         }
       } catch (error) {}
       try {
