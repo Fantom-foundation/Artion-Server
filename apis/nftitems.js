@@ -157,7 +157,7 @@ const sortNfts = (_allTokens, sortby) => {
       tmp = orderBy(
         _allTokens,
         ({ saleEndsAt }) => saleEndsAt - new Date() || 1623424670,
-        ["desc"]
+        ["asc"]
       );
       break;
     }
