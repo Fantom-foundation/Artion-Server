@@ -30,6 +30,7 @@ router.post("/collectiondetails", auth, async (req, res) => {
   } catch (error) {
     return res.status(400).json({
       status: "failed",
+      data : ""
     });
   }
 
