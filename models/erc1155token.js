@@ -4,6 +4,7 @@ const ERC1155TOKEN = mongoose.Schema({
   contractAddress: { type: String, required: true },
   tokenID: { type: Number, required: true },
   tokenURI: { type: String, required: true },
+  thumbnailPath: { type: String, default: "-" },
   symbol: { type: String },
   name: { type: String }, //for search filter
   owner: { type: Map },
