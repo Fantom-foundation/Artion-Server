@@ -147,6 +147,19 @@ router.post("/fetchTokens", async (req, res) => {
     let selectedCollections = req.body.collectionAddresses; //collection addresses from request
     let filters = req.body.filterby; //status -> array or null
     let sortby = req.body.sortby; //sort -> string param
+
+    // create a sort by option
+
+    let selectOption = [
+      "contractAddress",
+      "tokenID",
+      "tokenURI",
+      "thumbnailPath",
+      "name",
+      "supply",
+      "price",
+      sortby,
+    ];
     let wallet = req.body.address; // account address from meta mask
     if (wallet) wallet = toLowerCase(wallet);
 
@@ -191,34 +204,21 @@ router.post("/fetchTokens", async (req, res) => {
             ? { contractAddress: { $in: [...collections2filter] } }
             : {}),
         };
-        // let tokens_721 = await ERC721TOKEN.find(collectionFilters);
-        // let tokens_1155 = await ERC1155TOKEN.find(collectionFilters);
-        // let allTokens = [...tokens_721, ...tokens_1155];
         let allTokens = await NFTITEM.find(collectionFilters)
           .select([
             "contractAddress",
             "tokenID",
             "tokenURI",
             "thumbnailPath",
-            // "symbol",
             "name",
-            // "owner",
             "supply",
             "price",
-            // "lastSalePrice",
-            // "viewed",
-            // "tokenType",
           ])
           .sort(`-${sortby}`);
         let searchResults = allTokens.slice(
           step * FETCH_COUNT_PER_TIME,
           (step + 1) * FETCH_COUNT_PER_TIME
         );
-        // let sortedTokens = sortNfts(allTokens, sortby);
-        // let searchResults = sortedTokens.slice(
-        //   step * FETCH_COUNT_PER_TIME,
-        //   (step + 1) * FETCH_COUNT_PER_TIME
-        // );
         return res.json({
           status: "success",
           data: {
@@ -298,7 +298,7 @@ router.post("/fetchTokens", async (req, res) => {
           let token = await NFTITEM.findOne({
             contractAddress: tk[0],
             tokenID: tk[1],
-          });
+          }).select(selectOption);
           if (token) {
             allFilteredTokens.push(token);
           }
@@ -352,8 +352,12 @@ router.post("/fetchTokens", async (req, res) => {
             ? { contractAddress: { $in: [...collections2filter] } }
             : {}),
         };
-        let tokens_721 = await NFTITEM.find(collectionFilters721);
-        let _tokens_1155 = await NFTITEM.find(collectionFilters1155);
+        let tokens_721 = await NFTITEM.find(collectionFilters721).select(
+          selectOption
+        );
+        let _tokens_1155 = await NFTITEM.find(collectionFilters1155).select(
+          selectOption
+        );
         let tokens_1155 = [];
         _tokens_1155.map((token_1155) => {
           let isIncluded = isIncludedInArray(holders, [
@@ -471,14 +475,14 @@ router.post("/fetchTokens", async (req, res) => {
               tokenID: tk[1],
               owner: wallet,
               tokenType: 721,
-            });
+            }).select(selectOption);
             if (token) allFilteredTokens721.push(token);
           } else if (parseInt(tokenCategory[1]) == 1155) {
             let token = await NFTITEM.findOne({
               contractAddress: tk[0],
               tokenID: tk[1],
               tokenType: 1155,
-            });
+            }).select(selectOption);
             if (token) {
               if (
                 isIncludedInArray(holders, [
