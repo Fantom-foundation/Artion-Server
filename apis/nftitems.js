@@ -200,14 +200,14 @@ router.post("/fetchTokens", async (req, res) => {
             "tokenID",
             "tokenURI",
             "thumbnailPath",
-            "symbol",
+            // "symbol",
             "name",
-            "owner",
+            // "owner",
             "supply",
             "price",
-            "lastSalePrice",
-            "viewed",
-            "tokenType",
+            // "lastSalePrice",
+            // "viewed",
+            // "tokenType",
           ])
           .sort(`-${sortby}`);
         let searchResults = allTokens.slice(
