@@ -22,6 +22,7 @@ require("./models/erc721contract");
 require("./models/erc721token");
 require("./models/erc1155contract");
 require("./models/erc1155token");
+require("./models/nftitems");
 require("./models/event");
 require("./models/highestblock");
 require("./models/listing");
