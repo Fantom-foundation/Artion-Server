@@ -8,8 +8,7 @@ const mongoose = require("mongoose");
 const BannedUser = mongoose.model("BannedUser");
 const BannedNFT = mongoose.model("BannedNFT");
 const ERC721CONTRACT = mongoose.model("ERC721CONTRACT");
-const ERC721TOKEN = mongoose.model("ERC721TOKEN");
-const ERC1155TOKEN = mongoose.model("ERC1155TOKEN");
+const NFTITEM = mongoose.model("NFTITEM");
 const ERC1155HOLDING = mongoose.model("ERC1155HOLDING");
 
 const auth = require("./middleware/auth");
@@ -80,11 +79,7 @@ router.post("/banItem", auth, async (req, res) => {
         bannedNFT.contractAddress = address;
         bannedNFT.tokenID = tokenID;
         await bannedNFT.save();
-        await ERC721TOKEN.deleteOne({
-          contractAddress: address,
-          tokenID: tokenID,
-        });
-        await ERC1155TOKEN.deleteOne({
+        await NFTITEM.deleteOne({
           contractAddress: address,
           tokenID: tokenID,
         });

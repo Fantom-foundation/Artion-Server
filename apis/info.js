@@ -2,10 +2,9 @@ const router = require("express").Router();
 const { sortBy } = require("lodash");
 const orderBy = require("lodash.orderby");
 const mongoose = require("mongoose");
-const ERC721TOKEN = mongoose.model("ERC721TOKEN");
 const ERC721CONTRACT = mongoose.model("ERC721CONTRACT");
 const ERC1155CONTRACT = mongoose.model("ERC1155CONTRACT");
-const ERC1155TOKEN = mongoose.model("ERC1155TOKEN");
+const NFTITEM = mongoose.model("NFTITEM");
 const Collection = mongoose.model("Collection");
 const Account = mongoose.model("Account");
 const ERC1155HOLDING = mongoose.model("ERC1155HOLDING");
@@ -20,11 +19,7 @@ const auth = require("./middleware/auth");
 
 // list the newly minted 10 tokens
 router.get("/getNewestTokens", async (_, res) => {
-  let tokens_721 = await ERC721TOKEN.find().sort({ createdAt: 1 }).limit(10);
-  let tokens_1155 = await ERC1155TOKEN.find().sort({ createdAt: 1 }).limit(10);
-  let tokens = new Array();
-  tokens.push(...tokens_721);
-  tokens.push(...tokens_1155);
+  let tokens = await NFTITEM.find().sort({ createdAt: 1 }).limit(20);
   return res.json({
     status: "success",
     data: tokens,
@@ -115,17 +110,11 @@ router.post("/searchNames", async (req, res) => {
     })
       .select(["erc721Address", "collectionName", "logoImageHash"])
       .limit(3);
-    let tokens_721 = await ERC721TOKEN.find({
+    let tokens = await NFTITEM.find({
       name: { $regex: name, $options: "i" },
     })
       .select(["contractAddress", "tokenID", "tokenURI", "name"])
-      .limit(5);
-    let tokens_1155 = await ERC1155TOKEN.find({
-      name: { $regex: name, $options: "i" },
-    })
-      .select(["contractAddress", "tokenID", "tokenURI", "name"])
-      .limit(5);
-    let tokens = [...tokens_721, ...tokens_1155];
+      .limit(10);
     let data = { accounts, collections, tokens };
     return res.json({
       status: "success",
@@ -211,9 +200,10 @@ router.get("/get1155info/:address/:tokenID", async (req, res) => {
       supplyPerHolder: { $gt: 0 },
     });
     let count = holdings.length;
-    let token = await ERC1155TOKEN.findOne({
+    let token = await NFTITEM.findOne({
       contractAddress: collection,
       tokenID: tokenID,
+      tokenType: 1155,
     });
     let totalSupply = token.supply;
     return res.json({
@@ -257,19 +247,10 @@ router.get("/getAccountActivity/:address", async (req, res) => {
   });
   if (bidsFromAccount) {
     let bidsPromise = bidsFromAccount.map(async (bfa) => {
-      let type = getTokenType(bfa.minter, tokenTypes);
-      let token = null;
-      if (type == 721) {
-        token = await ERC721TOKEN.findOne({
-          contractAddress: bfa.minter,
-          tokenID: bfa.tokenID,
-        });
-      } else {
-        token = await ERC1155TOKEN.findOne({
-          contractAddress: bfa.minter,
-          tokenID: bfa.tokenID,
-        });
-      }
+      let token = await NFTITEM.findOne({
+        contractAddress: bfa.minter,
+        tokenID: bfa.tokenID,
+      });
       if (token) {
         let account = await getAccountInfo(token.owner);
         bids.push({
@@ -290,19 +271,10 @@ router.get("/getAccountActivity/:address", async (req, res) => {
   }
   if (offersFromAccount) {
     let offersPromise = offersFromAccount.map(async (ofa) => {
-      let type = getTokenType(ofa.minter, tokenTypes);
-      let token = null;
-      if (type == 721) {
-        token = await ERC721TOKEN.findOne({
-          contractAddress: ofa.minter,
-          tokenID: ofa.tokenID,
-        });
-      } else {
-        token = await ERC1155TOKEN.findOne({
-          contractAddress: ofa.minter,
-          tokenID: ofa.tokenID,
-        });
-      }
+      let token = await NFTITEM.findOne({
+        contractAddress: ofa.minter,
+        tokenID: ofa.tokenID,
+      });
       if (token) {
         let account = await getAccountInfo(token.owner);
         offers.push({
@@ -323,19 +295,10 @@ router.get("/getAccountActivity/:address", async (req, res) => {
   }
   if (listsFromAccount) {
     let listsPromise = listsFromAccount.map(async (lfa) => {
-      let type = getTokenType(lfa.minter, tokenTypes);
-      let token = null;
-      if (type == 721) {
-        token = await ERC721TOKEN.findOne({
-          contractAddress: lfa.minter,
-          tokenID: lfa.tokenID,
-        });
-      } else {
-        token = await ERC1155TOKEN.findOne({
-          contractAddress: lfa.minter,
-          tokenID: lfa.tokenID,
-        });
-      }
+      token = await NFTITEM.findOne({
+        contractAddress: lfa.minter,
+        tokenID: lfa.tokenID,
+      });
       if (token) {
         let account = await getAccountInfo(token.owner);
         listings.push({
@@ -370,7 +333,7 @@ router.get("/getActivityFromOthers/:address", async (req, res) => {
     /* get holding token [tokenID, minter] pair */
     let holdings = [];
     let offers = [];
-    let tmp = await ERC721TOKEN.find({
+    let tmp = await NFTITEM.find({
       owner: address,
     }).select(["contractAddress", "tokenID"]);
     tmp.map((tk) => {

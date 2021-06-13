@@ -5,8 +5,7 @@ const ethers = require("ethers");
 const mongoose = require("mongoose");
 const auth = require("./middleware/auth");
 
-const ERC721TOKEN = mongoose.model("ERC721TOKEN");
-const ERC1155TOKEN = mongoose.model("ERC1155TOKEN");
+const NFTITEM = mongoose.model("NFTITEM");
 const ERC1155HOLDING = mongoose.model("ERC1155HOLDING");
 const Category = mongoose.model("Category");
 const Collection = mongoose.model("Collection");
@@ -17,7 +16,6 @@ const Bid = mongoose.model("Bid");
 const Auction = mongoose.model("Auction");
 const Account = mongoose.model("Account");
 
-const sortBy = require("lodash.sortby");
 const orderBy = require("lodash.orderby");
 
 const _721_ABI = require("../constants/erc721abi");
@@ -37,37 +35,16 @@ router.post("/increaseViews", async (req, res) => {
     let contractAddress = req.body.contractAddress;
     contractAddress = toLowerCase(contractAddress);
     let tokenID = req.body.tokenID;
-    let tokenType = await Category.findOne({
-      minterAddress: contractAddress,
+    let token = await NFTITEM.findOne({
+      contractAddress: contractAddress,
+      tokenID: tokenID,
     });
-    tokenType = tokenType.type;
-    if (tokenType == 721) {
-      let token = await ERC721TOKEN.findOne({
-        contractAddress: contractAddress,
-        tokenID: tokenID,
-      });
-      token.viewed = token.viewed + 1;
-      let _token = await token.save();
-      return res.json({
-        status: "success",
-        data: _token.viewed,
-      });
-    } else if (tokenType == 1155) {
-      let token = await ERC1155TOKEN.findOne({
-        contractAddress: contractAddress,
-        tokenID: tokenID,
-      });
-      token.viewed = token.viewed + 1;
-      let _token = await token.save();
-      return res.json({
-        status: "success",
-        data: _token.viewed,
-      });
-    } else {
-      return res.status(400).json({
-        status: "failed",
-      });
-    }
+    token.viewed = token.viewed + 1;
+    let _token = await token.save();
+    return res.json({
+      status: "success",
+      data: _token.viewed,
+    });
   } catch (error) {
     return res.status(400).json({
       status: "failed",
@@ -80,30 +57,16 @@ router.post("/getTokenURI", async (req, res) => {
     let address = req.body.contractAddress;
     address = toLowerCase(address);
     let tokenID = req.body.tokenID;
-    let type = await Category.findOne({ minterAddress: address });
-    type = parseInt(type.type);
     let uri = "";
-    if (type == 721) {
-      let tk = await ERC721TOKEN.findOne({
-        contractAddress: address,
-        tokenID: tokenID,
-      });
-      uri = tk.tokenURI;
-      return res.json({
-        status: "success",
-        data: uri,
-      });
-    } else {
-      let tk = await ERC1155TOKEN.findOne({
-        contractAddress: address,
-        tokenID: tokenID,
-      });
-      uri = tk.tokenURI;
-      return res.json({
-        status: "success",
-        data: uri,
-      });
-    }
+    let tk = await NFTITEM.findOne({
+      contractAddress: address,
+      tokenID: tokenID,
+    });
+    uri = tk.tokenURI;
+    return res.json({
+      status: "success",
+      data: uri,
+    });
   } catch (error) {
     return res.status(400).json({
       status: "failed",
@@ -228,14 +191,34 @@ router.post("/fetchTokens", async (req, res) => {
             ? { contractAddress: { $in: [...collections2filter] } }
             : {}),
         };
-        let tokens_721 = await ERC721TOKEN.find(collectionFilters);
-        let tokens_1155 = await ERC1155TOKEN.find(collectionFilters);
-        let allTokens = [...tokens_721, ...tokens_1155];
-        let sortedTokens = sortNfts(allTokens, sortby);
-        let searchResults = sortedTokens.slice(
+        // let tokens_721 = await ERC721TOKEN.find(collectionFilters);
+        // let tokens_1155 = await ERC1155TOKEN.find(collectionFilters);
+        // let allTokens = [...tokens_721, ...tokens_1155];
+        let allTokens = await NFTITEM.find(collectionFilters)
+          .select([
+            "contractAddress",
+            "tokenID",
+            "tokenURI",
+            "thumbnailPath",
+            "symbol",
+            "name",
+            "owner",
+            "supply",
+            "price",
+            "lastSalePrice",
+            "viewed",
+            "tokenType",
+          ])
+          .sort(`-${sortby}`);
+        let searchResults = allTokens.slice(
           step * FETCH_COUNT_PER_TIME,
           (step + 1) * FETCH_COUNT_PER_TIME
         );
+        // let sortedTokens = sortNfts(allTokens, sortby);
+        // let searchResults = sortedTokens.slice(
+        //   step * FETCH_COUNT_PER_TIME,
+        //   (step + 1) * FETCH_COUNT_PER_TIME
+        // );
         return res.json({
           status: "success",
           data: {
@@ -312,24 +295,12 @@ router.post("/fetchTokens", async (req, res) => {
 
         let allFilteredTokens = [];
         let statusPromise = statusFilteredTokens.map(async (tk) => {
-          let tokenCategory = tokenTypes.filter(
-            (tokenType) => tokenType[0] == tk[0]
-          );
-          tokenCategory = tokenCategory[0];
-          if (parseInt(tokenCategory[1]) == 721) {
-            let token = await ERC721TOKEN.findOne({
-              contractAddress: tk[0],
-              tokenID: tk[1],
-            });
-            if (token) {
-              allFilteredTokens.push(token);
-            }
-          } else if (parseInt(tokenCategory[1]) == 1155) {
-            let token = await ERC1155TOKEN.findOne({
-              contractAddress: tk[0],
-              tokenID: tk[1],
-            });
-            if (token) allFilteredTokens.push(token);
+          let token = await NFTITEM.findOne({
+            contractAddress: tk[0],
+            tokenID: tk[1],
+          });
+          if (token) {
+            allFilteredTokens.push(token);
           }
         });
         await Promise.all(statusPromise);
@@ -369,18 +340,20 @@ router.post("/fetchTokens", async (req, res) => {
          */
         /* contract address filter */
         let collectionFilters721 = {
+          tokenType: 721,
           ...(collections2filter != null
             ? { contractAddress: { $in: [...collections2filter] } }
             : {}),
           ...(wallet ? { owner: wallet } : {}),
         };
         let collectionFilters1155 = {
+          tokenType: 1155,
           ...(collections2filter != null
             ? { contractAddress: { $in: [...collections2filter] } }
             : {}),
         };
-        let tokens_721 = await ERC721TOKEN.find(collectionFilters721);
-        let _tokens_1155 = await ERC1155TOKEN.find(collectionFilters1155);
+        let tokens_721 = await NFTITEM.find(collectionFilters721);
+        let _tokens_1155 = await NFTITEM.find(collectionFilters1155);
         let tokens_1155 = [];
         _tokens_1155.map((token_1155) => {
           let isIncluded = isIncludedInArray(holders, [
@@ -493,16 +466,18 @@ router.post("/fetchTokens", async (req, res) => {
           );
           tokenCategory = tokenCategory[0];
           if (parseInt(tokenCategory[1]) == 721) {
-            let token = await ERC721TOKEN.findOne({
+            let token = await NFTITEM.findOne({
               contractAddress: tk[0],
               tokenID: tk[1],
               owner: wallet,
+              tokenType: 721,
             });
             if (token) allFilteredTokens721.push(token);
           } else if (parseInt(tokenCategory[1]) == 1155) {
-            let token = await ERC1155TOKEN.findOne({
+            let token = await NFTITEM.findOne({
               contractAddress: tk[0],
               tokenID: tk[1],
+              tokenType: 1155,
             });
             if (token) {
               if (
@@ -532,6 +507,7 @@ router.post("/fetchTokens", async (req, res) => {
       }
     }
   } catch (error) {
+    console.log(error);
     return res.status(400).json({
       status: "failed",
     });
