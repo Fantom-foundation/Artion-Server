@@ -203,7 +203,6 @@ router.get("/get1155info/:address/:tokenID", async (req, res) => {
     let token = await NFTITEM.findOne({
       contractAddress: collection,
       tokenID: tokenID,
-      tokenType: 1155,
     });
     let totalSupply = token.supply;
     return res.json({

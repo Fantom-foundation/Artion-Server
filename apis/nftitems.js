@@ -349,14 +349,12 @@ router.post("/fetchTokens", async (req, res) => {
          */
         /* contract address filter */
         let collectionFilters721 = {
-          tokenType: 721,
           ...(collections2filter != null
             ? { contractAddress: { $in: [...collections2filter] } }
             : {}),
           ...(wallet ? { owner: wallet } : {}),
         };
         let collectionFilters1155 = {
-          tokenType: 1155,
           ...(collections2filter != null
             ? { contractAddress: { $in: [...collections2filter] } }
             : {}),
@@ -483,14 +481,12 @@ router.post("/fetchTokens", async (req, res) => {
               contractAddress: tk[0],
               tokenID: tk[1],
               owner: wallet,
-              tokenType: 721,
             }).select(selectOption);
             if (token) allFilteredTokens721.push(token);
           } else if (parseInt(tokenCategory[1]) == 1155) {
             let token = await NFTITEM.findOne({
               contractAddress: tk[0],
               tokenID: tk[1],
-              tokenType: 1155,
             }).select(selectOption);
             if (token) {
               if (
