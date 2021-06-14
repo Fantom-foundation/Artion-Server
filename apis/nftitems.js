@@ -214,6 +214,7 @@ router.post("/fetchTokens", async (req, res) => {
             "tokenID",
             "tokenURI",
             "thumbnailPath",
+            "tokenType",
             "name",
             "supply",
             "price",
