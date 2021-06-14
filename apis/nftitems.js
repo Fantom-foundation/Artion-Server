@@ -140,7 +140,6 @@ router.post("/fetchTokens", async (req, res) => {
   // all smart contract categories - 721/1155
   let tokenTypes = await Category.find();
   tokenTypes = tokenTypes.map((tt) => [tt.minterAddress, tt.type]);
-  console.log("start request");
   let startTime = new Date();
   try {
     let collections2filter = null;
@@ -187,7 +186,14 @@ router.post("/fetchTokens", async (req, res) => {
         collections2filter = collections2filter.filter((x) =>
           categoryCollections.includes(x)
         );
-        if (collections2filter.length == 0) collections2filter = null;
+        if (collections2filter.length == 0) {
+          // if not intersection between categoryfilter & collection filter => return null
+          collections2filter = null;
+          return res.json({
+            status: "success",
+            data: null,
+          });
+        }
       } else {
         collections2filter = categoryCollections;
       }
