@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const Collection = mongoose.model("Collection");
 const Category = mongoose.model("Category");
 const ERC1155CONTRACT = mongoose.model("ERC1155CONTRACT");
+const ERC721CONTRACT = mongoose.model("ERC721CONTRACT");
 const auth = require("./middleware/auth");
 const toLowerCase = require("../utils/utils");
 const ftmScanApiKey = process.env.FTM_SCAN_API_KEY;
@@ -30,7 +31,7 @@ router.post("/collectiondetails", auth, async (req, res) => {
   } catch (error) {
     return res.status(400).json({
       status: "failed",
-      data : ""
+      data: "",
     });
   }
 
@@ -139,10 +140,27 @@ router.get("/fetchAllCollections", auth, async (req, res) => {
 router.post("/getCollectionInfo", async (req, res) => {
   let address = toLowerCase(req.body.contractAddress);
   let collection = await Collection.findOne({ erc721Address: address });
-  return res.json({
-    status: "success",
-    data: collection,
+  if (collection)
+    return res.json({
+      status: "success",
+      data: collection,
+    });
+  collection = await ERC721CONTRACT.findOne({
+    address: address,
   });
+  if (collection)
+    return res.json({
+      status: "success",
+      data: collection,
+    });
+  collection = await ERC1155CONTRACT.findOne({
+    address: address,
+  });
+  if (collection)
+    return res.json({
+      status: "success",
+      data: collection,
+    });
 });
 
 router.post("/isValidated", auth, async (req, res) => {
