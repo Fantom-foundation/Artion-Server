@@ -140,6 +140,8 @@ router.post("/fetchTokens", async (req, res) => {
   // all smart contract categories - 721/1155
   let tokenTypes = await Category.find();
   tokenTypes = tokenTypes.map((tt) => [tt.minterAddress, tt.type]);
+  console.log("start request");
+  let startTime = new Date();
   try {
     let collections2filter = null;
     // get options from request & process
@@ -204,6 +206,8 @@ router.post("/fetchTokens", async (req, res) => {
             ? { contractAddress: { $in: [...collections2filter] } }
             : {}),
         };
+        console.log("before select");
+        console.log(new Date());
         let allTokens = await NFTITEM.find(collectionFilters)
           .select([
             "contractAddress",
@@ -214,11 +218,16 @@ router.post("/fetchTokens", async (req, res) => {
             "supply",
             "price",
           ])
+          .lean()
           .sort(`-${sortby}`);
+        console.log("after select");
+        console.log(new Date());
         let searchResults = allTokens.slice(
           step * FETCH_COUNT_PER_TIME,
           (step + 1) * FETCH_COUNT_PER_TIME
         );
+        console.log("before send");
+        console.log(new Date() - startTime);
         return res.json({
           status: "success",
           data: {
@@ -352,12 +361,12 @@ router.post("/fetchTokens", async (req, res) => {
             ? { contractAddress: { $in: [...collections2filter] } }
             : {}),
         };
-        let tokens_721 = await NFTITEM.find(collectionFilters721).select(
-          selectOption
-        );
-        let _tokens_1155 = await NFTITEM.find(collectionFilters1155).select(
-          selectOption
-        );
+        let tokens_721 = await NFTITEM.find(collectionFilters721)
+          .select(selectOption)
+          .lean();
+        let _tokens_1155 = await NFTITEM.find(collectionFilters1155)
+          .select(selectOption)
+          .lean();
         let tokens_1155 = [];
         _tokens_1155.map((token_1155) => {
           let isIncluded = isIncludedInArray(holders, [
