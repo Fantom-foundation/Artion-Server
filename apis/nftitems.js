@@ -140,7 +140,6 @@ router.post("/fetchTokens", async (req, res) => {
   // all smart contract categories - 721/1155
   let tokenTypes = await Category.find();
   tokenTypes = tokenTypes.map((tt) => [tt.minterAddress, tt.type]);
-  let startTime = new Date();
   try {
     let collections2filter = null;
     // get options from request & process
@@ -212,8 +211,6 @@ router.post("/fetchTokens", async (req, res) => {
             ? { contractAddress: { $in: [...collections2filter] } }
             : {}),
         };
-        console.log("before select");
-        console.log(new Date());
         let _allTokens = await NFTITEM.find(collectionFilters)
           .select(selectOption)
           .lean();
@@ -274,7 +271,13 @@ router.post("/fetchTokens", async (req, res) => {
         }
         if (filters.includes("hasOffers")) {
           /* for has offers - pick from Offer */
-          let tokens = await Offer.find(minterFilters).select([
+          let minterFilters4Offer = {
+            ...(collections2filter != null
+              ? { minter: { $in: [...collections2filter] } }
+              : {},
+            { deadline: { $gt: new Date() } }),
+          };
+          let tokens = await Offer.find(minterFilters4Offer).select([
             "minter",
             "tokenID",
           ]);
@@ -287,7 +290,13 @@ router.post("/fetchTokens", async (req, res) => {
         }
         if (filters.includes("onAuction")) {
           /* for on auction - pick from Auction */
-          let tokens = await Auction.find(minterFilters).select([
+          let minterFilters4Auction = {
+            ...(collections2filter != null
+              ? { minter: { $in: [...collections2filter] } }
+              : {},
+            { endTime: { $gt: new Date() } }),
+          };
+          let tokens = await Auction.find(minterFilters4Auction).select([
             "minter",
             "tokenID",
           ]);
