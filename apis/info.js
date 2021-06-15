@@ -358,18 +358,20 @@ router.get("/getActivityFromOthers/:address", async (req, res) => {
         "minter",
       ]);
       if (offer) {
-        let account = await getAccountInfo(offer.creator);
-        offers.push({
-          creator: offer.creator,
-          contractAddress: offer.minter,
-          tokenID: offer.tokenID,
-          quantity: offer.quantity,
-          pricePerItem: offer.pricePerItem,
-          deadline: offer.deadline,
-          createdAt: offer._id.getTimestamp(),
-          alias: account ? account[0] : null,
-          image: account ? account[1] : null,
-        });
+        if (offer.creator != address) {
+          let account = await getAccountInfo(offer.creator);
+          offers.push({
+            creator: offer.creator,
+            contractAddress: offer.minter,
+            tokenID: offer.tokenID,
+            quantity: offer.quantity,
+            pricePerItem: offer.pricePerItem,
+            deadline: offer.deadline,
+            createdAt: offer._id.getTimestamp(),
+            alias: account ? account[0] : null,
+            image: account ? account[1] : null,
+          });
+        }
       }
     });
     await Promise.all(promise);
