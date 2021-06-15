@@ -237,6 +237,12 @@ router.post("/fetchTokens", async (req, res) => {
         let minterFilters = {
           ...(collections2filter != null
             ? { minter: { $in: [...collections2filter] } }
+            : {},
+          filters.includes("hasOffers")
+            ? { deadline: { $gt: new Date() } }
+            : {},
+          filters.includes("onAuction")
+            ? { endTime: { $gt: new Date() } }
             : {}),
         };
         let statusFilteredTokens = [];
