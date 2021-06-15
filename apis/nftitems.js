@@ -214,27 +214,14 @@ router.post("/fetchTokens", async (req, res) => {
         };
         console.log("before select");
         console.log(new Date());
-        let allTokens = await NFTITEM.find(collectionFilters)
-          .select([
-            "contractAddress",
-            "tokenID",
-            "tokenURI",
-            "thumbnailPath",
-            "tokenType",
-            "name",
-            "supply",
-            "price",
-          ])
-          .lean()
-          .sort(`-${sortby}`);
-        console.log("after select");
-        console.log(new Date());
+        let _allTokens = await NFTITEM.find(collectionFilters)
+          .select(selectOption)
+          .lean();
+        let allTokens = sortNfts(_allTokens, sortby);
         let searchResults = allTokens.slice(
           step * FETCH_COUNT_PER_TIME,
           (step + 1) * FETCH_COUNT_PER_TIME
         );
-        console.log("before send");
-        console.log(new Date() - startTime);
         return res.json({
           status: "success",
           data: {
