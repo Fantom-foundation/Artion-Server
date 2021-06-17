@@ -4,6 +4,7 @@ const BundleInfo = mongoose.Schema({
   contractAddress: { type: String, required: true },
   bundleID: { type: String, required: true },
   tokenID: { type: Number, required: true },
+  tokenType: { type: Number, default: 721 },
   supply: { type: Number, required: true },
 });
 BundleInfo.index(
