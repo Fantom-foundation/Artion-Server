@@ -12,5 +12,6 @@ router.use("/listing", require("./listing"));
 router.use("/erc721", require("./erc721"));
 router.use("/offer", require("./offer"));
 router.use("/ban", require("./ban"));
+router.use("/bundle", require("./bundle"));
 
 module.exports = router;

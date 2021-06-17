@@ -15,7 +15,6 @@ app.use(
 require("./models//abi");
 require("./models/account");
 require("./models/bid");
-require("./models/bundle");
 require("./models/category");
 require("./models/collection");
 require("./models/erc721contract");
@@ -33,11 +32,13 @@ require("./models/auction");
 require("./models/erc1155holding");
 require("./models/banneduser");
 require("./models/bannenft");
-require("./models/bundleauction")
-require("./models/bundlebid")
-require("./models/bundleinfo")
-require("./models/bundlelisting")
-require("./models/bundleoffer")
+require("./models/bundle");
+require("./models/bundleauction");
+require("./models/bundlebid");
+require("./models/bundleinfo");
+require("./models/bundlelisting");
+require("./models/bundleoffer");
+require("./models/bundleHistory");
 
 app.use(bodyParser.json());
 app.options("*", cors()); // include before other routes
