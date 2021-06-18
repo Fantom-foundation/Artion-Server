@@ -23,7 +23,7 @@ const _721_ABI = require("../constants/erc721abi");
 const contractutils = require("../services/contract.utils");
 const toLowerCase = require("../utils/utils");
 
-const FETCH_COUNT_PER_TIME = 18;
+const FETCH_COUNT_PER_TIME = 12;
 
 const provider = new ethers.providers.JsonRpcProvider(
   _721_ABI.RPC,
@@ -240,12 +240,6 @@ router.post("/fetchTokens", async (req, res) => {
         let minterFilters = {
           ...(collections2filter != null
             ? { minter: { $in: [...collections2filter] } }
-            : {},
-          filters.includes("hasOffers")
-            ? { deadline: { $gt: new Date() } }
-            : {},
-          filters.includes("onAuction")
-            ? { endTime: { $gt: new Date() } }
             : {}),
         };
         let statusFilteredTokens = [];

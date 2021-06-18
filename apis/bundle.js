@@ -7,6 +7,7 @@ const auth = require("./middleware/auth");
 
 const NFTITEM = mongoose.model("NFTITEM");
 const Bundle = mongoose.model("Bundle");
+const BundleInfo = mongoose.model("BundleInfo");
 const ERC1155HOLDING = mongoose.model("ERC1155HOLDING");
 const Category = mongoose.model("Category");
 const Collection = mongoose.model("Collection");
@@ -50,7 +51,73 @@ router.post("/increaseViews", async (req, res) => {
 });
 
 router.post("/fetchBundles", async (req, res) => {
-  
+  let tokenTypes = await Category.find();
+  tokenTypes = tokenTypes.map((tt) => [tt.minterAddress, tt.type]);
+  try {
+    let collections2filter = null;
+    // get options from request & process
+    let step = parseInt(req.body.step); // step where to fetch
+    let selectedCollections = req.body.collectionAddresses; //collection addresses from request
+    let filters = req.body.filterby; //status -> array or null
+    let sortby = req.body.sortby; //sort -> string param
+    let category = req.body.category; //category -> array or null
+
+    let wallet = req.body.address; // account address from meta mask
+
+    if (!selectedCollections) selectedCollections = [];
+    else {
+      selectedCollections = selectedCollections.map((selectedCollection) =>
+        toLowerCase(selectedCollection)
+      );
+      collections2filter = selectedCollections;
+    }
+
+    let categoryCollections = null;
+
+    if (category != undefined) {
+      categoryCollections = await Collection.find({
+        categories: category,
+      }).select("erc721Address");
+      categoryCollections = categoryCollections.map((c) =>
+        toLowerCase(c.erc721Address)
+      );
+      if (collections2filter != null) {
+        collections2filter = collections2filter.filter((x) =>
+          categoryCollections.includes(x)
+        );
+        if (collections2filter.length == 0) {
+          // if not intersection between categoryfilter & collection filter => return null
+          collections2filter = null;
+          return res.json({
+            status: "success",
+            data: null,
+          });
+        }
+      } else {
+        collections2filter = categoryCollections;
+      }
+    }
+    if (!wallet) {
+      wallet = toLowerCase(wallet);
+      if (filters == undefined) {
+        let collection2Filters4BundleInfo = {
+          ...(collections2filter != null
+            ? { contractAddress: { $in: [...collections2filter] } }
+            : {}),
+        };
+
+        let allBundleInfo = await BundleInfo.find(
+          collection2Filters4BundleInfo
+        );
+        
+      }
+    }
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({
+      status: "failed",
+    });
+  }
 });
 
 const sortBundles = (_allBundles, sortby) => {
