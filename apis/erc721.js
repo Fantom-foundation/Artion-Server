@@ -2,6 +2,9 @@ const router = require("express").Router();
 const Web3 = require("web3");
 const validator = require("../utils/index");
 
+const mongoose = require("mongoose");
+const ERC721CONTRACT = mongoose.model("ERC721CONTRACT");
+
 const toLowerCase = require("../utils/utils");
 
 const web3 = new Web3(
@@ -32,6 +35,16 @@ router.post("/isERC721Contract", async (req, res) => {
       data: false,
     });
   }
+});
+
+router.get("/getAllERC721Contracts", async (req, res) => {
+  let all = await ERC721CONTRACT.find();
+  let addresses = [];
+  all.map((sc) => {
+    addresses.push(sc.address);
+  });
+
+  return res.json(addresses);
 });
 
 module.exports = router;

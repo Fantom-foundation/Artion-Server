@@ -24,6 +24,18 @@ const _721_ABI = require("../constants/erc721abi");
 
 const contractutils = require("../services/contract.utils");
 const toLowerCase = require("../utils/utils");
+const extractAddress = (req, res) => {
+  let authorization = req.headers.authorization.split(" ")[1],
+    decoded;
+  try {
+    decoded = jwt.verify(authorization, jwt_secret);
+  } catch (e) {
+    return res.status(401).send("unauthorized");
+  }
+  let address = decoded.data;
+  address = toLowerCase(address);
+  return address;
+};
 
 const FETCH_COUNT_PER_TIME = 18;
 
@@ -48,6 +60,21 @@ router.post("/increaseViews", async (req, res) => {
       status: "failed",
     });
   }
+});
+
+router.post("/addItemsToBundle", auth, async (req, res) => {
+  let address = extractAddress(req, res);
+  let bundleID = req.body.bundleID;
+  let tokenIDs = req.body.tokenIDs;
+  let contractAddresses = req.body.addresses;
+  let supplies = req.body.supplies;
+
+  let bundle = await Bundle.findById(bundleID);
+  // if bundle not exists
+  if (!bundle)
+    return res.json({
+      status: "failed",
+    });
 });
 
 router.post("/fetchBundles", async (req, res) => {
@@ -109,7 +136,6 @@ router.post("/fetchBundles", async (req, res) => {
         let allBundleInfo = await BundleInfo.find(
           collection2Filters4BundleInfo
         );
-        
       }
     }
   } catch (error) {
