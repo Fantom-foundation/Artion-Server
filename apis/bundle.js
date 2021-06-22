@@ -4,6 +4,7 @@ const ethers = require("ethers");
 
 const mongoose = require("mongoose");
 const auth = require("./middleware/auth");
+const service_auth = require("./middleware/auth.tracker");
 
 const NFTITEM = mongoose.model("NFTITEM");
 const Bundle = mongoose.model("Bundle");
@@ -61,20 +62,145 @@ router.post("/increaseViews", async (req, res) => {
     });
   }
 });
+// check if nft is erc721 or 1155
+const getTokenType = async (address) => {
+  let tokenTypes = await Category.find();
+  tokenTypes = tokenTypes.map((tt) => [tt.minterAddress, tt.type]);
+  let tokenCategory = tokenTypes.filter((tokenType) => tokenType[0] == address);
+  tokenCategory = tokenCategory[0];
+  return parseInt(tokenCategory[1]);
+};
 
-router.post("/addItemsToBundle", auth, async (req, res) => {
-  let address = extractAddress(req, res);
-  let bundleID = req.body.bundleID;
-  let tokenIDs = req.body.tokenIDs;
-  let contractAddresses = req.body.addresses;
-  let supplies = req.body.supplies;
+// check if the item can be added to a new bundle
+const validateItem = async (owner, address, tokenID, supply, tokenType) => {
+  if (tokenType == 721) {
+    let token = await NFTITEM.findOne({
+      owner: owner,
+      contractAddress: address,
+      tokenID: tokenID,
+    });
+    if (token) return true;
+    else return false;
+  } else if (tokenType == 1155) {
+    let token = await ERC1155HOLDING.findOne({
+      contractAddress: address,
+      tokenID: tokenID,
+      holderAddress: owner,
+    });
+    if (token) {
+      if (parseInt(token.supplyPerHolder) >= supply) return true;
+      else return false;
+    } else return false;
+  } else return false;
+};
 
-  let bundle = await Bundle.findById(bundleID);
-  // if bundle not exists
-  if (!bundle)
+router.post("/createBundle", auth, async (req, res) => {
+  let owner = extractAddress(req, res);
+  let name = req.body.name;
+  let price = parseFloat(req.body.price);
+  let items = req.body.items;
+
+  if (items.length == 0) {
+    return res.status(400).json({
+      status: "failed",
+      data: "Cannot create an empty bundle",
+    });
+  }
+  if (price <= 0) {
+    return res.status(400).json({
+      status: "failed",
+      data: "Price cannot be under 0",
+    });
+  }
+  // create a new bundle
+  let bundle = new Bundle();
+  bundle.name = name;
+  bundle.price = price;
+  bundle.owner = owner;
+  bundle.creator = owner;
+  bundle.listedAt = new Date(1970, 1, 1);
+  let _bundle = await bundle.save();
+  let bundleID = _bundle._id;
+
+  let promise = items.map(async (item) => {
+    let address = toLowerCase(item.address);
+    let tokenID = parseInt(item.tokenID);
+    let supply = parseInt(item.supply);
+    let tokenType = await getTokenType(address);
+    let isValid = await validateItem(
+      owner,
+      address,
+      tokenID,
+      supply,
+      tokenType
+    );
+    if (!isValid)
+      return res.status(400).json({
+        status: "failed",
+        data: `nft of ${address}' ${tokenID} is invalid to add to the bundle`,
+      });
+
+    let bundleItem = new BundleInfo();
+    bundleItem.contractAddress = address;
+    bundleItem.bundleID = bundleID;
+    bundleItem.tokenID = tokenID;
+    bundleItem.supply = supply;
+    bundleItem.tokenType = tokenType;
+
+    let token = await NFTITEM.findOne({
+      contractAddress: address,
+      tokenID: tokenID,
+    });
+    let tokenURI = token.tokenURI;
+    bundleItem.tokenURI = tokenURI;
+    await bundleItem.save();
+  });
+
+  await Promise.all(promise);
+
+  return res.json({
+    status: "success",
+    data: bundleID,
+  });
+});
+
+router.post("/removeItemFromBundle", service_auth, async (req, res) => {
+  try {
+    let contractAddress = toLowerCase(req.body.nft);
+    let tokenID = parseInt(req.body.tokenID);
+    let quantity = parseInt(req.body.quantity);
+    let owner = toLowerCase(req.body.seller);
+
+    let bundles = await Bundle.find({
+      owner: owner,
+    });
+    let bundleIDs = bundles.map((bundle) => bundle._id);
+    let promise = bundleIDs.map(async (bundleID) => {
+      await BundleInfo.update(
+        {
+          contractAddress: contractAddress,
+          tokenID: tokenID,
+          bundleID: bundleID,
+        },
+        {
+          $inc: {
+            supply: quantity * -1,
+          },
+        }
+      );
+      await BundleInfo.deleteMany({
+        supply: 0,
+      });
+    });
+    await Promise.all(promise);
     return res.json({
+      status: "success",
+    });
+  } catch (error) {
+    return res.status(400).json({
       status: "failed",
     });
+  }
 });
 
 router.post("/fetchBundles", async (req, res) => {
