@@ -25,6 +25,10 @@ const _721_ABI = require("../constants/erc721abi");
 
 const contractutils = require("../services/contract.utils");
 const toLowerCase = require("../utils/utils");
+
+const jwt = require("jsonwebtoken");
+const jwt_secret = process.env.JWT_SECRET;
+
 const extractAddress = (req, res) => {
   let authorization = req.headers.authorization.split(" ")[1],
     decoded;
