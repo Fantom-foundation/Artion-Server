@@ -181,11 +181,30 @@ router.post("/getBundleByID", async (req, res) => {
     let bundleHoldings = await BundleInfo.find({
       bundleID: bundleID,
     });
+
+    let items = [];
+    let promise = bundleHoldings.map(async (holding) => {
+      let contractAddress = holding.contractAddress;
+      let tokenID = holding.tokenID;
+      let token = await NFTITEM.findOne({
+        contractAddress: contractAddress,
+        tokenID: tokenID,
+      });
+      items.push({
+        contractAddress: token.contractAddress,
+        tokenID: token.tokenID,
+        tokenURI: token.tokenURI,
+        thumbnailPath: token.thumbnailPath,
+        name: token.name,
+        supply: holding.supply,
+      });
+    });
+    await Promise.all(promise);
     return res.json({
       status: "success",
       data: {
         bundle,
-        bundleHoldings,
+        items,
       },
     });
   } catch (error) {
