@@ -99,78 +99,100 @@ const validateItem = async (owner, address, tokenID, supply, tokenType) => {
 };
 
 router.post("/createBundle", auth, async (req, res) => {
-  let owner = extractAddress(req, res);
-  let name = req.body.name;
-  let price = parseFloat(req.body.price);
-  let items = req.body.items;
+  try {
+    let owner = extractAddress(req, res);
+    let name = req.body.name;
+    let price = parseFloat(req.body.price);
+    let items = req.body.items;
 
-  console.log("owner", owner);
-  console.log(name);
-  console.log(price);
-  console.log(items);
-
-  if (items.length == 0) {
-    return res.status(400).json({
-      status: "failed",
-      data: "Cannot create an empty bundle",
-    });
-  }
-  if (price <= 0) {
-    return res.status(400).json({
-      status: "failed",
-      data: "Price cannot be under 0",
-    });
-  }
-  // create a new bundle
-  let bundle = new Bundle();
-  bundle.name = name;
-  bundle.price = price;
-  bundle.owner = owner;
-  bundle.creator = owner;
-  bundle.listedAt = new Date(1970, 1, 1);
-  let _bundle = await bundle.save();
-  let bundleID = _bundle._id;
-
-  let promise = items.map(async (item) => {
-    let address = toLowerCase(item.address);
-    let tokenID = parseInt(item.tokenID);
-    let supply = parseInt(item.supply);
-    let tokenType = await getTokenType(address);
-    let isValid = await validateItem(
-      owner,
-      address,
-      tokenID,
-      supply,
-      tokenType
-    );
-    if (!isValid)
+    if (items.length == 0) {
       return res.status(400).json({
         status: "failed",
-        data: `nft of ${address}' ${tokenID} is invalid to add to the bundle`,
+        data: "Cannot create an empty bundle",
       });
+    }
+    if (price <= 0) {
+      return res.status(400).json({
+        status: "failed",
+        data: "Price cannot be under 0",
+      });
+    }
+    // create a new bundle
+    let bundle = new Bundle();
+    bundle.name = name;
+    bundle.price = price;
+    bundle.owner = owner;
+    bundle.creator = owner;
+    bundle.listedAt = new Date(1970, 1, 1);
+    let _bundle = await bundle.save();
+    let bundleID = _bundle._id;
 
-    let bundleItem = new BundleInfo();
-    bundleItem.contractAddress = address;
-    bundleItem.bundleID = bundleID;
-    bundleItem.tokenID = tokenID;
-    bundleItem.supply = supply;
-    bundleItem.tokenType = tokenType;
+    let promise = items.map(async (item) => {
+      let address = toLowerCase(item.address);
+      let tokenID = parseInt(item.tokenID);
+      let supply = parseInt(item.supply);
+      let tokenType = await getTokenType(address);
+      let isValid = await validateItem(
+        owner,
+        address,
+        tokenID,
+        supply,
+        tokenType
+      );
+      if (!isValid)
+        return res.status(400).json({
+          status: "failed",
+          data: `nft of ${address}' ${tokenID} is invalid to add to the bundle`,
+        });
 
-    let token = await NFTITEM.findOne({
-      contractAddress: address,
-      tokenID: tokenID,
+      let bundleItem = new BundleInfo();
+      bundleItem.contractAddress = address;
+      bundleItem.bundleID = bundleID;
+      bundleItem.tokenID = tokenID;
+      bundleItem.supply = supply;
+      bundleItem.tokenType = tokenType;
+
+      let token = await NFTITEM.findOne({
+        contractAddress: address,
+        tokenID: tokenID,
+      });
+      let tokenURI = token.tokenURI;
+      bundleItem.tokenURI = tokenURI;
+      await bundleItem.save();
     });
-    let tokenURI = token.tokenURI;
-    bundleItem.tokenURI = tokenURI;
-    await bundleItem.save();
-  });
 
-  await Promise.all(promise);
+    await Promise.all(promise);
 
-  return res.json({
-    status: "success",
-    data: bundleID,
-  });
+    return res.json({
+      status: "success",
+      data: bundleID,
+    });
+  } catch (error) {
+    return res.status(400).json({
+      status: "failed",
+    });
+  }
+});
+
+router.post("/getBundleByID", async (req, res) => {
+  try {
+    let bundleID = req.body.bundleID;
+    let bundle = await Bundle.findById(bundleID);
+    let bundleHoldings = await BundleInfo.find({
+      bundleID: bundleID,
+    });
+    return res.json({
+      status: "success",
+      data: {
+        bundle,
+        bundleHoldings,
+      },
+    });
+  } catch (error) {
+    return res.status(400).json({
+      status: "failed",
+    });
+  }
 });
 
 router.post("/removeItemFromBundle", service_auth, async (req, res) => {
