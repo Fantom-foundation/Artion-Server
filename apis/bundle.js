@@ -100,6 +100,11 @@ router.post("/createBundle", auth, async (req, res) => {
   let price = parseFloat(req.body.price);
   let items = req.body.items;
 
+  console.log("owner", owner);
+  console.log(name);
+  console.log(price);
+  console.log(items);
+
   if (items.length == 0) {
     return res.status(400).json({
       status: "failed",
