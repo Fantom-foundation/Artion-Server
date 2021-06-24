@@ -677,8 +677,11 @@ router.post("/fetchTokens", async (req, res) => {
     (step + 1) * FETCH_COUNT_PER_TIME
   );
   return res.json({
-    tokens: searchResults,
-    total: data.length,
+    status: "success",
+    data: {
+      tokens: searchResults,
+      total: data.length,
+    },
   });
 });
 
