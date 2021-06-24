@@ -165,6 +165,7 @@ const selectTokens = async (req, res) => {
       "tokenType",
       "thumbnailPath",
       "name",
+      "imageURL",
       "supply",
       "price",
       sortby,
