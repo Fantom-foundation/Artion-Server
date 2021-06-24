@@ -16,12 +16,18 @@ const Bid = mongoose.model("Bid");
 const Auction = mongoose.model("Auction");
 const Account = mongoose.model("Account");
 
+const BundleInfo = mongoose.model("BundleInfo");
+const Bundle = mongoose.model("Bundle");
+const BundleListing = mongoose.model("BundleListing");
+const BundleOffer = mongoose.model("BundleOffer");
+
 const orderBy = require("lodash.orderby");
 
 const _721_ABI = require("../constants/erc721abi");
 
 const contractutils = require("../services/contract.utils");
 const toLowerCase = require("../utils/utils");
+const { filter } = require("../constants/simplifiederc1155abi");
 
 const FETCH_COUNT_PER_TIME = 12;
 
@@ -75,7 +81,7 @@ router.post("/getTokenURI", async (req, res) => {
   }
 });
 
-const sortNfts = (_allTokens, sortby) => {
+const sortItems = (_allTokens, sortby) => {
   let tmp = [];
   switch (sortby) {
     case "createdAt": {
@@ -141,20 +147,17 @@ const isIncludedInArray = (array, target) => {
   return hash.hasOwnProperty(target);
 };
 
-router.post("/fetchTokens", async (req, res) => {
+const selectTokens = async (req, res) => {
   // all smart contract categories - 721/1155
   let tokenTypes = await Category.find();
   tokenTypes = tokenTypes.map((tt) => [tt.minterAddress, tt.type]);
   try {
     let collections2filter = null;
     // get options from request & process
-    let step = parseInt(req.body.step); // step where to fetch
     let selectedCollections = req.body.collectionAddresses; //collection addresses from request
     let filters = req.body.filterby; //status -> array or null
     let sortby = req.body.sortby; //sort -> string param
-
     // create a sort by option
-
     let selectOption = [
       "contractAddress",
       "tokenID",
@@ -194,10 +197,7 @@ router.post("/fetchTokens", async (req, res) => {
         if (collections2filter.length == 0) {
           // if not intersection between categoryfilter & collection filter => return null
           collections2filter = null;
-          return res.json({
-            status: "success",
-            data: null,
-          });
+          return [];
         }
       } else {
         collections2filter = categoryCollections;
@@ -217,21 +217,10 @@ router.post("/fetchTokens", async (req, res) => {
             ? { contractAddress: { $in: [...collections2filter] } }
             : {}),
         };
-        let _allTokens = await NFTITEM.find(collectionFilters)
+        let allTokens = await NFTITEM.find(collectionFilters)
           .select(selectOption)
           .lean();
-        let allTokens = sortNfts(_allTokens, sortby);
-        let searchResults = allTokens.slice(
-          step * FETCH_COUNT_PER_TIME,
-          (step + 1) * FETCH_COUNT_PER_TIME
-        );
-        return res.json({
-          status: "success",
-          data: {
-            tokens: searchResults,
-            total: allTokens.length,
-          },
-        });
+        return allTokens;
       } else {
         /*
         when status option
@@ -274,8 +263,8 @@ router.post("/fetchTokens", async (req, res) => {
           let minterFilters4Offer = {
             ...(collections2filter != null
               ? { minter: { $in: [...collections2filter] } }
-              : {},
-            { deadline: { $gt: new Date() } }),
+              : {}),
+            ...{ deadline: { $gt: new Date() } },
           };
           let tokens = await Offer.find(minterFilters4Offer).select([
             "minter",
@@ -293,8 +282,8 @@ router.post("/fetchTokens", async (req, res) => {
           let minterFilters4Auction = {
             ...(collections2filter != null
               ? { minter: { $in: [...collections2filter] } }
-              : {},
-            { endTime: { $gt: new Date() } }),
+              : {}),
+            ...{ endTime: { $gt: new Date() } },
           };
           let tokens = await Auction.find(minterFilters4Auction).select([
             "minter",
@@ -322,18 +311,7 @@ router.post("/fetchTokens", async (req, res) => {
           }
         });
         await Promise.all(statusPromise);
-        let sortedTokens = sortNfts(allFilteredTokens, sortby);
-        let searchResults = sortedTokens.slice(
-          step * FETCH_COUNT_PER_TIME,
-          (step + 1) * FETCH_COUNT_PER_TIME
-        );
-        return res.json({
-          status: "success",
-          data: {
-            tokens: searchResults,
-            total: allFilteredTokens.length,
-          },
-        });
+        return allFilteredTokens;
       }
     } else {
       /*
@@ -361,7 +339,7 @@ router.post("/fetchTokens", async (req, res) => {
           ...(collections2filter != null
             ? { contractAddress: { $in: [...collections2filter] } }
             : {}),
-          ...(wallet ? { owner: wallet } : {}),
+          ...(wallet != null ? { owner: wallet } : {}),
         };
         let collectionFilters1155 = {
           ...(collections2filter != null
@@ -399,18 +377,7 @@ router.post("/fetchTokens", async (req, res) => {
             });
         });
         let allTokens = [...tokens_721, ...tokens_1155];
-        let sortedTokens = sortNfts(allTokens, sortby);
-        let searchResults = sortedTokens.slice(
-          step * FETCH_COUNT_PER_TIME,
-          (step + 1) * FETCH_COUNT_PER_TIME
-        );
-        return res.json({
-          status: "success",
-          data: {
-            tokens: searchResults,
-            total: allTokens.length,
-          },
-        });
+        return allTokens;
       } else {
         /*
         when status option
@@ -511,26 +478,208 @@ router.post("/fetchTokens", async (req, res) => {
         });
         await Promise.all(statusPromise);
         allFilteredTokens = [...allFilteredTokens721, ...allFilteredTokens1155];
-        let sortedTokens = sortNfts(allFilteredTokens, sortby);
-        let searchResults = sortedTokens.slice(
-          step * FETCH_COUNT_PER_TIME,
-          (step + 1) * FETCH_COUNT_PER_TIME
-        );
-        return res.json({
-          status: "success",
-          data: {
-            tokens: searchResults,
-            total: allFilteredTokens.length,
-          },
-        });
+        return allFilteredTokens;
       }
     }
   } catch (error) {
-    console.log(error);
-    return res.status(400).json({
-      status: "failed",
-    });
+    return null;
   }
+};
+
+const selectBundles = async (req, res) => {
+  try {
+    let collections2filter = null;
+    // let step = parseInt(req.body.step);
+    let selectedCollections = req.body.collectionAddresses;
+    let filters = req.body.filterby;
+    // let sortby = req.body.sortby;
+    let wallet = req.body.address;
+    if (wallet) wallet = toLowerCase(wallet);
+    if (!selectedCollections) selectedCollections = [];
+    else {
+      selectedCollections = selectedCollections.map((selectedCollection) =>
+        toLowerCase(selectedCollection)
+      );
+      collections2filter = selectedCollections;
+    }
+    let category = req.body.category; //category -> array or null
+
+    let categoryCollections = null;
+
+    if (category != undefined) {
+      categoryCollections = await Collection.find({
+        categories: category,
+      }).select("erc721Address");
+      categoryCollections = categoryCollections.map((c) =>
+        toLowerCase(c.erc721Address)
+      );
+      if (collections2filter != null) {
+        collections2filter = collections2filter.filter((x) =>
+          categoryCollections.includes(x)
+        );
+        if (collections2filter.length == 0) {
+          // if not intersection between categoryfilter & collection filter => return null
+          collections2filter = null;
+          return [];
+        }
+      } else {
+        collections2filter = categoryCollections;
+      }
+    }
+
+    // if (!wallet) {
+    if (filters == null) {
+      console.log("filter is null");
+      /*
+        when no status option 
+         */
+      /* contract address filter */
+      let collectionFilters = {
+        ...(collections2filter != null
+          ? { contractAddress: { $in: [...collections2filter] } }
+          : {}),
+      };
+      let bundleInfos = await BundleInfo.find(collectionFilters);
+      let bundleIDs = [];
+      bundleInfos.map((bundleInfo) => {
+        if (!bundleIDs.includes(bundleInfo.bundleID)) {
+          bundleIDs.push(bundleInfo.bundleID);
+        }
+      });
+
+      let bundleFilter = {
+        ...(wallet != null ? { owner: wallet } : {}),
+        ...{ _id: { $in: bundleIDs } },
+      };
+      let bundles = await Bundle.find(bundleFilter);
+      console.log(bundles);
+      let data = [];
+      bundles.map((bundle) => {
+        let bundleItems = bundleInfos.filter(
+          (bundleInfo) => bundleInfo.bundleID == bundle._id
+        );
+        data.push({
+          ...bundle._doc,
+          items: bundleItems,
+        });
+      });
+      return data;
+    } else if (filters.includes("buyNow") || filters.includes("onAuction")) {
+      console.log(filters);
+      /*
+        when no status option 
+         */
+      /* contract address filter */
+      let collectionFilters = {
+        ...(collections2filter != null
+          ? { contractAddress: { $in: [...collections2filter] } }
+          : {}),
+      };
+
+      let data = [];
+      let filterBundleIDs = [];
+      if (filters.includes("buyNow")) {
+        let listedBundles = await BundleListing.find().select(["bundleID"]);
+        let listedBundleIDs = listedBundles.map(
+          (listedBundle) => listedBundle.bundleID
+        );
+        filterBundleIDs = [...filterBundleIDs, ...listedBundleIDs];
+      }
+      if (filters.includes("hasOffers")) {
+        let offerBundles = await BundleOffer.find().select(["bundleID"]);
+        let offerBundleIDs = offerBundles.map(
+          (offerBundle) => offerBundle.bundleID
+        );
+        filterBundleIDs = [...filterBundleIDs, ...offerBundleIDs];
+      }
+      let bundleInfos = await BundleInfo.find(collectionFilters);
+      let bundleIDs = [];
+      bundleInfos.map((bundleInfo) => {
+        if (!bundleIDs.includes(bundleInfo.bundleID)) {
+          if (filterBundleIDs.includes(bundleInfo.bundleID))
+            bundleIDs.push(bundleInfo.bundleID);
+        }
+      });
+      let bundleFilter = {
+        ...(wallet != null ? { owner: wallet } : {}),
+        ...{ _id: { $in: bundleIDs } },
+      };
+      let bundles = await Bundle.find(bundleFilter);
+      bundles.map((bundle) => {
+        let bundleItems = bundleInfos.filter(
+          (bundleInfo) => bundleInfo.bundleID == bundle._id
+        );
+        data.push({
+          ...bundle._doc,
+          items: bundleItems,
+        });
+      });
+      return data;
+    } else {
+      console.log(filters);
+      /*
+        when no status option 
+         */
+      /* contract address filter */
+      let collectionFilters = {
+        ...(collections2filter != null
+          ? { contractAddress: { $in: [...collections2filter] } }
+          : {}),
+      };
+      let bundleInfos = await BundleInfo.find(collectionFilters);
+      let bundleIDs = [];
+      bundleInfos.map((bundleInfo) => {
+        if (!bundleIDs.includes(bundleInfo.bundleID)) {
+          bundleIDs.push(bundleInfo.bundleID);
+        }
+      });
+      let bundleFilter = {
+        ...(wallet != null ? { owner: wallet } : {}),
+        ...{ _id: { $in: bundleIDs } },
+      };
+      let bundles = await Bundle.find(bundleFilter);
+      let data = [];
+      bundles.map((bundle) => {
+        let bundleItems = bundleInfos.filter(
+          (bundleInfo) => bundleInfo.bundleID == bundle._id
+        );
+        data.push({
+          ...bundle._doc,
+          items: bundleItems,
+        });
+      });
+      return data;
+    }
+  } catch (error) {
+    console.log(error);
+    return null;
+  }
+};
+
+router.post("/fetchTokens", async (req, res) => {
+  let type = req.body.type; // type - item type
+  let sortby = req.body.sortby; //sort -> string param
+  let step = parseInt(req.body.step); // step where to fetch
+  let items = [];
+  if (type == "all") {
+    let nfts = await selectTokens(req, res);
+    let bundles = await selectBundles(req, res);
+    items = [...nfts, ...bundles];
+  } else if (type == "single") {
+    items = await selectTokens(req, res);
+  } else if (type == "bundle") {
+    items = await selectBundles(req, res);
+  }
+
+  let data = sortItems(items, sortby);
+  let searchResults = data.slice(
+    step * FETCH_COUNT_PER_TIME,
+    (step + 1) * FETCH_COUNT_PER_TIME
+  );
+  return res.json({
+    tokens: searchResults,
+    total: data.length,
+  });
 });
 
 const extractAddress = (data) => {
