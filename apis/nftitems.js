@@ -487,13 +487,38 @@ const selectTokens = async (req, res) => {
   }
 };
 
+const getBundleItemDetails = async (bundleItem) => {
+  try {
+    let nftItem = await NFTITEM.findOne({
+      contractAddress: bundleItem.contractAddress,
+      tokenID: bundleItem.tokenID,
+    });
+    return {
+      imageURL: nftItem.imageURL,
+      thumbnailPath: nftItem.thumbnailPath,
+    };
+  } catch (error) {
+    return {};
+  }
+};
+
+const entailBundleInfoItems = async (bundleInfoItems) => {
+  let details = [];
+  let promise = bundleInfoItems.map(async (bundleInfoItem) => {
+    let detail = await getBundleItemDetails(bundleInfoItem);
+    details.push({
+      ...bundleInfoItem._doc,
+      ...detail,
+    });
+  });
+  await Promise.all(promise);
+  return details;
+};
 const selectBundles = async (req, res) => {
   try {
     let collections2filter = null;
-    // let step = parseInt(req.body.step);
     let selectedCollections = req.body.collectionAddresses;
     let filters = req.body.filterby;
-    // let sortby = req.body.sortby;
     let wallet = req.body.address;
     if (wallet) wallet = toLowerCase(wallet);
     if (!selectedCollections) selectedCollections = [];
@@ -541,6 +566,9 @@ const selectBundles = async (req, res) => {
           : {}),
       };
       let bundleInfos = await BundleInfo.find(collectionFilters);
+      console.log(bundleInfos);
+      bundleInfos = await entailBundleInfoItems(bundleInfos);
+      console.log(bundleInfos);
       let bundleIDs = [];
       bundleInfos.map((bundleInfo) => {
         if (!bundleIDs.includes(bundleInfo.bundleID)) {
@@ -594,6 +622,7 @@ const selectBundles = async (req, res) => {
         filterBundleIDs = [...filterBundleIDs, ...offerBundleIDs];
       }
       let bundleInfos = await BundleInfo.find(collectionFilters);
+      bundleInfos = await entailBundleInfoItems(bundleInfos);
       let bundleIDs = [];
       bundleInfos.map((bundleInfo) => {
         if (!bundleIDs.includes(bundleInfo.bundleID)) {
@@ -628,6 +657,7 @@ const selectBundles = async (req, res) => {
           : {}),
       };
       let bundleInfos = await BundleInfo.find(collectionFilters);
+      bundleInfos = await entailBundleInfoItems(bundleInfos);
       let bundleIDs = [];
       bundleInfos.map((bundleInfo) => {
         if (!bundleIDs.includes(bundleInfo.bundleID)) {
