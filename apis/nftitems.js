@@ -27,7 +27,6 @@ const _721_ABI = require("../constants/erc721abi");
 
 const contractutils = require("../services/contract.utils");
 const toLowerCase = require("../utils/utils");
-const { filter } = require("../constants/simplifiederc1155abi");
 
 const FETCH_COUNT_PER_TIME = 12;
 
@@ -566,9 +565,7 @@ const selectBundles = async (req, res) => {
           : {}),
       };
       let bundleInfos = await BundleInfo.find(collectionFilters);
-      console.log(bundleInfos);
       bundleInfos = await entailBundleInfoItems(bundleInfos);
-      console.log(bundleInfos);
       let bundleIDs = [];
       bundleInfos.map((bundleInfo) => {
         if (!bundleIDs.includes(bundleInfo.bundleID)) {
@@ -581,7 +578,6 @@ const selectBundles = async (req, res) => {
         ...{ _id: { $in: bundleIDs } },
       };
       let bundles = await Bundle.find(bundleFilter);
-      console.log(bundles);
       let data = [];
       bundles.map((bundle) => {
         let bundleItems = bundleInfos.filter(
@@ -703,6 +699,7 @@ router.post("/fetchTokens", async (req, res) => {
   }
 
   let data = sortItems(items, sortby);
+  console.log(data);
   let searchResults = data.slice(
     step * FETCH_COUNT_PER_TIME,
     (step + 1) * FETCH_COUNT_PER_TIME
