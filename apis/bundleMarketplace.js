@@ -73,10 +73,9 @@ router.post("itemListed", service_auth, async (req, res) => {
     history.activity = "List";
     history.createdAt = Date.now();
     await history.save();
+    return res.json({});
   } catch (error) {
     return res.status(400).json({});
-  } finally {
-    return res.json({});
   }
 });
 
@@ -105,11 +104,9 @@ router.post("/itemSold", service_auth, async (req, res) => {
     history.activity = "Sale";
     history.createdAt = Date.now();
     await history.save();
-    await history.save();
+    return res.json({});
   } catch (error) {
     return res.status(400).json({});
-  } finally {
-    return res.json({});
   }
 });
 
@@ -155,10 +152,9 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
       await bundleItem.save();
     });
     await Promise.all(promise);
+    return res.json({});
   } catch (error) {
     return res.status(400).json({});
-  } finally {
-    return res.json({});
   }
 });
 
@@ -177,10 +173,9 @@ router.post("/itemCanceled", service_auth, async (req, res) => {
     bundle.listedAt = new Date(1970, 1, 1);
     bundle.saleEndsAt = new Date(1970, 1, 1);
     await bundle.save();
+    return res.json({});
   } catch (error) {
     return res.status(400).json({});
-  } finally {
-    return res.json({});
   }
 });
 
@@ -198,12 +193,10 @@ router.post("/offerCreated", service_auth, async (req, res) => {
     offer.price = price;
     offer.deadline = deadline;
     await offer.save();
-
+    return res.json({});
     // send mail to owner
   } catch (error) {
     return res.status(400).json({});
-  } finally {
-    return res.json({});
   }
 });
 
@@ -218,10 +211,9 @@ router.post("/offerCanceled", service_auth, async (req, res) => {
     });
 
     // send email to the owner
+    return res.json({});
   } catch (error) {
     return res.status(400).json({});
-  } finally {
-    return res.json({});
   }
 });
 

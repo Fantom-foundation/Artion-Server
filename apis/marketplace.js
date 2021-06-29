@@ -100,10 +100,9 @@ router.post("/itemListed", service_auth, async (req, res) => {
       newList.startTime = startingTime;
       await newList.save();
     } catch (error) {}
+    return res.json({});
   } catch (error) {
     return res.status(400).json({});
-  } finally {
-    return res.json({});
   }
 });
 
@@ -203,10 +202,9 @@ router.post("/itemSold", service_auth, async (req, res) => {
         tokenID: tokenID,
       });
     } catch (error) {}
+    return res.json({});
   } catch (error) {
     return res.status(400).json({});
-  } finally {
-    return res.json({});
   }
 });
 //   item updated
@@ -244,10 +242,9 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
       list.price = price;
       await list.save();
     }
+    return res.json({});
   } catch (error) {
     return res.status(400).json({});
-  } finally {
-    return res.json({});
   }
 });
 
@@ -278,10 +275,9 @@ router.post("/itemCanceled", service_auth, async (req, res) => {
         tokenID: tokenID,
       });
     } catch (error) {}
+    return res.json({});
   } catch (error) {
     return res.status(400).json({});
-  } finally {
-    return res.json({});
   }
 });
 
@@ -354,10 +350,9 @@ router.post("/offerCreated", service_auth, async (req, res) => {
     } catch (error) {
       console.log(error);
     }
+    return res.json({});
   } catch (error) {
     return res.status(400).json({});
-  } finally {
-    return res.json({});
   }
 });
 
@@ -413,10 +408,9 @@ router.post("/offerCanceled", service_auth, async (req, res) => {
     } catch (error) {
       console.log(error);
     }
+    return res.json({});
   } catch (error) {
     return res.status(400).json({});
-  } finally {
-    return res.json({});
   }
 });
 

@@ -99,10 +99,9 @@ router.post("/auctionCreated", service_auth, async (req, res) => {
         await token.save();
       }
     } catch (error) {}
+    return res.json({});
   } catch (error) {
     return res.status(400);
-  } finally {
-    return res.json({});
   }
 });
 
@@ -123,10 +122,9 @@ router.post("updateAuctionStartTime", service_auth, async (req, res) => {
         await auction.save();
       }
     } catch (error) {}
+    return res.json({});
   } catch (error) {
     return res.status(400).json({});
-  } finally {
-    return res.json({});
   }
 });
 
@@ -158,10 +156,9 @@ router.post("updateAuctionEndTime", service_auth, async (req, res) => {
         await auction.save();
       }
     } catch (error) {}
+    return res.json({});
   } catch (error) {
     return res.status(400).json({});
-  } finally {
-    return res.json({});
   }
 });
 
@@ -201,10 +198,9 @@ router.post("/updateAuctionReservePrice", service_auth, async (req, res) => {
         sendEmail(data);
       }
     }
+    return res.json({});
   } catch (error) {
     return res.status(400).json({});
-  } finally {
-    return res.json({});
   }
 });
 
@@ -261,10 +257,9 @@ router.post("/bidPlaced", service_auth, async (req, res) => {
       newBid.bid = bid;
       await newBid.save();
     } catch (error) {}
+    return res.json({});
   } catch (error) {
     return res.status(400).json({});
-  } finally {
-    return res.json({});
   }
 });
 
@@ -318,10 +313,9 @@ router.post("/bidWithdrawn", service_auth, async (req, res) => {
         tokenID: tokenID,
       });
     } catch (error) {}
+    return res.json({});
   } catch (error) {
     return res.status(400).json({});
-  } finally {
-    return res.json({});
   }
 });
 
@@ -397,10 +391,9 @@ router.post("/auctionResulted", service_auth, async (req, res) => {
         });
       } catch (error) {}
     } catch (error) {}
+    return res.json({});
   } catch (error) {
     return res.status(400).json({});
-  } finally {
-    return res.json({});
   }
 });
 
@@ -460,10 +453,9 @@ router.post("/auctionCancelled", service_auth, async (req, res) => {
         tokenID: tokenID,
       });
     } catch (error) {}
+    return res.json({});
   } catch (error) {
     return res.status(400).json({});
-  } finally {
-    return res.json({});
   }
 });
 
