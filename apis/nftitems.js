@@ -699,7 +699,6 @@ router.post("/fetchTokens", async (req, res) => {
   }
 
   let data = sortItems(items, sortby);
-  console.log(data);
   let searchResults = data.slice(
     step * FETCH_COUNT_PER_TIME,
     (step + 1) * FETCH_COUNT_PER_TIME
