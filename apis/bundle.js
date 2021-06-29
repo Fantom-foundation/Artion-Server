@@ -174,6 +174,25 @@ router.post("/createBundle", auth, async (req, res) => {
   }
 });
 
+router.post("/removeBundle", auth, async (req, res) => {
+  try {
+    let bundleID = req.body.bundleID;
+    await Bundle.deleteOne({
+      _id: bundleID,
+    });
+    await BundleInfo.deleteMany({
+      bundleID: bundleID,
+    });
+    return res.json({
+      status: "success",
+    });
+  } catch (error) {
+    return res.status(400).json({
+      status: "failed",
+    });
+  }
+});
+
 router.post("/getBundleByID", async (req, res) => {
   try {
     let bundleID = req.body.bundleID;
@@ -213,18 +232,6 @@ router.post("/getBundleByID", async (req, res) => {
     });
   }
 });
-
-router.post("/itemListed", service_auth, async (req, res) => {});
-
-router.post("/itemSold", service_auth, async (req, res) => {});
-
-router.post("/itemUpdated", service_auth, async (req, res) => {});
-
-router.post("/itemCancelled", service_auth, async (req, res) => {});
-
-router.post("/offerCreated", service_auth, async (req, res) => {});
-
-router.post("/offerCancelled", service_auth, async (req, res) => {});
 
 router.post("/removeItemFromBundle", service_auth, async (req, res) => {
   try {
