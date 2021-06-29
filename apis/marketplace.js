@@ -102,6 +102,7 @@ router.post("/itemListed", service_auth, async (req, res) => {
     } catch (error) {}
     return res.json({});
   } catch (error) {
+    console.log(error);
     return res.json({ status: "failed" });
   }
 });
@@ -277,6 +278,7 @@ router.post("/itemCanceled", service_auth, async (req, res) => {
     } catch (error) {}
     return res.json({});
   } catch (error) {
+    console.log(error);
     return res.json({ status: "failed" });
   }
 });
