@@ -92,47 +92,52 @@ router.post("/addBundleHistory", service_auth, async (req, res) => {
 });
 
 router.post("/getBundleTradeHistory", async (req, res) => {
-  let bundleID = req.body.bundleID;
+  try {
+    let bundleID = req.body.bundleID;
+    let _history = await BundleTradeHistory.find({
+      bundleID: { $regex: new RegExp(bundleID, "i") },
+    })
+      .select([
+        "bundleID",
+        "creator",
+        "from",
+        "to",
+        "price",
+        "activity",
+        "createdAt",
+      ])
+      .sort({ createdAt: "desc" });
+    let history = [];
 
-  let _history = await BundleTradeHistory.find({
-    bundleID: { $regex: new RegExp(bundleID, "i") },
-  })
-    .select([
-      "bundleID",
-      "creator",
-      "from",
-      "to",
-      "price",
-      "activity",
-      "createdAt",
-    ])
-    .sort({ createdAt: "desc" });
-  let history = [];
-
-  let promise = _history.map(async (hist) => {
-    let sender = await getAccountInfo(hist.from);
-    let receiver = await getAccountInfo(hist.to);
-    let creator = await getAccountInfo(hist.creator);
-    history.push({
-      bundleID: hist.bundleID,
-      from: hist.from,
-      to: hist.to,
-      price: hist.price,
-      createdAt: hist.createdAt,
-      activity: hist.activity,
-      creatorAlias: creator ? creator[0] : null,
-      creatorImage: creator ? creator[1] : null,
-      fromAlias: sender ? sender[0] : null,
-      fromImage: sender ? sender[1] : null,
-      toAlias: receiver ? receiver[0] : null,
-      toImage: receiver ? receiver[1] : null,
+    let promise = _history.map(async (hist) => {
+      let sender = await getAccountInfo(hist.from);
+      let receiver = await getAccountInfo(hist.to);
+      let creator = await getAccountInfo(hist.creator);
+      history.push({
+        bundleID: hist.bundleID,
+        from: hist.from,
+        to: hist.to,
+        price: hist.price,
+        createdAt: hist.createdAt,
+        activity: hist.activity,
+        creatorAlias: creator ? creator[0] : null,
+        creatorImage: creator ? creator[1] : null,
+        fromAlias: sender ? sender[0] : null,
+        fromImage: sender ? sender[1] : null,
+        toAlias: receiver ? receiver[0] : null,
+        toImage: receiver ? receiver[1] : null,
+      });
     });
-  });
-  await Promise.all(promise);
-  return res.send({
-    status: "success",
-    data: history,
-  });
+    await Promise.all(promise);
+    return res.send({
+      status: "success",
+      data: history,
+    });
+  } catch (error) {
+    return res.json({
+      status: "failed",
+    });
+  }
 });
 
 module.exports = router;
