@@ -13,6 +13,7 @@ const Bid = mongoose.model("Bid");
 const Offer = mongoose.model("Offer");
 const Listing = mongoose.model("Listing");
 const Auction = mongoose.model("Auction");
+const Bundle = mongoose.model("Bundle");
 
 const toLowerCase = require("../utils/utils");
 const auth = require("./middleware/auth");
@@ -115,7 +116,13 @@ router.post("/searchNames", async (req, res) => {
     })
       .select(["contractAddress", "tokenID", "tokenURI", "name"])
       .limit(10);
-    let data = { accounts, collections, tokens };
+
+    let bundles = await Bundle.find({
+      name: { $regex: name, $options: "i" },
+    })
+      .select(["name", "_id"])
+      .limit(10);
+    let data = { accounts, collections, tokens, bundles };
     return res.json({
       status: "success",
       data: data,

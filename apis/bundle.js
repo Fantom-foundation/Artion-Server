@@ -214,6 +214,18 @@ router.post("/getBundleByID", async (req, res) => {
   }
 });
 
+router.post("/itemListed", service_auth, async (req, res) => {});
+
+router.post("/itemSold", service_auth, async (req, res) => {});
+
+router.post("/itemUpdated", service_auth, async (req, res) => {});
+
+router.post("/itemCancelled", service_auth, async (req, res) => {});
+
+router.post("/offerCreated", service_auth, async (req, res) => {});
+
+router.post("/offerCancelled", service_auth, async (req, res) => {});
+
 router.post("/removeItemFromBundle", service_auth, async (req, res) => {
   try {
     let contractAddress = toLowerCase(req.body.nft);

@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "@pinata/sdk": "^1.1.13",
+    "@sendgrid/mail": "^7.4.5",
     "@sideway/address": "^4.1.1",
     "axios": "^0.21.1",
     "body-parser": "^1.19.0",

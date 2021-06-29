@@ -125,6 +125,10 @@ router.post("/boostCollection", auth, async (req, res) => {
             status: "success",
             data: "collection boosted",
           });
+        } else {
+          return res.status(400).json({
+            status: "failed",
+          });
         }
       } catch (error) {
         return res.status(400).json({
