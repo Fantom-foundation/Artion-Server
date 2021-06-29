@@ -38,9 +38,7 @@ router.post("/getOffers", async (req, res) => {
       data: offers,
     });
   } catch (error) {
-    return res.json({
-      status: "failed",
-    });
+    return res.json({ status: "failed" });
   }
 });
 
@@ -68,7 +66,7 @@ router.post("/getBundleOffer", async (req, res) => {
       data: offers,
     });
   } catch (error) {
-    return res.status(400).json({});
+    return res.json({ status: "failed" });
   }
 });
 

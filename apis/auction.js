@@ -124,7 +124,7 @@ router.post("updateAuctionStartTime", service_auth, async (req, res) => {
     } catch (error) {}
     return res.json({});
   } catch (error) {
-    return res.status(400).json({});
+    return res.json({ status: "failed" });
   }
 });
 
@@ -158,7 +158,7 @@ router.post("updateAuctionEndTime", service_auth, async (req, res) => {
     } catch (error) {}
     return res.json({});
   } catch (error) {
-    return res.status(400).json({});
+    return res.json({ status: "failed" });
   }
 });
 
@@ -200,7 +200,7 @@ router.post("/updateAuctionReservePrice", service_auth, async (req, res) => {
     }
     return res.json({});
   } catch (error) {
-    return res.status(400).json({});
+    return res.json({ status: "failed" });
   }
 });
 
@@ -259,7 +259,7 @@ router.post("/bidPlaced", service_auth, async (req, res) => {
     } catch (error) {}
     return res.json({});
   } catch (error) {
-    return res.status(400).json({});
+    return res.json({ status: "failed" });
   }
 });
 
@@ -315,7 +315,7 @@ router.post("/bidWithdrawn", service_auth, async (req, res) => {
     } catch (error) {}
     return res.json({});
   } catch (error) {
-    return res.status(400).json({});
+    return res.json({ status: "failed" });
   }
 });
 
@@ -393,7 +393,7 @@ router.post("/auctionResulted", service_auth, async (req, res) => {
     } catch (error) {}
     return res.json({});
   } catch (error) {
-    return res.status(400).json({});
+    return res.json({ status: "failed" });
   }
 });
 
@@ -455,7 +455,7 @@ router.post("/auctionCancelled", service_auth, async (req, res) => {
     } catch (error) {}
     return res.json({});
   } catch (error) {
-    return res.status(400).json({});
+    return res.json({ status: "failed" });
   }
 });
 

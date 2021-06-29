@@ -75,7 +75,7 @@ router.post("itemListed", service_auth, async (req, res) => {
     await history.save();
     return res.json({});
   } catch (error) {
-    return res.status(400).json({});
+    return res.json({ status: "failed" });
   }
 });
 
@@ -106,7 +106,7 @@ router.post("/itemSold", service_auth, async (req, res) => {
     await history.save();
     return res.json({});
   } catch (error) {
-    return res.status(400).json({});
+    return res.json({ status: "failed" });
   }
 });
 
@@ -154,7 +154,7 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
     await Promise.all(promise);
     return res.json({});
   } catch (error) {
-    return res.status(400).json({});
+    return res.json({ status: "failed" });
   }
 });
 
@@ -175,7 +175,7 @@ router.post("/itemCanceled", service_auth, async (req, res) => {
     await bundle.save();
     return res.json({});
   } catch (error) {
-    return res.status(400).json({});
+    return res.json({ status: "failed" });
   }
 });
 
@@ -196,7 +196,7 @@ router.post("/offerCreated", service_auth, async (req, res) => {
     return res.json({});
     // send mail to owner
   } catch (error) {
-    return res.status(400).json({});
+    return res.json({ status: "failed" });
   }
 });
 
@@ -213,7 +213,7 @@ router.post("/offerCanceled", service_auth, async (req, res) => {
     // send email to the owner
     return res.json({});
   } catch (error) {
-    return res.status(400).json({});
+    return res.json({ status: "failed" });
   }
 });
 
