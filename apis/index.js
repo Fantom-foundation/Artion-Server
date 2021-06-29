@@ -16,4 +16,5 @@ router.use("/bundle", require("./bundle"));
 router.use("/test", require("./test"));
 router.use("/marketplace", require("./marketplace"));
 router.use("/auction", require("./auction"));
+router.use("/bundlemarketplace", require("./bundleMarketplace"));
 module.exports = router;

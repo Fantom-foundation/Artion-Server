@@ -21,6 +21,9 @@ const toLowerCase = (val) => {
 const parseToFTM = (inWei) => {
   return parseFloat(inWei.toString()) / 10 ** 18;
 };
+const convertTime = (value) => {
+  return parseToFTM(value) * 1000;
+};
 
 const getCollectionName = async (address) => {
   try {
@@ -59,18 +62,12 @@ const getUserAlias = async (walletAddress) => {
 
 router.post("/itemListed", service_auth, async (req, res) => {
   try {
-    let owner = req.body.owner;
-    let nft = req.body.nft;
-    let tokenID = req.body.tokenID;
-    let quantity = req.body.quantity;
-    let pricePerItem = req.body.pricePerItem;
-    let startingTime = req.body.startingTime;
-    owner = toLowerCase(owner);
-    nft = toLowerCase(nft);
-    allowedAddress = toLowerCase(allowedAddress);
-    pricePerItem = parseToFTM(pricePerItem);
-    tokenID = parseInt(tokenID);
-    quantity = parseInt(quantity);
+    let owner = toLowerCase(req.body.owner);
+    let nft = toLowerCase(req.body.nft);
+    let tokenID = parseInt(req.body.tokenID);
+    let quantity = parseInt(req.body.quantity);
+    let pricePerItem = parseToFTM(req.body.pricePerItem);
+    let startingTime = convertTime(req.body.startingTime);
     // first update the token price
     let category = await Category.findOne({ minterAddress: nft });
     if (category) {
@@ -79,7 +76,7 @@ router.post("/itemListed", service_auth, async (req, res) => {
         tokenID: tokenID,
       });
       if (token) {
-        token.price = parseFloat(pricePerItem);
+        token.price = pricePerItem;
         token.listedAt = new Date(); // set listed date
         await token.save();
       }
@@ -100,7 +97,7 @@ router.post("/itemListed", service_auth, async (req, res) => {
       newList.tokenID = tokenID;
       newList.quantity = quantity;
       newList.price = pricePerItem;
-      newList.startTime = new Date(parseFloat(startingTime) * 1000);
+      newList.startTime = startingTime;
       await newList.save();
     } catch (error) {}
   } catch (error) {
@@ -134,8 +131,8 @@ router.post("/itemSold", service_auth, async (req, res) => {
         tokenID: tokenID,
       });
       if (token) {
-        token.price = parseFloat(price);
-        token.lastSalePrice = parseFloat(price);
+        token.price = price;
+        token.lastSalePrice = price;
         token.soldAt = new Date(); //set recently sold date
         token.listedAt = new Date(1970, 1, 1); //remove listed date
         await token.save();
@@ -233,7 +230,7 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
         tokenID: tokenID,
       });
       if (token) {
-        token.price = parseFloat(price);
+        token.price = price;
         await token.save();
       }
     }
@@ -295,11 +292,12 @@ router.post("/offerCreated", service_auth, async (req, res) => {
     let tokenID = req.body.tokenID;
     let quantity = req.body.quantity;
     let pricePerItem = req.body.pricePerItem;
-    let deadline = req.body.deadline;
+    let deadline = convertTime(req.body.deadline);
     creator = toLowerCase(creator);
     nft = toLowerCase(nft);
     pricePerItem = parseToFTM(pricePerItem);
     tokenID = parseInt(tokenID);
+    quantity = parseInt(quantity);
 
     try {
       await Offer.deleteMany({
@@ -365,13 +363,11 @@ router.post("/offerCreated", service_auth, async (req, res) => {
 
 router.post("/offerCanceled", service_auth, async (req, res) => {
   try {
-    let creator = req.body.creator;
-    let nft = req.body.nft;
+    let creator = toLowerCase(req.body.creator);
+    let nft = toLowerCase(req.body.nft);
     let tokenID = req.body.tokenID;
     tokenID = parseInt(tokenID);
     try {
-      creator = toLowerCase(creator);
-      nft = toLowerCase(nft);
       await Offer.deleteMany({
         creator: creator,
         minter: nft,

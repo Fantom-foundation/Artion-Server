@@ -66,6 +66,10 @@ const getAuctionEndTime = async (sc, nftAddress, tokenID) => {
   }
 };
 
+const convertTime = (value) => {
+  return parseFloat(value) * 1000;
+};
+
 router.post("/auctionCreated", service_auth, async (req, res) => {
   try {
     let nftAddress = req.body.nftAddress;
@@ -78,7 +82,7 @@ router.post("/auctionCreated", service_auth, async (req, res) => {
         tokenID: tokenID,
       });
       let auction = new Auction();
-      auction.minter = toLowerCase(nftAddress);
+      auction.minter = nftAddress;
       auction.tokenID = tokenID;
       auction.bidder = 0;
       await auction.save();
@@ -106,7 +110,7 @@ router.post("updateAuctionStartTime", service_auth, async (req, res) => {
   try {
     let nftAddress = req.body.nftAddress;
     let tokenID = req.body.tokenID;
-    let startTime = req.body.startTime;
+    let startTime = convertTime(req.body.startTime);
     nftAddress = toLowerCase(nftAddress);
     tokenID = parseInt(tokenID);
     try {
@@ -115,7 +119,7 @@ router.post("updateAuctionStartTime", service_auth, async (req, res) => {
         tokenID: tokenID,
       });
       if (auction) {
-        auction.startTime = new Date(parseInt(startTime) * 1000);
+        auction.startTime = startTime;
         await auction.save();
       }
     } catch (error) {}
@@ -130,7 +134,7 @@ router.post("updateAuctionEndTime", service_auth, async (req, res) => {
   try {
     let nftAddress = req.body.nftAddress;
     let tokenID = req.body.tokenID;
-    let endTime = req.body.endTime;
+    let endTime = convertTime(req.body.endTime);
     nftAddress = toLowerCase(nftAddress);
     tokenID = parseInt(tokenID);
     // update saleEndsAt for 721 tk
@@ -140,7 +144,7 @@ router.post("updateAuctionEndTime", service_auth, async (req, res) => {
         tokenID: tokenID,
       });
       if (tk) {
-        tk.saleEndsAt = new Date(parseInt(endTime) * 1000);
+        tk.saleEndsAt = endTime;
         await tk.save();
       }
     } catch (error) {}
@@ -150,7 +154,7 @@ router.post("updateAuctionEndTime", service_auth, async (req, res) => {
         tokenID: tokenID,
       });
       if (auction) {
-        auction.endTime = new Date(parseInt(endTime) * 1000);
+        auction.endTime = endTime;
         await auction.save();
       }
     } catch (error) {}

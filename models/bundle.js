@@ -10,7 +10,7 @@ const Bundle = mongoose.Schema(
     category: [{ type: String }],
     owner: { type: String, required: true },
     creator: { type: String, required: true },
-    listedAt: { type: Date, required: true },
+    createdAt: { type: Date, required: true },
     listedAt: { type: Date, default: new Date(1970, 1, 1) },
     soldAt: { type: Date, default: new Date(1970, 1, 1) },
     saleEndsAt: { type: Date, default: new Date(1970, 1, 1) },
