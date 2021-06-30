@@ -153,6 +153,7 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
     let tokenIDs = req.body.tokenID;
     let quantities = req.body.quantity;
     let newPrice = parseFloat(req.body.newPrice);
+    console.log(bundleID, nfts, tokenIDs, quantities, newPrice);
 
     // update bundle info
     if (newPrice) {
