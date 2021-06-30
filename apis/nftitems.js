@@ -564,8 +564,12 @@ const selectBundles = async (req, res) => {
           ? { contractAddress: { $in: [...collections2filter] } }
           : {}),
       };
+
+      console.log(collectionFilters);
+
       let bundleInfos = await BundleInfo.find(collectionFilters);
       bundleInfos = await entailBundleInfoItems(bundleInfos);
+
       let bundleIDs = [];
       bundleInfos.map((bundleInfo) => {
         if (!bundleIDs.includes(bundleInfo.bundleID)) {
@@ -574,20 +578,24 @@ const selectBundles = async (req, res) => {
       });
 
       let bundleFilter = {
-        ...(wallet != null ? { owner: wallet } : {}),
+        ...(wallet != null ? { owner: { $regex: wallet, $options: "i" } } : {}),
         ...{ _id: { $in: bundleIDs } },
       };
+
       let bundles = await Bundle.find(bundleFilter);
+
       let data = [];
       bundles.map((bundle) => {
         let bundleItems = bundleInfos.filter(
-          (bundleInfo) => bundleInfo.bundleID == bundle._id
+          (bundleInfo) =>
+            bundleInfo.bundleID.toString() == bundle._id.toString()
         );
         data.push({
           ...bundle._doc,
           items: bundleItems,
         });
       });
+      console.log(data);
       return data;
     } else if (filters.includes("buyNow") || filters.includes("onAuction")) {
       console.log(filters);
@@ -627,7 +635,7 @@ const selectBundles = async (req, res) => {
         }
       });
       let bundleFilter = {
-        ...(wallet != null ? { owner: wallet } : {}),
+        ...(wallet != null ? { owner: { $regex: wallet, $options: "i" } } : {}),
         ...{ _id: { $in: bundleIDs } },
       };
       let bundles = await Bundle.find(bundleFilter);
@@ -661,7 +669,7 @@ const selectBundles = async (req, res) => {
         }
       });
       let bundleFilter = {
-        ...(wallet != null ? { owner: wallet } : {}),
+        ...(wallet != null ? { owner: { $regex: wallet, $options: "i" } } : {}),
         ...{ _id: { $in: bundleIDs } },
       };
       let bundles = await Bundle.find(bundleFilter);
