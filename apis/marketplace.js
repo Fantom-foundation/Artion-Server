@@ -57,6 +57,8 @@ router.post("/itemListed", service_auth, async (req, res) => {
     let quantity = parseInt(req.body.quantity);
     let pricePerItem = parseFloat(req.body.pricePerItem);
     let startingTime = parseFloat(req.body.startingTime);
+
+    console.log(owner, nft, tokenID, quantity, pricePerItem, startingTime);
     // first update the token price
     let category = await Category.findOne({ minterAddress: nft });
     if (category) {
