@@ -26,37 +26,29 @@ const createMessage = (data) => {
             from: foundationEmail,
             subject: "You sold out your bundle!",
             text: "artion notification",
-            html: `<p>Dear ${data.alias}<p/> You have sold a new NFT item, ${data.bundleName} at ${data.price} FTM. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+            html: `<p>Dear ${data.alias}<p/> You have sold a new NFT Bundle, ${data.bundleName} at ${data.price} FTM. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
           };
         }
       }
       break;
     case "OfferCreated":
-      {
-        if (data.type == 721) {
-          message = {
-            to: data.to,
-            from: foundationEmail,
-            subject: data.subject,
-            text: "artion notification",
-            html: `<p>Dear ${data.alias}!</p> You have received an offer from ${data.from} for your item ${data.tokenID} of ${data.collectionName} collection at ${data.price} wFTM. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
-          };
-        } else {
-        }
-      }
+      message = {
+        to: data.to,
+        from: foundationEmail,
+        subject: "You received an offer for your bundle!",
+        text: "artion notification",
+        html: `<p>Dear ${data.alias}!</p> You have received an offer from ${data.from} for your bundle ${data.bundleName} at ${data.price} wFTM. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+      };
       break;
     case "OfferCanceled":
       {
-        if (data.type == 721) {
-          message = {
-            to: data.to,
-            from: foundationEmail,
-            subject: data.subject,
-            text: "artion notification",
-            html: `<p>Dear ${data.alias}!</p> An Offer from ${data.from} for your item ${data.tokenID} of ${data.collectionName} collection has been withdrawn. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
-          };
-        } else {
-        }
+        message = {
+          to: data.to,
+          from: foundationEmail,
+          subject: "Offer withdrawn!",
+          text: "artion notification",
+          html: `<p>Dear ${data.alias}!</p> An Offer from ${data.from} for your bundle ${data.bundleName} has been withdrawn. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+        };
       }
       break;
   }

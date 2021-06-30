@@ -230,8 +230,30 @@ router.post("/offerCreated", service_auth, async (req, res) => {
     offer.price = price;
     offer.deadline = deadline;
     await offer.save();
-    return res.json({});
     // send mail to owner
+    try {
+      let bundle = await Bundle.findById(bundleID);
+      let owner = bundle.owner;
+      let bundleName = bundle.name;
+      let ownerAccount = await Account.findOne({
+        address: owner,
+      });
+      if (ownerAccount) {
+        let to = ownerAccount.email;
+        let ownerAlias = await getUserAlias(owner);
+        let creatorAlias = await getUserAlias(creator);
+        let data = {
+          to,
+          alias: ownerAlias,
+          event: "OfferCreated",
+          from: creatorAlias,
+          bundleName,
+          price,
+        };
+        sendEmail(data);
+      }
+    } catch (error) {}
+    return res.json({});
   } catch (error) {
     return res.json({ status: "failed" });
   }
@@ -246,6 +268,28 @@ router.post("/offerCanceled", service_auth, async (req, res) => {
     await BundleOffer.deleteMany({
       bundleID: bundleID,
     });
+
+    try {
+      let bundle = await Bundle.findById(bundleID);
+      let owner = bundle.owner;
+      let bundleName = bundle.name;
+      let ownerAccount = await Account.findOne({
+        address: owner,
+      });
+      if (ownerAccount) {
+        let to = ownerAccount.email;
+        let ownerAlias = await getUserAlias(owner);
+        let creatorAlias = await getUserAlias(creator);
+        let data = {
+          to,
+          alias: ownerAlias,
+          event: "OfferCanceled",
+          from: creatorAlias,
+          bundleName,
+        };
+        sendEmail(data);
+      }
+    } catch (error) {}
 
     // send email to the owner
     return res.json({});
