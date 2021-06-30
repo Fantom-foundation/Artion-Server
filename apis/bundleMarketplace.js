@@ -190,6 +190,7 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
     await Promise.all(promise);
     return res.json({});
   } catch (error) {
+    console.log(error);
     return res.json({ status: "failed" });
   }
 });
