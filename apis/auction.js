@@ -11,15 +11,6 @@ const TradeHistory = mongoose.model("TradeHistory");
 
 const sendEmail = require("../mailer/auctionMailer");
 
-const toLowerCase = (val) => {
-  if (val) return val.toLowerCase();
-  else return val;
-};
-
-const parseToFTM = (inWei) => {
-  return parseFloat(inWei.toString()) / 10 ** 18;
-};
-
 const getCollectionName = async (address) => {
   try {
     let collection = await Collection.findOne({
@@ -66,15 +57,10 @@ const getAuctionEndTime = async (sc, nftAddress, tokenID) => {
   }
 };
 
-const convertTime = (value) => {
-  return parseFloat(value) * 1000;
-};
-
 router.post("/auctionCreated", service_auth, async (req, res) => {
   try {
     let nftAddress = req.body.nftAddress;
     let tokenID = req.body.tokenID;
-    nftAddress = toLowerCase(nftAddress);
     tokenID = parseInt(tokenID);
     try {
       await Auction.deleteMany({
@@ -109,12 +95,11 @@ router.post("updateAuctionStartTime", service_auth, async (req, res) => {
   try {
     let nftAddress = req.body.nftAddress;
     let tokenID = req.body.tokenID;
-    let startTime = convertTime(req.body.startTime);
-    nftAddress = toLowerCase(nftAddress);
+    let startTime = parseFloat(req.body.startTime);
     tokenID = parseInt(tokenID);
     try {
       let auction = await Auction.findOne({
-        minter: toLowerCase(nftAddress),
+        minter: nftAddress,
         tokenID: tokenID,
       });
       if (auction) {
@@ -132,8 +117,7 @@ router.post("updateAuctionEndTime", service_auth, async (req, res) => {
   try {
     let nftAddress = req.body.nftAddress;
     let tokenID = req.body.tokenID;
-    let endTime = convertTime(req.body.endTime);
-    nftAddress = toLowerCase(nftAddress);
+    let endTime = parseFloat(req.body.endTime);
     tokenID = parseInt(tokenID);
     // update saleEndsAt for 721 tk
     try {
@@ -148,7 +132,7 @@ router.post("updateAuctionEndTime", service_auth, async (req, res) => {
     } catch (error) {}
     try {
       let auction = await Auction.findOne({
-        minter: toLowerCase(nftAddress),
+        minter: nftAddress,
         tokenID: tokenID,
       });
       if (auction) {
@@ -167,15 +151,14 @@ router.post("/updateAuctionReservePrice", service_auth, async (req, res) => {
     let nftAddress = req.body.nftAddress;
     let tokenID = req.body.tokenID;
     let reservePrice = req.body.reservePrice;
-    nftAddress = toLowerCase(nftAddress);
-    reservePrice = parseToFTM(reservePrice);
+    reservePrice = parseFloat(reservePrice);
     tokenID = parseInt(tokenID);
     let bid = await Bid.findOne({
       minter: nftAddress,
       tokenID: tokenID,
     });
     if (bid) {
-      let bidder = toLowerCase(bid.bidder);
+      let bidder = bid.bidder;
       let account = await Account.findOne({ address: bidder });
 
       if (account) {
@@ -210,9 +193,7 @@ router.post("/bidPlaced", service_auth, async (req, res) => {
     let tokenID = req.body.tokenID;
     let bidder = req.body.bidder;
     let bid = req.body.bid;
-    nftAddress = toLowerCase(nftAddress);
-    bidder = toLowerCase(bidder);
-    bid = parseToFTM(bid);
+    bid = parseFloat(bid);
     tokenID = parseInt(tokenID);
     try {
       let tk = await NFTITEM.findOne({
@@ -269,9 +250,7 @@ router.post("/bidWithdrawn", service_auth, async (req, res) => {
     let tokenID = req.body.tokenID;
     let bidder = req.body.bidder;
     let bid = req.body.bid;
-    nftAddress = toLowerCase(nftAddress);
-    bidder = toLowerCase(bidder);
-    bid = parseToFTM(bid);
+    bid = parseFloat(bid);
     tokenID = parseInt(tokenID);
     // send mail
     let tk = await NFTITEM.findOne({
@@ -306,8 +285,8 @@ router.post("/bidWithdrawn", service_auth, async (req, res) => {
     }
     // remove bids
     try {
-      nftAddress = toLowerCase(nftAddress);
-      bidder = toLowerCase(bidder);
+      nftAddress = nftAddress;
+      bidder = bidder;
       await Bid.deleteMany({
         minter: nftAddress,
         tokenID: tokenID,
@@ -325,9 +304,7 @@ router.post("/auctionResulted", service_auth, async (req, res) => {
     let tokenID = req.body.tokenID;
     let winner = req.body.winner;
     let winningBid = req.body.winningBid;
-    winningBid = parseToFTM(winningBid);
-    nftAddress = toLowerCase(nftAddress);
-    winner = toLowerCase(winner);
+    winningBid = parseFloat(winningBid);
     tokenID = parseInt(tokenID);
     try {
       // send mail
@@ -366,7 +343,7 @@ router.post("/auctionResulted", service_auth, async (req, res) => {
         token.saleEndsAt = null;
         await token.save();
         try {
-          let from = toLowerCase(token.owner);
+          let from = token.owner;
           let history = new TradeHistory();
           history.collectionAddress = nftAddress;
           history.tokenID = tokenID;
@@ -401,8 +378,6 @@ router.post("/auctionCancelled", service_auth, async (req, res) => {
   try {
     let nftAddress = req.body.nftAddress;
     let tokenID = req.body.tokenID;
-
-    nftAddress = toLowerCase(nftAddress);
     tokenID = parseInt(tokenID);
     // first send email
     let bid = await Bid.findOne({
@@ -410,7 +385,7 @@ router.post("/auctionCancelled", service_auth, async (req, res) => {
       tokenID: tokenID,
     });
     if (bid) {
-      let bidder = toLowerCase(bid.bidder);
+      let bidder = bid.bidder;
       let account = await Account.findOne({ address: bidder });
       if (account) {
         let to = account.email;

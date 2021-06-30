@@ -14,17 +14,6 @@ const service_auth = require("./middleware/auth.tracker");
 
 const sendEmail = require("../mailer/marketplaceMailer");
 
-const toLowerCase = (val) => {
-  if (val) return val.toLowerCase();
-  else return val;
-};
-const parseToFTM = (inWei) => {
-  return parseFloat(inWei.toString()) / 10 ** 18;
-};
-const convertTime = (value) => {
-  return parseToFTM(value) * 1000;
-};
-
 const getCollectionName = async (address) => {
   try {
     let collection = await Collection.findOne({
@@ -62,12 +51,12 @@ const getUserAlias = async (walletAddress) => {
 
 router.post("/itemListed", service_auth, async (req, res) => {
   try {
-    let owner = toLowerCase(req.body.owner);
-    let nft = toLowerCase(req.body.nft);
+    let owner = req.body.owner;
+    let nft = req.body.nft;
     let tokenID = parseInt(req.body.tokenID);
     let quantity = parseInt(req.body.quantity);
-    let pricePerItem = parseToFTM(req.body.pricePerItem);
-    let startingTime = convertTime(req.body.startingTime);
+    let pricePerItem = parseFloat(req.body.pricePerItem);
+    let startingTime = parseFloat(req.body.startingTime);
     // first update the token price
     let category = await Category.findOne({ minterAddress: nft });
     if (category) {
@@ -112,15 +101,9 @@ router.post("/itemSold", service_auth, async (req, res) => {
     let seller = req.body.seller;
     let buyer = req.body.buyer;
     let nft = req.body.nft;
-    let tokenID = req.body.tokenID;
-    let quantity = req.body.quantity;
-    let price = req.body.price;
-    seller = toLowerCase(seller);
-    buyer = toLowerCase(buyer);
-    nft = toLowerCase(nft);
-    price = parseToFTM(price);
-    quantity = parseInt(quantity);
-    tokenID = parseInt(tokenID);
+    let tokenID = parseInt(req.body.tokenID);
+    let quantity = parseInt(req.body.quantity);
+    let price = parseFloat(req.body.price);
     // update last sale price
     // first update the token price
     let category = await Category.findOne({ minterAddress: nft });
@@ -216,9 +199,7 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
     let nft = req.body.nft;
     let tokenID = req.body.tokenID;
     let price = req.body.price;
-    owner = toLowerCase(owner);
-    nft = toLowerCase(nft);
-    price = parseToFTM(price);
+    price = parseFloat(price);
     tokenID = parseInt(tokenID);
     // update the price of the nft here
     // first update the token price
@@ -254,8 +235,6 @@ router.post("/itemCanceled", service_auth, async (req, res) => {
     let owner = req.body.owner;
     let nft = req.body.nft;
     let tokenID = req.body.tokenID;
-    owner = toLowerCase(owner);
-    nft = toLowerCase(nft);
     tokenID = parseInt(tokenID);
     let category = await Category.findOne({ minterAddress: nft });
     if (category) {
@@ -290,10 +269,8 @@ router.post("/offerCreated", service_auth, async (req, res) => {
     let tokenID = req.body.tokenID;
     let quantity = req.body.quantity;
     let pricePerItem = req.body.pricePerItem;
-    let deadline = convertTime(req.body.deadline);
-    creator = toLowerCase(creator);
-    nft = toLowerCase(nft);
-    pricePerItem = parseToFTM(pricePerItem);
+    let deadline = parseFloat(req.body.deadline);
+    pricePerItem = parseFloat(pricePerItem);
     tokenID = parseInt(tokenID);
     quantity = parseInt(quantity);
 
@@ -360,8 +337,8 @@ router.post("/offerCreated", service_auth, async (req, res) => {
 
 router.post("/offerCanceled", service_auth, async (req, res) => {
   try {
-    let creator = toLowerCase(req.body.creator);
-    let nft = toLowerCase(req.body.nft);
+    let creator = req.body.creator;
+    let nft = req.body.nft;
     let tokenID = req.body.tokenID;
     tokenID = parseInt(tokenID);
     try {

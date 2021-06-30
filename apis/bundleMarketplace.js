@@ -13,14 +13,6 @@ const router = require("express").Router();
 const service_auth = require("./middleware/auth.tracker");
 const sendEmail = require("../mailer/bundleMailer");
 
-const toLowerCase = (val) => {
-  if (val) return val.toLowerCase();
-  else return val;
-};
-const parseToFTM = (inWei) => {
-  return parseFloat(inWei.toString()) / 10 ** 18;
-};
-
 // check if nft is erc721 or 1155
 const getTokenType = async (address) => {
   let tokenTypes = await Category.find();
@@ -28,10 +20,6 @@ const getTokenType = async (address) => {
   let tokenCategory = tokenTypes.filter((tokenType) => tokenType[0] == address);
   tokenCategory = tokenCategory[0];
   return parseInt(tokenCategory[1]);
-};
-
-const convertTime = (value) => {
-  return parseFloat(value) * 1000;
 };
 
 const getUserAlias = async (walletAddress) => {
@@ -47,9 +35,9 @@ const getUserAlias = async (walletAddress) => {
 router.post("itemListed", service_auth, async (req, res) => {
   try {
     let bundleID = req.body.bundleID;
-    let owner = toLowerCase(req.body.owner);
-    let price = parseToFTM(req.body.price);
-    let startingTime = convertTime(req.body.startingTime);
+    let owner = req.body.owner;
+    let price = parseFloat(req.body.price);
+    let startingTime = parseFloat(req.body.startingTime);
 
     //   update bundle's list time & price
     let bundle = await Bundle.findById(bundleID);
@@ -81,10 +69,10 @@ router.post("itemListed", service_auth, async (req, res) => {
 
 router.post("/itemSold", service_auth, async (req, res) => {
   try {
-    let seller = toLowerCase(req.body.seller);
-    let buyer = toLowerCase(req.body.buyer);
+    let seller = req.body.seller;
+    let buyer = req.body.buyer;
     let bundleID = req.body.bundleID;
-    let price = parseToFTM(req.body.price);
+    let price = parseFloat(req.body.price);
 
     // first update the bundle owner
     let bundle = await Bundle.findById(bundleID);
@@ -112,12 +100,12 @@ router.post("/itemSold", service_auth, async (req, res) => {
 
 router.post("/itemUpdated", service_auth, async (req, res) => {
   try {
-    let owner = toLowerCase(req.body.owner);
+    let owner = req.body.owner;
     let bundleID = req.body.bundleID;
     let nfts = req.body.nft;
     let tokenIDs = req.body.tokenID;
     let quantities = req.body.quantity;
-    let newPrice = parseToFTM(req.body.newPrice);
+    let newPrice = parseFloat(req.body.newPrice);
 
     // update bundle info
     if (newPrice) {
@@ -160,7 +148,7 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
 
 router.post("/itemCanceled", service_auth, async (req, res) => {
   try {
-    let owner = toLowerCase(req.body.owner);
+    let owner = req.body.owner;
     let bundleID = req.body.bundleID;
 
     // remove from bundle listing
@@ -181,10 +169,10 @@ router.post("/itemCanceled", service_auth, async (req, res) => {
 
 router.post("/offerCreated", service_auth, async (req, res) => {
   try {
-    let creator = toLowerCase(req.body.creator);
+    let creator = req.body.creator;
     let bundleID = req.body.bundleID;
-    let price = parseToFTM(req.body.price);
-    let deadline = convertTime(req.body.deadline);
+    let price = parseFloat(req.body.price);
+    let deadline = parseFloat(req.body.deadline);
 
     // create new bundle offer
     let offer = new BundleOffer();
@@ -202,7 +190,7 @@ router.post("/offerCreated", service_auth, async (req, res) => {
 
 router.post("/offerCanceled", service_auth, async (req, res) => {
   try {
-    let creator = toLowerCase(req.body.creator);
+    let creator = req.body.creator;
     let bundleID = req.body.bundleID;
 
     // remove bundle offer
