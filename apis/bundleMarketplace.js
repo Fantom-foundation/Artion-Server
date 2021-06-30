@@ -6,6 +6,7 @@ const Bundle = mongoose.model("Bundle");
 const BundleInfo = mongoose.model("BundleInfo");
 const BundleOffer = mongoose.model("BundleOffer");
 
+const Account = mongoose.model("Account");
 const Category = mongoose.model("Category");
 const NFTITEM = mongoose.model("NFTITEM");
 
@@ -92,6 +93,52 @@ router.post("/itemSold", service_auth, async (req, res) => {
     history.activity = "Sale";
     history.createdAt = Date.now();
     await history.save();
+    // send an email to seller & buyer
+    // seller
+    try {
+      let account = await Account.findOne({
+        address: seller,
+      });
+      if (account) {
+        let to = account.email;
+        let sellerAlias = await getUserAlias(seller);
+        let bundleName = bundle.name;
+        let data = {
+          to,
+          alias: sellerAlias,
+          event: "ItemSold",
+          price: price,
+          bundleID,
+          bundleName,
+          isBuyer: false,
+        };
+        sendEmail(data);
+      }
+    } catch (error) {}
+    // buyer
+    try {
+      let account = await Account.findOne({
+        address: buyer,
+      });
+      if (account) {
+        let to = account.email;
+        let buyerAlias = await getUserAlias(buyer);
+        let bundleName = bundle.name;
+
+        let data = {
+          to,
+          alias: buyerAlias,
+          event: "ItemSold",
+          buyer: buyerAlias,
+          price: price,
+          bundleID,
+          bundleName,
+          isBuyer: true,
+        };
+        sendEmail(data);
+      }
+    } catch (error) {}
+
     return res.json({});
   } catch (error) {
     return res.json({ status: "failed" });

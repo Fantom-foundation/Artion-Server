@@ -120,6 +120,7 @@ router.post("/searchNames", async (req, res) => {
         "tokenURI",
         "name",
         "thumbnailPath",
+        "imageURL",
       ])
       .limit(10);
 
