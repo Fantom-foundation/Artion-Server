@@ -114,7 +114,13 @@ router.post("/searchNames", async (req, res) => {
     let tokens = await NFTITEM.find({
       name: { $regex: name, $options: "i" },
     })
-      .select(["contractAddress", "tokenID", "tokenURI", "name"])
+      .select([
+        "contractAddress",
+        "tokenID",
+        "tokenURI",
+        "name",
+        "thumbnailPath",
+      ])
       .limit(10);
 
     let bundles = await Bundle.find({
