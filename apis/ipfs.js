@@ -37,13 +37,14 @@ const pinata = pinataSDK(
 );
 
 // pin image file for NFT creation
-const pinFileToIPFS = async (fileName, address, name, symbol) => {
+const pinFileToIPFS = async (fileName, address, name, symbol, royalty) => {
   const options = {
     pinataMetadata: {
       name: name,
       keyvalues: {
-        address: address,
         symbol: symbol,
+        ...(royalty ? { royalty: royalty } : null),
+        recipient: address,
       },
     },
     pinataOptions: {
@@ -56,7 +57,6 @@ const pinFileToIPFS = async (fileName, address, name, symbol) => {
     let result = await pinata.pinFileToIPFS(readableStreamForFile, options);
     return result;
   } catch (error) {
-    console.log(error);
     return "failed to pin file to ipfs";
   }
 };
@@ -81,7 +81,6 @@ const pinBundleFileToIPFS = async (fileName, name, address) => {
     let result = await pinata.pinFileToIPFS(readableStreamForFile, options);
     return result;
   } catch (error) {
-    console.log(error);
     return "failed to pin file to ipfs";
   }
 };
@@ -103,7 +102,6 @@ const pinBannerFileToIPFS = async (fileName, address) => {
     let result = await pinata.pinFileToIPFS(readableStreamForFile, options);
     return result;
   } catch (error) {
-    console.log(error);
     return "failed to pin file to ipfs";
   }
 };
@@ -128,7 +126,6 @@ const pinCollectionFileToIPFS = async (fileName, name, address) => {
     let result = await pinata.pinFileToIPFS(readableStreamForFile, options);
     return result;
   } catch (error) {
-    console.log(error);
     return "failed to pin file to ipfs";
   }
 };
@@ -150,7 +147,6 @@ const pinJsonToIPFS = async (jsonMetadata) => {
     let result = await pinata.pinJSONToIPFS(jsonMetadata, options);
     return result;
   } catch (error) {
-    console.log(error);
     return "failed to pin json to ipfs";
   }
 };
@@ -172,7 +168,6 @@ const pinBundleJsonToIPFS = async (jsonMetadata) => {
     let result = await pinata.pinJSONToIPFS(jsonMetadata, options);
     return result;
   } catch (error) {
-    console.log(error);
     return "failed to pin json to ipfs";
   }
 };
@@ -181,13 +176,11 @@ router.get("/ipfstest", async (req, res) => {
   pinata
     .testAuthentication()
     .then((result) => {
-      console.log(result);
       res.send({
         result: result,
       });
     })
     .catch((err) => {
-      console.log(err);
       res.send({
         result: "failed",
       });
@@ -206,8 +199,6 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
   });
   form.parse(req, async (err, fields, files) => {
     if (err) {
-      console.log("form parse failed");
-      console.log(err);
       return res.status(400).json({
         status: "failed",
       });
@@ -222,6 +213,8 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
 
       let description = fields.description;
       let symbol = fields.symbol;
+      let royalty = fields.royalty;
+      let recipient = fields.recipient;
       let extension = imgData.substring(
         "data:image/".length,
         imgData.indexOf(";base64")
@@ -231,8 +224,6 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
       imgData = imgData.replace(`data:image\/${extension};base64,`, "");
       fs.writeFile(uploadPath + imageFileName, imgData, "base64", (err) => {
         if (err) {
-          console.log("save image failed");
-          console.log(err);
           return res.status(400).json({
             status: "failed to save an image file",
             err,
@@ -243,17 +234,14 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
         imageFileName,
         address,
         name,
-        symbol
+        symbol,
+        royalty
       );
-      console.log(filePinStatus);
 
       // remove file once pinned
       try {
         fs.unlinkSync(uploadPath + imageFileName);
-      } catch (error) {
-        console.log("failed to unlink");
-        console.log(error);
-      }
+      } catch (error) {}
 
       let now = new Date();
       let currentTime = now.toTimeString();
@@ -271,7 +259,6 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
       };
 
       let jsonPinStatus = await pinJsonToIPFS(metaData);
-      console.log(jsonPinStatus);
       return res.send({
         status: "success",
         uploadedCounts: 2,
@@ -344,7 +331,6 @@ router.post("/uploadBundleImage2Server", auth, async (req, res) => {
           });
         }
       } catch (error) {
-        console.log(error);
         return res.status(400).json({
           status: "failedOutSave",
         });
@@ -369,8 +355,6 @@ router.post("/uploadBannerImage2Server", auth, async (req, res) => {
       });
     } else {
       let imgData = fields.imgData;
-      // let address = fields.address;
-      // address = toLowerCase(address);
 
       /* change getting address from auth token */
       let address = extractAddress(req, res);
