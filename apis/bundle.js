@@ -123,6 +123,7 @@ router.post("/createBundle", auth, async (req, res) => {
     bundle.price = price;
     bundle.owner = owner;
     bundle.creator = owner;
+    bundle.createdAt = Date.now();
     bundle.listedAt = new Date(1970, 1, 1);
     let _bundle = await bundle.save();
     let bundleID = _bundle._id;
