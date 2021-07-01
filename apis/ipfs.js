@@ -429,6 +429,7 @@ router.post("/uploadCollectionImage2Server", auth, async (req, res) => {
       imgData = imgData.replace(`data:image\/${extension};base64,`, "");
       fs.writeFile(uploadPath + imageFileName, imgData, "base64", (err) => {
         if (err) {
+          console.log(err);
           return res.status(400).json({
             status: "failed to save an image file",
             err,
