@@ -153,7 +153,6 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
     let tokenIDs = req.body.tokenID;
     let quantities = req.body.quantity;
     let newPrice = parseFloat(req.body.newPrice);
-    console.log(bundleID, nfts, tokenIDs, quantities, newPrice);
 
     // update bundle info
     if (newPrice) {
@@ -190,7 +189,6 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
     await Promise.all(promise);
     return res.json({});
   } catch (error) {
-    console.log(error);
     return res.json({ status: "failed" });
   }
 });

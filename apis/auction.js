@@ -6,22 +6,10 @@ const Auction = mongoose.model("Auction");
 const Account = mongoose.model("Account");
 const Bid = mongoose.model("Bid");
 const NFTITEM = mongoose.model("NFTITEM");
-const Collection = mongoose.model("Collection");
 const TradeHistory = mongoose.model("TradeHistory");
 
 const sendEmail = require("../mailer/auctionMailer");
-
-const getCollectionName = async (address) => {
-  try {
-    let collection = await Collection.findOne({
-      erc721Address: toLowerCase(address),
-    });
-    if (collection) return collection.collectionName;
-    else return address;
-  } catch (error) {
-    return address;
-  }
-};
+const getCollectionName = require("../mailer/utils");
 
 const get721ItemName = async (nft, tokenID) => {
   try {

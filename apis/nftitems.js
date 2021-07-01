@@ -559,7 +559,6 @@ const selectBundles = async (req, res) => {
 
     // if (!wallet) {
     if (filters == null) {
-      console.log("filter is null");
       /*
         when no status option 
          */
@@ -570,8 +569,6 @@ const selectBundles = async (req, res) => {
           : {}),
         thumbnailPath: { $ne: nonImage },
       };
-
-      console.log(collectionFilters);
 
       let bundleInfos = await BundleInfo.find(collectionFilters);
       bundleInfos = await entailBundleInfoItems(bundleInfos);
@@ -601,10 +598,8 @@ const selectBundles = async (req, res) => {
           items: bundleItems,
         });
       });
-      console.log(data);
       return data;
     } else if (filters.includes("buyNow") || filters.includes("onAuction")) {
-      console.log(filters);
       /*
         when no status option 
          */
@@ -656,7 +651,6 @@ const selectBundles = async (req, res) => {
       });
       return data;
     } else {
-      console.log(filters);
       /*
         when no status option 
          */
@@ -692,7 +686,6 @@ const selectBundles = async (req, res) => {
       return data;
     }
   } catch (error) {
-    console.log(error);
     return null;
   }
 };
@@ -839,7 +832,6 @@ const fetchTransferHistory1155 = async (address, id) => {
       null,
     ],
   });
-  // console.log(singleTransferEvts);
   let batchTransferEvts = await provider.getLogs({
     address: address,
     fromBlock: 0,

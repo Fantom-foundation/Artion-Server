@@ -7,24 +7,12 @@ const TradeHistory = mongoose.model("TradeHistory");
 const Offer = mongoose.model("Offer");
 const NFTITEM = mongoose.model("NFTITEM");
 const Category = mongoose.model("Category");
-const Collection = mongoose.model("Collection");
 const Account = mongoose.model("Account");
 
 const service_auth = require("./middleware/auth.tracker");
 
 const sendEmail = require("../mailer/marketplaceMailer");
-
-const getCollectionName = async (address) => {
-  try {
-    let collection = await Collection.findOne({
-      erc721Address: toLowerCase(address),
-    });
-    if (collection) return collection.collectionName;
-    else return address;
-  } catch (error) {
-    return address;
-  }
-};
+const getCollectionName = require("../mailer/utils");
 
 const getNFTItemName = async (nft, tokenID) => {
   try {
@@ -58,7 +46,6 @@ router.post("/itemListed", service_auth, async (req, res) => {
     let pricePerItem = parseFloat(req.body.pricePerItem);
     let startingTime = parseFloat(req.body.startingTime);
 
-    console.log(owner, nft, tokenID, quantity, pricePerItem, startingTime);
     // first update the token price
     let category = await Category.findOne({ minterAddress: nft });
     if (category) {
@@ -93,7 +80,6 @@ router.post("/itemListed", service_auth, async (req, res) => {
     } catch (error) {}
     return res.json({});
   } catch (error) {
-    console.log(error);
     return res.json({ status: "failed" });
   }
 });
@@ -177,9 +163,7 @@ router.post("/itemSold", service_auth, async (req, res) => {
       history.price = price;
       history.value = quantity;
       await history.save();
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (error) {}
     try {
       // remove from listing
       await Listing.deleteMany({
@@ -259,7 +243,6 @@ router.post("/itemCanceled", service_auth, async (req, res) => {
     } catch (error) {}
     return res.json({});
   } catch (error) {
-    console.log(error);
     return res.json({ status: "failed" });
   }
 });
@@ -328,9 +311,7 @@ router.post("/offerCreated", service_auth, async (req, res) => {
         } else if (category == 1155) {
         }
       }
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (error) {}
     return res.json({});
   } catch (error) {
     return res.json({ status: "failed" });
@@ -386,9 +367,7 @@ router.post("/offerCanceled", service_auth, async (req, res) => {
         } else if (category == 1155) {
         }
       }
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (error) {}
     return res.json({});
   } catch (error) {
     return res.json({ status: "failed" });

@@ -59,13 +59,8 @@ const createMessage = (data) => {
 const sendEmail = (data) => {
   let message = createMessage(data);
   sgMail.send(message).then(
-    () => {
-      console.log("email sent");
-    },
+    () => {},
     (error) => {
-      console.log("failed to send an email");
-      console.error(error);
-
       if (error.response) {
         console.error(error.response.body);
       }

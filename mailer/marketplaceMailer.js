@@ -5,7 +5,6 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const foundationEmail = "support.artion@fantom.foundation";
 
 const createMessage = (data) => {
-  console.log(data.subject);
   let message = {};
   let event = data.event;
   const artionUri = `https://artion.io/${data.nftAddress}/${data.tokenID}`;
@@ -68,13 +67,8 @@ const createMessage = (data) => {
 const sendEmailMarketplace = (data) => {
   let message = createMessage(data);
   sgMail.send(message).then(
-    () => {
-      console.log("email sent");
-    },
+    () => {},
     (error) => {
-      console.log("failed to send an email");
-      console.error(error);
-
       if (error.response) {
         console.error(error.response.body);
       }

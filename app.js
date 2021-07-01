@@ -52,9 +52,9 @@ const connect = () => {
   const db = mongoose.connection;
   db.on("error", console.error.bind(console, "connection error:"));
   db.once("open", function () {
-    console.log("nifty server has been connected to the db server");
+    console.log("artion server has been connected to the db server");
     app.listen(port, () => {
-      console.log(`nifty server is running at port ${port}`);
+      console.log(`artion server is running at port ${port}`);
     });
   });
 };

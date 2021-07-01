@@ -169,7 +169,6 @@ router.post("/createBundle", auth, async (req, res) => {
       data: bundleID,
     });
   } catch (error) {
-    console.log(error);
     return res.status(400).json({
       status: "failed",
     });
@@ -336,7 +335,6 @@ router.post("/fetchBundles", async (req, res) => {
       }
     }
   } catch (error) {
-    console.log(error);
     return res.status(400).json({
       status: "failed",
     });
