@@ -14,6 +14,9 @@ const service_auth = require("./middleware/auth.tracker");
 const sendEmail = require("../mailer/marketplaceMailer");
 const getCollectionName = require("../mailer/utils");
 
+const contractutils = require("../services/contract.utils");
+const toLowerCase = require("../utils/utils");
+
 const getNFTItemName = async (nft, tokenID) => {
   try {
     let token = await NFTITEM.findOne({
@@ -35,6 +38,12 @@ const getUserAlias = async (walletAddress) => {
   } catch (error) {
     return walletAddress;
   }
+};
+
+const isOfferCancelNotifiable = async (receiver, nft, tokenID) => {
+  let contract = await contractutils.loadContractFromAddress(nft);
+  let owner = await contract.ownerOf(tokenID);
+  return toLowerCase(owner) == receiver;
 };
 
 router.post("/itemListed", service_auth, async (req, res) => {
@@ -345,6 +354,12 @@ router.post("/offerCanceled", service_auth, async (req, res) => {
             address: tokenOwner.owner,
           });
           if (owner) {
+            let isNotifiable = await isOfferCancelNotifiable(
+              owner.address,
+              nft,
+              tokenID
+            );
+            if (!isNotifiable) return;
             let alias = await getUserAlias(owner.address);
             let tokenName = await getNFTItemName(nft, tokenID);
             let creatorAlias = await getUserAlias(creator);
