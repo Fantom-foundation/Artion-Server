@@ -214,7 +214,6 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
       let description = fields.description;
       let symbol = fields.symbol;
       let royalty = fields.royalty;
-      let recipient = fields.recipient;
       let extension = imgData.substring(
         "data:image/".length,
         imgData.indexOf(";base64")
@@ -253,6 +252,8 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
         properties: {
           symbol: symbol,
           address: address,
+          royalty: royalty,
+          recipient: address,
           createdAt: currentTime,
           collection: "Fantom Powered Artion Collection",
         },
