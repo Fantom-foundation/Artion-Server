@@ -9,7 +9,7 @@ const getCollectionName = async (address) => {
     });
     if (collection) return collection.collectionName;
     else {
-      let erc721contract = await ERC721CONTRACT.findOne({ address });
+      let erc721contract = await ERC721CONTRACT.findOne({ address: address });
       if (erc721contract) return erc721contract.name;
       else return address;
     }
