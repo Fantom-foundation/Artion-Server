@@ -35,6 +35,8 @@ const provider = new ethers.providers.JsonRpcProvider(
   _721_ABI.CHAINID
 );
 
+const nonImage = "non-image";
+
 router.post("/increaseViews", async (req, res) => {
   try {
     let contractAddress = req.body.contractAddress;
@@ -216,6 +218,7 @@ const selectTokens = async (req, res) => {
           ...(collections2filter != null
             ? { contractAddress: { $in: [...collections2filter] } }
             : {}),
+          thumbnailPath: { $ne: nonImage },
         };
         let allTokens = await NFTITEM.find(collectionFilters)
           .select(selectOption)
@@ -340,11 +343,13 @@ const selectTokens = async (req, res) => {
             ? { contractAddress: { $in: [...collections2filter] } }
             : {}),
           ...(wallet != null ? { owner: wallet } : {}),
+          thumbnailPath: { $ne: nonImage },
         };
         let collectionFilters1155 = {
           ...(collections2filter != null
             ? { contractAddress: { $in: [...collections2filter] } }
             : {}),
+          thumbnailPath: { $ne: nonImage },
         };
         let tokens_721 = await NFTITEM.find(collectionFilters721)
           .select(selectOption)
@@ -563,6 +568,7 @@ const selectBundles = async (req, res) => {
         ...(collections2filter != null
           ? { contractAddress: { $in: [...collections2filter] } }
           : {}),
+        thumbnailPath: { $ne: nonImage },
       };
 
       console.log(collectionFilters);
