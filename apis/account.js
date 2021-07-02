@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 
 const auth = require("./middleware/auth");
 const Account = mongoose.model("Account");
+const Follow = mongoose.model("Follow");
 
 const pinataSDK = require("@pinata/sdk");
 const pinata = pinataSDK(
@@ -186,10 +187,21 @@ router.post("/getuseraccountinfo", async (req, res) => {
   let address = req.body.address;
   address = toLowerCase(address);
   let account = await Account.findOne({ address: address });
+  let followers = await Follow.find({ to: address });
+  let followings = await Follow.find({ from: address });
   if (account) {
     return res.json({
       status: "success",
-      data: account.toAccountJSON(),
+      data: {
+        address: account.address,
+        alias: account.alias,
+        email: account.email,
+        bio: account.bio,
+        imageHash: account.imageHash,
+        bannerHash: account.bannerHash,
+        followers: followers.length,
+        followings: followings.length,
+      },
     });
   } else {
     return res.status(400).json({
