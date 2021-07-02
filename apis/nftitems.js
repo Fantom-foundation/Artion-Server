@@ -370,6 +370,7 @@ const selectTokens = async (req, res) => {
               tokenID: token_1155.tokenID,
               tokenURI: token_1155.tokenURI,
               thumbnailPath: token_1155.thumbnailPath,
+              imageURL: token_1155.imageURL,
               tokenType: token_1155.tokenType,
               name: token_1155.name,
               symbol: token_1155.symbol,
