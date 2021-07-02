@@ -1,6 +1,4 @@
 require("dotenv").config();
-const jwt = require("jsonwebtoken");
-const jwt_secret = process.env.JWT_SECRET;
 const router = require("express").Router();
 
 const mongoose = require("mongoose");
@@ -12,23 +10,11 @@ const NFTITEM = mongoose.model("NFTITEM");
 const ERC1155HOLDING = mongoose.model("ERC1155HOLDING");
 
 const auth = require("./middleware/auth");
-const contractutils = require("../services/contract.utils");
 const toLowerCase = require("../utils/utils");
 
 const adminAddress = "0xB7bC6D2666e73F8Cd143a929DB5404e2fc03eA89";
 
-const extractAddress = (req, res) => {
-  let authorization = req.headers.authorization.split(" ")[1],
-    decoded;
-  try {
-    decoded = jwt.verify(authorization, jwt_secret);
-  } catch (e) {
-    return res.status(401).send("unauthorized");
-  }
-  let address = decoded.data;
-  address = toLowerCase(address);
-  return address;
-};
+const extractAddress = require("../services/address.utils");
 
 const isAdmin = (msgSender) => {
   return toLowerCase(adminAddress) == toLowerCase(msgSender);

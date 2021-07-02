@@ -3,7 +3,6 @@ const router = require("express").Router();
 const ethers = require("ethers");
 
 const mongoose = require("mongoose");
-const auth = require("./middleware/auth");
 
 const NFTITEM = mongoose.model("NFTITEM");
 const ERC1155HOLDING = mongoose.model("ERC1155HOLDING");
@@ -24,8 +23,6 @@ const BundleOffer = mongoose.model("BundleOffer");
 const orderBy = require("lodash.orderby");
 
 const _721_ABI = require("../constants/erc721abi");
-
-const contractutils = require("../services/contract.utils");
 const toLowerCase = require("../utils/utils");
 
 const FETCH_COUNT_PER_TIME = 12;
