@@ -75,10 +75,12 @@ router.get("/getFollowers", async (req, res) => {
     let promise = followers.map(async (follower) => {
       let to = follower.to;
       let account = await Account.findOne({ address: to });
+      let followers = await Follow.find({ to: to });
       data.push({
         address: to,
         alias: account ? account.alias : null,
         imageHash: account ? account.imageHash : null,
+        followers: followers.length,
       });
     });
     await Promise.all(promise);
@@ -100,10 +102,12 @@ router.get("/getFollowings/:address", async (req, res) => {
     let promise = followings.map(async (following) => {
       let from = following.from;
       let account = await Account.findOne({ address: from });
+      let followers = await Follow.find({ to: from });
       data.push({
         address: from,
         alias: account ? account.alias : null,
         imageHash: account ? account.imageHash : null,
+        followers: followers.length,
       });
     });
     await Promise.all(promise);
