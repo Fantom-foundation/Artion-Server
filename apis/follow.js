@@ -83,7 +83,7 @@ router.post("/update", auth, async (req, res) => {
     return res.status(400).json({});
   }
 });
-router.get("/getFollowers/:address", async (req, res) => {
+router.get("/getFollowings/:address", async (req, res) => {
   try {
     let address = toLowerCase(req.params.address);
     let followers = await Follow.find({
@@ -110,7 +110,7 @@ router.get("/getFollowers/:address", async (req, res) => {
     return res.status(400).json({});
   }
 });
-router.get("/getFollowings/:address", async (req, res) => {
+router.get("/getFollowers/:address", async (req, res) => {
   try {
     let address = toLowerCase(req.params.address);
     let followings = await Follow.find({
