@@ -9,11 +9,28 @@ const mongoose = require("mongoose");
 const Follow = mongoose.model("Follow");
 const Account = mongoose.model("Account");
 
+router.post("/isFollowing", async (req, res) => {
+  let from = toLowerCase(req.body.from);
+  let to = toLowerCase(req.body.to);
+  let follow = await Follow.findOne({
+    from: from,
+    to: to,
+  });
+  if (follow) {
+    return res.status(404).json({
+      status: "failed",
+    });
+  } else
+    return res.json({
+      status: "success",
+      data: true,
+    });
+});
+
 router.post("/update", auth, async (req, res) => {
   try {
     let from = extractAddress(req, res);
     let to = toLowerCase(req.body.follower);
-    console.log(from, to);
     // cannot follow himself
     if (from == to)
       return res.json({
