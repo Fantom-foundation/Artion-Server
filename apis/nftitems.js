@@ -22,14 +22,13 @@ const BundleOffer = mongoose.model("BundleOffer");
 
 const orderBy = require("lodash.orderby");
 
-const _721_ABI = require("../constants/erc721abi");
 const toLowerCase = require("../utils/utils");
 
 const FETCH_COUNT_PER_TIME = 12;
 
 const provider = new ethers.providers.JsonRpcProvider(
-  _721_ABI.RPC,
-  _721_ABI.CHAINID
+  process.env.MAINNET_RPC,
+  parseInt(process.env.MAINNET_CHAINID)
 );
 
 const nonImage = "non-image";
@@ -733,6 +732,7 @@ router.post("/transfer721History", async (req, res) => {
       data: history,
     });
   } catch (error) {
+    console.log(error);
     return res.json({
       status: "failed",
     });
