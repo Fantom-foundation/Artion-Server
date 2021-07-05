@@ -13,6 +13,7 @@ router.post("/update", auth, async (req, res) => {
   try {
     let from = extractAddress(req, res);
     let to = toLowerCase(req.body.follower);
+    console.log(from, to);
     // cannot follow himself
     if (from == to)
       return res.json({
