@@ -17,8 +17,8 @@ const loadContractFromAddress = async (address) => {
   }
 
   let provider = new ethers.providers.JsonRpcProvider(
-    "https://rpcapi.fantom.network",
-    250
+    process.env.NETWORK_RPC,
+    parseInt(process.env.NETWORK_CHAINID)
   );
   let tokenType = await Category.findOne({ minterAddress: address });
   tokenType = tokenType.type;

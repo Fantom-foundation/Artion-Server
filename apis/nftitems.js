@@ -22,8 +22,8 @@ const toLowerCase = require("../utils/utils");
 const FETCH_COUNT_PER_TIME = 12;
 
 const provider = new ethers.providers.JsonRpcProvider(
-  process.env.MAINNET_RPC,
-  parseInt(process.env.MAINNET_CHAINID)
+  process.env.NETWORK_RPC,
+  parseInt(process.env.NETWORK_CHAINID)
 );
 
 const nonImage = "non-image";

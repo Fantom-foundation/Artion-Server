@@ -21,7 +21,6 @@ const Account = mongoose.model("Account");
 
 const orderBy = require("lodash.orderby");
 
-const _721_ABI = require("../constants/erc721abi");
 
 const contractutils = require("../services/contract.utils");
 const toLowerCase = require("../utils/utils");
