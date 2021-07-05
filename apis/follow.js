@@ -17,13 +17,13 @@ router.post("/isFollowing", async (req, res) => {
     to: to,
   });
   if (follow) {
-    return res.status(404).json({
-      status: "failed",
-    });
-  } else
     return res.json({
       status: "success",
       data: true,
+    });
+  } else
+    return res.status(404).json({
+      status: "failed",
     });
 });
 
