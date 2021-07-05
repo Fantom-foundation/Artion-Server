@@ -1,27 +1,22 @@
 const router = require("express").Router();
-
 const ethers = require("ethers");
 
 const mongoose = require("mongoose");
-
 const NFTITEM = mongoose.model("NFTITEM");
 const ERC1155HOLDING = mongoose.model("ERC1155HOLDING");
 const Category = mongoose.model("Category");
 const Collection = mongoose.model("Collection");
-
 const Listing = mongoose.model("Listing");
 const Offer = mongoose.model("Offer");
 const Bid = mongoose.model("Bid");
 const Auction = mongoose.model("Auction");
 const Account = mongoose.model("Account");
-
 const BundleInfo = mongoose.model("BundleInfo");
 const Bundle = mongoose.model("Bundle");
 const BundleListing = mongoose.model("BundleListing");
 const BundleOffer = mongoose.model("BundleOffer");
 
 const orderBy = require("lodash.orderby");
-
 const toLowerCase = require("../utils/utils");
 
 const FETCH_COUNT_PER_TIME = 12;
@@ -747,6 +742,35 @@ router.post("/transfer1155History", async (req, res) => {
     return res.json({
       status: "success",
       data: history,
+    });
+  } catch (error) {
+    return res.json({
+      status: "failed",
+    });
+  }
+});
+
+router.post("/getMoreItemsFromCollection", async (req, res) => {
+  try {
+    let address = toLowerCase(req.body.address);
+    let nfts = await NFTITEM.find({
+      contractAddress: address,
+    })
+      .sort({ price: "desc" })
+      .limit(10)
+      .select([
+        "thumbnailPath",
+        "supply",
+        "price",
+        "tokenType",
+        "tokenID",
+        "tokenURI",
+        "name",
+        "imageURL",
+      ]);
+    return res.json({
+      status: "success",
+      data: nfts,
     });
   } catch (error) {
     return res.json({
