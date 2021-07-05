@@ -204,8 +204,12 @@ router.post("/getuseraccountinfo", async (req, res) => {
       },
     });
   } else {
-    return res.status(400).json({
-      status: "failed",
+    return res.json({
+      status: "success",
+      data: {
+        followers: followers.length,
+        followings: followings.length,
+      },
     });
   }
 });
