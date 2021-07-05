@@ -22,8 +22,9 @@ router.post("/isFollowing", async (req, res) => {
       data: true,
     });
   } else
-    return res.status(404).json({
-      status: "failed",
+    return res.json({
+      status: "success",
+      data: false,
     });
 });
 
