@@ -183,77 +183,84 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
     maxFileSize: 200 * 1024 * 1024,
     maxFieldsSize: 300 * 1024 * 1024,
   });
-  form.parse(req, async (err, fields, files) => {
-    if (err) {
-      return res.status(400).json({
-        status: "failed",
-      });
-    } else {
-      let imgData = fields.image;
-      let name = fields.name;
-      // let address = fields.account;
-      // address = toLowerCase(address);
+  try {
+    form.parse(req, async (err, fields, files) => {
+      if (err) {
+        return res.status(400).json({
+          status: "failed",
+        });
+      } else {
+        let imgData = fields.image;
+        let name = fields.name;
+        // let address = fields.account;
+        // address = toLowerCase(address);
 
-      /* change getting address from auth token */
-      let address = extractAddress(req, res);
+        /* change getting address from auth token */
+        let address = extractAddress(req, res);
 
-      let description = fields.description;
-      let symbol = fields.symbol;
-      let royalty = fields.royalty;
-      let extension = imgData.substring(
-        "data:image/".length,
-        imgData.indexOf(";base64")
-      );
-      let imageFileName =
-        address + name.replace(" ", "") + symbol + "." + extension;
-      imgData = imgData.replace(`data:image\/${extension};base64,`, "");
-      fs.writeFile(uploadPath + imageFileName, imgData, "base64", (err) => {
-        if (err) {
-          return res.status(400).json({
-            status: "failed to save an image file",
-            err,
-          });
-        }
-      });
-      let filePinStatus = await pinFileToIPFS(
-        imageFileName,
-        address,
-        name,
-        symbol,
-        royalty
-      );
+        let description = fields.description;
+        let symbol = fields.symbol;
+        let royalty = fields.royalty;
+        let extension = imgData.substring(
+          "data:image/".length,
+          imgData.indexOf(";base64")
+        );
+        let imageFileName =
+          address + name.replace(" ", "") + symbol + "." + extension;
+        imgData = imgData.replace(`data:image\/${extension};base64,`, "");
+        fs.writeFile(uploadPath + imageFileName, imgData, "base64", (err) => {
+          if (err) {
+            return res.status(400).json({
+              status: "failed to save an image file",
+              err,
+            });
+          }
+        });
+        let filePinStatus = await pinFileToIPFS(
+          imageFileName,
+          address,
+          name,
+          symbol,
+          royalty
+        );
 
-      // remove file once pinned
-      try {
-        fs.unlinkSync(uploadPath + imageFileName);
-      } catch (error) {}
+        // remove file once pinned
+        try {
+          fs.unlinkSync(uploadPath + imageFileName);
+        } catch (error) {}
 
-      let now = new Date();
-      let currentTime = now.toTimeString();
+        let now = new Date();
+        let currentTime = now.toTimeString();
 
-      let metaData = {
-        name: name,
-        image: ipfsUri + filePinStatus.IpfsHash,
-        description: description,
-        properties: {
-          symbol: symbol,
-          address: address,
-          royalty: royalty,
-          recipient: address,
-          createdAt: currentTime,
-          collection: "Fantom Powered Artion Collection",
-        },
-      };
+        let metaData = {
+          name: name,
+          image: ipfsUri + filePinStatus.IpfsHash,
+          description: description,
+          properties: {
+            symbol: symbol,
+            address: address,
+            royalty: royalty,
+            recipient: address,
+            createdAt: currentTime,
+            collection: "Fantom Powered Artion Collection",
+          },
+        };
 
-      let jsonPinStatus = await pinJsonToIPFS(metaData);
-      return res.send({
-        status: "success",
-        uploadedCounts: 2,
-        fileHash: ipfsUri + filePinStatus.IpfsHash,
-        jsonHash: ipfsUri + jsonPinStatus.IpfsHash,
-      });
-    }
-  });
+        let jsonPinStatus = await pinJsonToIPFS(metaData);
+        return res.send({
+          status: "success",
+          uploadedCounts: 2,
+          fileHash: ipfsUri + filePinStatus.IpfsHash,
+          jsonHash: ipfsUri + jsonPinStatus.IpfsHash,
+        });
+      }
+    });
+  } catch (error) {
+    console.log(error);
+    return res.json({
+      status: "failed",
+    });
+  }
 });
 
 router.post("/uploadBundleImage2Server", auth, async (req, res) => {
@@ -275,19 +282,14 @@ router.post("/uploadBundleImage2Server", auth, async (req, res) => {
       );
       let imageFileName = address + name.replace(" ", "") + "." + extension;
       imgData = imgData.replace(`data:image\/${extension};base64,`, "");
-      await fs.writeFile(
-        uploadPath + imageFileName,
-        imgData,
-        "base64",
-        (err) => {
-          if (err) {
-            return res.status(400).json({
-              status: "failed to save an image file",
-              err,
-            });
-          }
+      fs.writeFile(uploadPath + imageFileName, imgData, "base64", (err) => {
+        if (err) {
+          return res.status(400).json({
+            status: "failed to save an image file",
+            err,
+          });
         }
-      );
+      });
 
       let filePinStatus = await pinBundleFileToIPFS(
         imageFileName,
