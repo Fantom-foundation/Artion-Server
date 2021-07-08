@@ -31,6 +31,7 @@
     "legit": "^1.0.9",
     "lodash.orderby": "^4.6.0",
     "lodash.sortby": "^4.7.0",
+    "migrate-mongo": "^8.2.2",
     "mongodb": "^3.6.5",
     "mongoose": "^5.12.1",
     "nodemailer": "^6.5.0",

@@ -40,6 +40,8 @@ require("./models/bundlelisting");
 require("./models/bundleoffer");
 require("./models/bundleHistory");
 require("./models/follow");
+require("./models/like");
+require("./models/bundlelike");
 
 app.use(bodyParser.json());
 app.options("*", cors()); // include before other routes

@@ -17,4 +17,5 @@ router.use("/marketplace", require("./marketplace"));
 router.use("/auction", require("./auction"));
 router.use("/bundlemarketplace", require("./bundleMarketplace"));
 router.use("/follow", require("./follow"));
+router.use("/like", require("./like"));
 module.exports = router;

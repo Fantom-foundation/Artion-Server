@@ -160,6 +160,7 @@ const selectTokens = async (req, res) => {
       "imageURL",
       "supply",
       "price",
+      "liked",
       sortby,
     ];
     let wallet = req.body.address; // account address from meta mask
@@ -368,6 +369,7 @@ const selectTokens = async (req, res) => {
               tokenType: token_1155.tokenType,
               name: token_1155.name,
               symbol: token_1155.symbol,
+              liked: token_1155.liked,
               createdAt: token_1155.createdAt,
               holderSupply: holdingSupplies.get(
                 token_1155.contractAddress + token_1155.tokenID
@@ -767,6 +769,7 @@ router.post("/getMoreItemsFromCollection", async (req, res) => {
         "tokenURI",
         "name",
         "imageURL",
+        "liked",
       ]);
     return res.json({
       status: "success",

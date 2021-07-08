@@ -14,6 +14,7 @@ const Bundle = mongoose.Schema(
     listedAt: { type: Date, default: new Date(1970, 1, 1) },
     soldAt: { type: Date, default: new Date(1970, 1, 1) },
     saleEndsAt: { type: Date, default: new Date(1970, 1, 1) },
+    liked: { type: Number, default: 0, index: true },
   },
   {
     timestamps: true,
