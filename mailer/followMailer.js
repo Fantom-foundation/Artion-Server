@@ -8,7 +8,6 @@ const team = "Artion team from Fantom Foundation";
 
 const mongoose = require("mongoose");
 const toLowerCase = require("../utils/utils");
-const Bundle = mongoose.model("Bundle");
 const Account = mongoose.model("Account");
 const Follow = mongoose.model("Follow");
 

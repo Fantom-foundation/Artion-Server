@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const Collection = mongoose.model("Collection");
 const ERC721CONTRACT = mongoose.model("ERC721CONTRACT");
+const toLowerCase = require("../utils/utils");
 
 const getCollectionName = async (address) => {
   try {

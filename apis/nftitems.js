@@ -752,6 +752,25 @@ router.post("/transfer1155History", async (req, res) => {
   }
 });
 
+router.get("/getLikesCount/:address/:tokenID", async (req, res) => {
+  try {
+    let address = toLowerCase(req.params.address);
+    let tokenID = parseInt(req.params.tokenID);
+    let nft = await NFTITEM.findOne({
+      contractAddress: address,
+      tokenID: tokenID,
+    });
+    return res.json({
+      status: "success",
+      data: nft.liked,
+    });
+  } catch (error) {
+    return res.json({
+      status: "failed",
+    });
+  }
+});
+
 router.post("/getMoreItemsFromCollection", async (req, res) => {
   try {
     let address = toLowerCase(req.body.address);
