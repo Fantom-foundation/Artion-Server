@@ -70,6 +70,7 @@ router.post("/update", auth, async (req, res) => {
   try {
     let follower = extractAddress(req, res);
     let type = req.body.type;
+    let newLiked = 0;
     if (type == "nft") {
       let contractAddress = toLowerCase(req.body.contractAddress);
       let tokenID = parseInt(req.body.tokenID);
@@ -88,7 +89,8 @@ router.post("/update", auth, async (req, res) => {
           tokenID: tokenID,
         });
         nft.liked = parseInt(nft.liked) - 1;
-        await nft.save();
+        let _nft = await nft.save();
+        newLiked = _nft.liked;
       } else {
         let _like = new Like();
         _like.contractAddress = contractAddress;
@@ -100,11 +102,12 @@ router.post("/update", auth, async (req, res) => {
           tokenID: tokenID,
         });
         nft.liked = parseInt(nft.liked) + 1;
-        await nft.save();
+        let _nft = await nft.save();
+        newLiked = _nft.liked;
       }
       return res.json({
         status: "success",
-        data: true,
+        data: newLiked,
       });
     } else if (type == "bundle") {
       let bundleID = req.body.bundleID;
@@ -112,11 +115,13 @@ router.post("/update", auth, async (req, res) => {
         bundleID: bundleID,
         follower: follower,
       });
+      let newLiked = 0;
       if (like) {
         await like.remove();
         let bundle = await Bundle.findById(bundleID);
         bundle.liked = parseInt(bundle.liked) - 1;
-        await bundle.save();
+        let _bundle = await bundle.save();
+        newLiked = _bundle.liked;
       } else {
         let _like = new BundleLike();
         _like.bundleID = bundleID;
@@ -124,11 +129,12 @@ router.post("/update", auth, async (req, res) => {
         await _like.save();
         let bundle = await Bundle.findById(bundleID);
         bundle.liked = parseInt(bundle.liked) + 1;
-        await bundle.save();
+        let _bundle = await bundle.save();
+        newLiked = _bundle.liked;
       }
       return res.json({
         status: "success",
-        data: true,
+        data: newLiked,
       });
     } else
       return res.json({
@@ -143,7 +149,7 @@ router.post("/update", auth, async (req, res) => {
   }
 });
 
-router.post("/getLikes/", async (req, res) => {
+router.post("/getLikes", async (req, res) => {
   try {
     let type = req.body.type;
     let likes = [];

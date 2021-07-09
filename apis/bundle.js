@@ -1,7 +1,5 @@
 const router = require("express").Router();
 
-const ethers = require("ethers");
-
 const mongoose = require("mongoose");
 const auth = require("./middleware/auth");
 const service_auth = require("./middleware/auth.tracker");
@@ -13,21 +11,12 @@ const ERC1155HOLDING = mongoose.model("ERC1155HOLDING");
 const Category = mongoose.model("Category");
 const Collection = mongoose.model("Collection");
 
-const Listing = mongoose.model("Listing");
-const Offer = mongoose.model("Offer");
-const Bid = mongoose.model("Bid");
-const Auction = mongoose.model("Auction");
-const Account = mongoose.model("Account");
+const notifications = require("../mailer/followMailer");
 
 const orderBy = require("lodash.orderby");
-
-
-const contractutils = require("../services/contract.utils");
 const toLowerCase = require("../utils/utils");
 
 const extractAddress = require("../services/address.utils");
-
-const FETCH_COUNT_PER_TIME = 18;
 
 router.post("/increaseViews", async (req, res) => {
   try {
@@ -148,7 +137,7 @@ router.post("/createBundle", auth, async (req, res) => {
     });
 
     await Promise.all(promise);
-
+    notifications.notifyBundleCreation(owner, bundleID, name);
     return res.json({
       status: "success",
       data: bundleID,

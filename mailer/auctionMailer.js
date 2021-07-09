@@ -2,10 +2,13 @@ require("dotenv").config();
 const sgMail = require("@sendgrid/mail");
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
+const app_url = process.env.APP_URL;
+const foundationEmail = "support.artion@fantom.foundation";
+
 const createMessage = (data) => {
   let message = {};
   let event = data.event;
-  const artionUri = `https://artion.io/${data.nftAddress}/${data.tokenID}`;
+  const artionUri = `${app_url}${data.nftAddress}/${data.tokenID}`;
   const team = "Artion team from Fantom Foundation";
   if (data.type == "auction") {
     switch (event) {
@@ -13,7 +16,7 @@ const createMessage = (data) => {
         {
           message = {
             to: data.to,
-            from: "support.artion@fantom.foundation",
+            from: foundationEmail,
             subject: data.subject,
             text: "artion notification",
             html: `<p>Dear ${data.alias}<p/> Your bid, from ${data.collectionName}'s ${data.tokenName} has updated it's reserve price to ${data.newPrice} <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
@@ -24,7 +27,7 @@ const createMessage = (data) => {
         {
           message = {
             to: data.to,
-            from: "support.artion@fantom.foundation",
+            from: foundationEmail,
             subject: data.subject,
             text: "artion notification",
             html: `<p>Dear ${data.alias}<p/> Your item, from ${data.collectionName}'s ${data.tokenName} has has got a bid from ${data.bidderAlias} at the price of ${data.bid} FTMs <br/> For more information, click <a href = "${artionUri}">here</a></br> ${team}`,
@@ -35,7 +38,7 @@ const createMessage = (data) => {
         {
           message = {
             to: data.to,
-            from: "support.artion@fantom.foundation",
+            from: foundationEmail,
             subject: data.subject,
             text: "artion notification",
             html: `<p>Dear ${data.alias}<p/> Your item, from ${data.collectionName}'s ${data.tokenName} has has got a bid withdrawn  from ${data.bidderAlias} at the price of ${data.bid} FTMs <br/> For more information, click <a href = "${artionUri}">here</a></br> ${team}`,
@@ -46,7 +49,7 @@ const createMessage = (data) => {
         {
           message = {
             to: data.to,
-            from: "support.artion@fantom.foundation",
+            from: foundationEmail,
             subject: data.subject,
             text: "artion notification",
             html: `<p>Dear ${data.alias}<p/> You won the item, ${data.collectionName}'s ${data.tokenName} as it's auction has been resulted.<br/> For more information, click <a href = "${artionUri}">here</a></br> ${team}`,
@@ -57,7 +60,7 @@ const createMessage = (data) => {
         {
           message = {
             to: data.to,
-            from: "support.artion@fantom.foundation",
+            from: foundationEmail,
             subject: data.subject,
             text: "artion notification",
             html: `<p>Dear ${data.alias}<p/> The NFT Item, from ${data.collectionName}'s ${data.tokenName} is dropped from auction<br/> For more information, click <a href = "${artionUri}">here</a></br> ${team}`,

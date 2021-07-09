@@ -2,12 +2,13 @@ require("dotenv").config();
 const sgMail = require("@sendgrid/mail");
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
+const app_url = process.env.APP_URL;
 const foundationEmail = "support.artion@fantom.foundation";
 
 const createMessage = (data) => {
   let message = {};
   let event = data.event;
-  const artionUri = `https://artion.io/${data.nftAddress}/${data.tokenID}`;
+  const artionUri = `${app_url}${data.nftAddress}/${data.tokenID}`;
   const team = "Artion team from Fantom Foundation";
   switch (event) {
     case "ItemSold":
