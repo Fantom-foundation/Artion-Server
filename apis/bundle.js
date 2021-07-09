@@ -373,4 +373,19 @@ const sortBundles = (_allBundles, sortby) => {
   return tmp;
 };
 
+router.get("/getLikesCount/:bundleID", async (req, res) => {
+  try {
+    let bundleID = req.params.bundleID;
+    let bundle = await Bundle.findById(bundleID);
+    return res.json({
+      status: "success",
+      data: bundle.liked,
+    });
+  } catch (error) {
+    return res.json({
+      status: "failed",
+    });
+  }
+});
+
 module.exports = router;
