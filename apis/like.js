@@ -155,10 +155,12 @@ router.post("/getMyLikes", async (req, res) => {
     );
     return res.json({
       status: "success",
-      data: data,
+      data: {
+        tokens: data,
+        total: _data.length,
+      },
     });
   } catch (error) {
-    console.log(error);
     return res.json({
       status: "failed",
     });
