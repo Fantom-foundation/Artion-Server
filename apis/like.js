@@ -158,6 +158,7 @@ router.post("/getMyLikes", async (req, res) => {
       data: data,
     });
   } catch (error) {
+    console.log(error);
     return res.json({
       status: "failed",
     });
