@@ -3,6 +3,7 @@ require("dotenv").config();
 const mongoose = require("mongoose");
 const Like = mongoose.model("Like");
 const BundleLike = mongoose.model("BundleLike");
+const BundleInfo = mongoose.model("BundleInfo");
 const Bundle = mongoose.model("Bundle");
 const NFTITEM = mongoose.model("NFTITEM");
 const Account = mongoose.model("Account");
@@ -11,7 +12,37 @@ const router = require("express").Router();
 const auth = require("./middleware/auth");
 const toLowerCase = require("../utils/utils");
 const extractAddress = require("../services/address.utils");
-const e = require("express");
+const orderBy = require("lodash.orderby");
+
+const FETCH_COUNT_PER_TIME = 12;
+
+const getBundleItemDetails = async (bundleItem) => {
+  try {
+    let nftItem = await NFTITEM.findOne({
+      contractAddress: bundleItem.contractAddress,
+      tokenID: bundleItem.tokenID,
+    });
+    return {
+      imageURL: nftItem.imageURL,
+      thumbnailPath: nftItem.thumbnailPath,
+    };
+  } catch (error) {
+    return {};
+  }
+};
+
+const entailBundleInfoItems = async (bundleInfoItems) => {
+  let details = [];
+  let promise = bundleInfoItems.map(async (bundleInfoItem) => {
+    let detail = await getBundleItemDetails(bundleInfoItem);
+    details.push({
+      ...bundleInfoItem._doc,
+      ...detail,
+    });
+  });
+  await Promise.all(promise);
+  return details;
+};
 
 router.post("/isLiked", async (req, res) => {
   try {
@@ -62,6 +93,73 @@ router.post("/isLiked", async (req, res) => {
     return res.json({
       status: "success",
       data: false,
+    });
+  }
+});
+
+router.post("/getMyLikes", async (req, res) => {
+  try {
+    let address = toLowerCase(req.body.address);
+    let step = parseInt(req.body.step);
+    // find nfts
+    let _nftLikes = await Like.find({ follower: address });
+    let nftLikes = _nftLikes.map((_nftLike) => {
+      return {
+        contractAddress: _nftLike.contractAddress,
+        tokenID: _nftLike.tokenID,
+      };
+    });
+    let myLikedNFTs = await NFTITEM.find({ $or: nftLikes }).select([
+      "contractAddress",
+      "tokenID",
+      "tokenURI",
+      "tokenType",
+      "thumbnailPath",
+      "name",
+      "imageURL",
+      "supply",
+      "price",
+      "liked",
+    ]);
+    // find bundles
+    let _bundleLikes = await BundleLike.find({ follower: address });
+    let bundleLikesIDs = _bundleLikes.map(
+      (_bundleLike) => _bundleLike.bundleID
+    );
+    let _myLikedBundles = await Bundle.find({
+      _id: { $in: bundleLikesIDs },
+    });
+    let bundleInfos = await BundleInfo.find({
+      bundleID: { $in: bundleLikesIDs },
+    });
+    bundleInfos = await entailBundleInfoItems(bundleInfos);
+    let myLikedBundles = [];
+    _myLikedBundles.map((bundle) => {
+      let bundleItems = bundleInfos.filter(
+        (bundleInfo) => bundleInfo.bundleID == bundle._id
+      );
+      myLikedBundles.push({
+        viewed: bundle._doc.viewed,
+        liked: bundle._doc.liked,
+        price: bundle._doc.price,
+        _id: bundle._doc._id,
+        name: bundle._doc.name,
+        items: bundleItems,
+      });
+    });
+    let _data = [...myLikedNFTs, ...myLikedBundles];
+    _data = orderBy(_data, "liked", "desc");
+    let data = _data.slice(
+      step * FETCH_COUNT_PER_TIME,
+      (step + 1) * FETCH_COUNT_PER_TIME
+    );
+    return res.json({
+      status: "success",
+      data: data,
+    });
+  } catch (error) {
+    return res.json({
+      status: "failed",
     });
   }
 });

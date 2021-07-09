@@ -589,7 +589,11 @@ const selectBundles = async (req, res) => {
             bundleInfo.bundleID.toString() == bundle._id.toString()
         );
         data.push({
-          ...bundle._doc,
+          viewed: bundle._doc.viewed,
+          liked: bundle._doc.liked,
+          price: bundle._doc.price,
+          _id: bundle._doc._id,
+          name: bundle._doc.name,
           items: bundleItems,
         });
       });
@@ -640,7 +644,11 @@ const selectBundles = async (req, res) => {
           (bundleInfo) => bundleInfo.bundleID == bundle._id
         );
         data.push({
-          ...bundle._doc,
+          viewed: bundle._doc.viewed,
+          liked: bundle._doc.liked,
+          price: bundle._doc.price,
+          _id: bundle._doc._id,
+          name: bundle._doc.name,
           items: bundleItems,
         });
       });
@@ -674,7 +682,11 @@ const selectBundles = async (req, res) => {
           (bundleInfo) => bundleInfo.bundleID == bundle._id
         );
         data.push({
-          ...bundle._doc,
+          viewed: bundle._doc.viewed,
+          liked: bundle._doc.liked,
+          price: bundle._doc.price,
+          _id: bundle._doc._id,
+          name: bundle._doc.name,
           items: bundleItems,
         });
       });
