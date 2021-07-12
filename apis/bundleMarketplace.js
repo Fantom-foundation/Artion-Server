@@ -158,40 +158,42 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
     let tokenIDs = req.body.tokenID;
     let quantities = req.body.quantity;
     let newPrice = parseFloat(req.body.newPrice);
-
-    // update bundle info
-    if (newPrice) {
+    if (nfts.length == 0) {
+      await Bundle.deleteOne({ _id: bundleID });
+      await BundleInfo.deleteMany({ bundleID: bundleID });
+    } else {
+      // update bundle info
       let bundle = await Bundle.findById(bundleID);
       bundle.price = newPrice;
       await bundle.save();
-    }
 
-    // first remove all bundle info with the bundle's id
-    await BundleInfo.deleteMany({ bundleID: bundleID });
+      // first remove all bundle info with the bundle's id
+      await BundleInfo.deleteMany({ bundleID: bundleID });
 
-    // now create new bundle infos
-    let promise = nfts.map(async (_, index) => {
-      let address = nfts[index];
-      let tokenID = parseInt(tokenIDs[index]);
-      let supply = parseInt(quantities[index]);
-      let tokenType = await getTokenType(address);
+      // now create new bundle infos
+      let promise = nfts.map(async (_, index) => {
+        let address = nfts[index];
+        let tokenID = parseInt(tokenIDs[index]);
+        let supply = parseInt(quantities[index]);
+        let tokenType = await getTokenType(address);
 
-      let bundleItem = new BundleInfo();
-      bundleItem.contractAddress = address;
-      bundleItem.bundleID = bundleID;
-      bundleItem.tokenID = tokenID;
-      bundleItem.supply = supply;
-      bundleItem.tokenType = tokenType;
+        let bundleItem = new BundleInfo();
+        bundleItem.contractAddress = address;
+        bundleItem.bundleID = bundleID;
+        bundleItem.tokenID = tokenID;
+        bundleItem.supply = supply;
+        bundleItem.tokenType = tokenType;
 
-      let token = await NFTITEM.findOne({
-        contractAddress: address,
-        tokenID: tokenID,
+        let token = await NFTITEM.findOne({
+          contractAddress: address,
+          tokenID: tokenID,
+        });
+        let tokenURI = token.tokenURI;
+        bundleItem.tokenURI = tokenURI;
+        await bundleItem.save();
       });
-      let tokenURI = token.tokenURI;
-      bundleItem.tokenURI = tokenURI;
-      await bundleItem.save();
-    });
-    await Promise.all(promise);
+      await Promise.all(promise);
+    }
     return res.json({});
   } catch (error) {
     return res.json({ status: "failed" });
