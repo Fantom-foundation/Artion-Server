@@ -12,6 +12,7 @@ const Account = mongoose.model("Account");
 const service_auth = require("./middleware/auth.tracker");
 
 const sendEmail = require("../mailer/marketplaceMailer");
+const notifications = require("../mailer/followMailer");
 const getCollectionName = require("../mailer/utils");
 
 const contractutils = require("../services/contract.utils");
@@ -87,6 +88,14 @@ router.post("/itemListed", service_auth, async (req, res) => {
       newList.startTime = startingTime;
       await newList.save();
     } catch (error) {}
+    // now notify followers
+    notifications.notifySingleItemListed(
+      owner,
+      nft,
+      tokenID,
+      quantity,
+      pricePerItem
+    );
     return res.json({});
   } catch (error) {
     return res.json({ status: "failed" });

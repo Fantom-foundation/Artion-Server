@@ -13,6 +13,7 @@ const NFTITEM = mongoose.model("NFTITEM");
 const router = require("express").Router();
 const service_auth = require("./middleware/auth.tracker");
 const sendEmail = require("../mailer/bundleMailer");
+const notifications = require("../mailer/followMailer");
 
 // check if nft is erc721 or 1155
 const getTokenType = async (address) => {
@@ -42,9 +43,11 @@ router.post("itemListed", service_auth, async (req, res) => {
 
     //   update bundle's list time & price
     let bundle = await Bundle.findById(bundleID);
+    let bundleName = bundle.name;
     bundle.price = price;
     bundle.listedAt = Date.now();
     await bundle.save();
+
     // save the new listing
     let listing = new BundleListing();
     listing.bundleID = bundleID;
@@ -62,6 +65,8 @@ router.post("itemListed", service_auth, async (req, res) => {
     history.activity = "List";
     history.createdAt = Date.now();
     await history.save();
+    // notify follower
+    notifications.notifyBundleListing(bundleID, bundleName, owner, price);
     return res.json({});
   } catch (error) {
     return res.json({ status: "failed" });

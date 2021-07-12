@@ -10,6 +10,7 @@ const TradeHistory = mongoose.model("TradeHistory");
 
 const sendEmail = require("../mailer/auctionMailer");
 const getCollectionName = require("../mailer/utils");
+const notifications = require("../mailer/followMailer");
 
 const get721ItemName = async (nft, tokenID) => {
   try {
@@ -73,6 +74,8 @@ router.post("/auctionCreated", service_auth, async (req, res) => {
         await token.save();
       }
     } catch (error) {}
+    // notify followers
+    notifications.notifyNewAuction(nftAddress, tokenID);
     return res.json({});
   } catch (error) {
     return res.status(400);
@@ -169,6 +172,8 @@ router.post("/updateAuctionReservePrice", service_auth, async (req, res) => {
         sendEmail(data);
       }
     }
+    // now send to followers notifications
+    notifications.notifyAuctionPriceUpdate(nftAddress, tokenID, reservePrice);
     return res.json({});
   } catch (error) {
     return res.json({ status: "failed" });
