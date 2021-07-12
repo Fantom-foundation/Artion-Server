@@ -38,11 +38,15 @@ const notifyBundleCreation = async (address, bundleID, bundleName) => {
   const artionUri = `${app_url}bundle/${bundleID}`;
   try {
     const followers = await Follow.find({ to: address });
+    console.log("followers");
+    console.log(followers);
     let addresses = followers.map((follower) => follower.from);
     let accounts = await Account.find({ address: { $in: addresses } });
     let emails = accounts.map((account) =>
       account.email ? account.email : null
     );
+    console.log("emails");
+    console.log(emails);
 
     let owner = await getUserAlias(address);
     let message = {
@@ -50,16 +54,22 @@ const notifyBundleCreation = async (address, bundleID, bundleName) => {
       from: foundationEmail,
       subject: "New Bundle Created",
       text: "artion notification",
-      html: `Dear Artion User! <br/> Artion user(${owner}) has created a  new Bundle(bundleName).  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+      html: `Dear Artion User! <br/> Artion user(${owner}) has created a  new Bundle(${bundleName}).  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
     };
     sgMail.sendMultiple(message).then(
-      () => {},
+      () => {
+        console.log("email has been sent");
+      },
       (error) => {
         if (error.response) {
+          console.log("cannot send email");
         }
       }
     );
-  } catch (error) {}
+  } catch (error) {
+    console.log("catch ----");
+    console.log(error);
+  }
 };
 
 const nofifyNFTShowUp = async (address, contractAddress, tokenID) => {
