@@ -166,11 +166,17 @@ const notifySingleItemListed = async (
     let owner = ownerAccount.alias;
 
     const followers = await Follow.find({ to: address });
+    console.log("followers are ");
+    console.log(followers);
     let addresses = followers.map((follower) => follower.from);
     let accounts = await Account.find({ address: { $in: addresses } });
+    console.log("accounts are");
+    console.log(accounts);
     let emails = accounts.map((account) =>
       account.email ? account.email : null
     );
+    console.log("emails are ");
+    console.log(emails);
     let message = {
       to: emails,
       from: foundationEmail,
