@@ -39,15 +39,11 @@ const notifyBundleCreation = async (address, bundleID, bundleName) => {
   const artionUri = `${app_url}bundle/${bundleID}`;
   try {
     const followers = await Follow.find({ to: address });
-    console.log("followers");
-    console.log(followers);
     let addresses = followers.map((follower) => follower.from);
     let accounts = await Account.find({ address: { $in: addresses } });
     let emails = accounts.map((account) =>
       account.email ? account.email : null
     );
-    console.log("emails");
-    console.log(emails);
 
     let owner = await getUserAlias(address);
     let message = {
@@ -63,15 +59,10 @@ const notifyBundleCreation = async (address, bundleID, bundleName) => {
       },
       (error) => {
         if (error.response) {
-          console.log("notify new bundle, in sending email");
-          console.log(error);
         }
       }
     );
-  } catch (error) {
-    console.log("catch ----");
-    console.log(error);
-  }
+  } catch (error) {}
 };
 
 const nofifyNFTShowUp = async (address, contractAddress, tokenID) => {
@@ -100,8 +91,6 @@ const nofifyNFTShowUp = async (address, contractAddress, tokenID) => {
       () => {},
       (error) => {
         if (error.response) {
-          console.log("notify new nft item, in sending email");
-          console.log(error);
         }
       }
     );
@@ -137,15 +126,10 @@ const notifyAuctionPriceUpdate = async (contractAddress, tokenID, price) => {
       () => {},
       (error) => {
         if (error.response) {
-          console.log("notify auction reserve price, in sending email");
-          console.log(error);
         }
       }
     );
-  } catch (error) {
-    console.log("notifyAuctionPriceUpdate catch");
-    console.log(error);
-  }
+  } catch (error) {}
 };
 
 const notifySingleItemListed = async (
@@ -166,12 +150,8 @@ const notifySingleItemListed = async (
     let owner = ownerAccount.alias;
 
     const followers = await Follow.find({ to: address });
-    console.log("followers are ");
-    console.log(followers);
     let addresses = followers.map((follower) => follower.from);
     let accounts = await Account.find({ address: { $in: addresses } });
-    console.log("accounts are");
-    console.log(accounts);
     let emails = accounts.map((account) =>
       account.email ? account.email : null
     );
@@ -183,22 +163,17 @@ const notifySingleItemListed = async (
       subject: "New Item Listing",
       text: "artion notification",
       html: `Dear Artion User! <br/> ${owner} has listed ${quantity} ${nftName}${
-        quantity > 1 ? "s" : null
+        quantity > 1 ? "s" : ""
       } at ${price} FTM  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
     };
     sgMail.sendMultiple(message).then(
       () => {},
       (error) => {
         if (error.response) {
-          console.log("notify new item listing, in sending email");
-          console.log(error);
         }
       }
     );
-  } catch (error) {
-    console.log("notifySingleItemListed catch");
-    console.log(error);
-  }
+  } catch (error) {}
 };
 
 const notifyNewAuction = async (contractAddress, tokenID) => {
@@ -228,31 +203,22 @@ const notifyNewAuction = async (contractAddress, tokenID) => {
         () => {},
         (error) => {
           if (error.response) {
-            console.log("notify new auction, in sending email");
-            console.log(error);
           }
         }
       );
     } catch (error) {}
-  } catch (error) {
-    console.log("notifyNewAuction catch");
-    console.log(error);
-  }
+  } catch (error) {}
 };
 
 const notifyBundleListing = async (bundleID, bundleName, address, price) => {
   const artionUri = `${app_url}bundle/${bundleID}`;
   try {
     const followers = await Follow.find({ to: address });
-    console.log("followers");
-    console.log(followers);
     let addresses = followers.map((follower) => follower.from);
     let accounts = await Account.find({ address: { $in: addresses } });
     let emails = accounts.map((account) =>
       account.email ? account.email : null
     );
-    console.log("emails");
-    console.log(emails);
 
     let owner = await getUserAlias(address);
     let message = {
@@ -263,19 +229,75 @@ const notifyBundleListing = async (bundleID, bundleName, address, price) => {
       html: `Dear Artion User! <br/> Artion user(${owner}) has listed a  Bundle(${bundleName}) at ${price} FTM.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
     };
     sgMail.sendMultiple(message).then(
-      () => {
-        console.log("email has been sent");
-      },
+      () => {},
       (error) => {
         if (error.response) {
-          console.log("cannot send email");
         }
       }
     );
-  } catch (error) {
-    console.log("catch ----");
-    console.log(error);
-  }
+  } catch (error) {}
+};
+
+const notifyBundleUpdate = async (bundleID, bundleName, address, price) => {
+  const artionUri = `${app_url}bundle/${bundleID}`;
+  try {
+    const followers = await Follow.find({ to: address });
+    let addresses = followers.map((follower) => follower.from);
+    let accounts = await Account.find({ address: { $in: addresses } });
+    let emails = accounts.map((account) =>
+      account.email ? account.email : null
+    );
+
+    let owner = await getUserAlias(address);
+    let message = {
+      to: emails,
+      from: foundationEmail,
+      subject: "Bundle Updated",
+      text: "artion notification",
+      html: `Dear Artion User! <br/> Artion user(${owner}) has updated a Bundle(${bundleName})'s price to${price} FTM.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+    };
+    sgMail.sendMultiple(message).then(
+      () => {},
+      (error) => {
+        if (error.response) {
+        }
+      }
+    );
+  } catch (error) {}
+};
+
+const nofityNFTUpdated = async (address, contractAddress, tokenID, price) => {
+  try {
+    const artionUri = `${app_url}explore/${contractAddress}/${tokenID}`;
+    let nft = await NFTITEM.findOne({
+      contractAddress: contractAddress,
+      tokenID: tokenID,
+    });
+    let nftName = nft.name ? nft.name : nft.tokenID;
+    let ownerAccount = await Account.findOne({ address: address });
+    let owner = ownerAccount.alias;
+
+    const followers = await Follow.find({ to: address });
+    let addresses = followers.map((follower) => follower.from);
+    let accounts = await Account.find({ address: { $in: addresses } });
+    let emails = accounts.map((account) =>
+      account.email ? account.email : null
+    );
+    let message = {
+      to: emails,
+      from: foundationEmail,
+      subject: "Item Update",
+      text: "artion notification",
+      html: `Dear Artion User! <br/> ${owner} has updated ${nftName} to ${price} FTM  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+    };
+    sgMail.sendMultiple(message).then(
+      () => {},
+      (error) => {
+        if (error.response) {
+        }
+      }
+    );
+  } catch (error) {}
 };
 
 const notifications = {
@@ -285,6 +307,8 @@ const notifications = {
   notifySingleItemListed,
   notifyNewAuction,
   notifyBundleListing,
+  nofityNFTUpdated,
+  notifyBundleUpdate,
 };
 
 module.exports = notifications;

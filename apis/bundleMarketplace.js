@@ -164,6 +164,7 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
     } else {
       // update bundle info
       let bundle = await Bundle.findById(bundleID);
+      let bundleName = bundle.name;
       bundle.price = newPrice;
       await bundle.save();
 
@@ -193,6 +194,9 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
         await bundleItem.save();
       });
       await Promise.all(promise);
+
+      // notify
+      notifications.notifyBundleUpdate(bundleID, bundleName, owner, newPrice);
     }
     return res.json({});
   } catch (error) {

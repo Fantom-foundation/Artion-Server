@@ -228,6 +228,9 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
       list.price = price;
       await list.save();
     }
+
+    // send notification
+    notifications.nofityNFTUpdated(owner, nft, tokenID, price);
     return res.json({});
   } catch (error) {
     return res.json({ status: "failed" });
