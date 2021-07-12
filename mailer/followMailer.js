@@ -10,6 +10,7 @@ const mongoose = require("mongoose");
 const toLowerCase = require("../utils/utils");
 const Account = mongoose.model("Account");
 const Follow = mongoose.model("Follow");
+const NFTITEM = mongoose.model("NFTITEM");
 
 const getUserAlias = async (walletAddress) => {
   try {
