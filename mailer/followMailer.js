@@ -254,7 +254,7 @@ const notifyBundleUpdate = async (bundleID, bundleName, address, price) => {
       from: foundationEmail,
       subject: "Bundle Updated",
       text: "artion notification",
-      html: `Dear Artion User! <br/> Artion user(${owner}) has updated a Bundle(${bundleName})'s price to${price} FTM.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+      html: `Dear Artion User! <br/> Artion user(${owner}) has updated a Bundle(${bundleName})'s price to ${price} FTM.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
     };
     sgMail.sendMultiple(message).then(
       () => {},
