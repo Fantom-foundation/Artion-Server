@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
 const TradeHistory = mongoose.Schema(
   {
@@ -8,12 +8,12 @@ const TradeHistory = mongoose.Schema(
     tokenID: { type: Number, required: true },
     price: { type: Number, required: true },
     value: { type: Number, default: 1 },
-    saleDate: { type: Date, default: new Date() },
+    saleDate: { type: Date, index: true },
     isAuction: { type: Boolean, default: false },
   },
   {
     timestamps: true,
-  },
-)
+  }
+);
 
-mongoose.model('TradeHistory', TradeHistory)
+mongoose.model("TradeHistory", TradeHistory);

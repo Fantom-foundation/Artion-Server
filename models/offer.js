@@ -9,5 +9,6 @@ const Offer = mongoose.Schema({
   pricePerItem: { type: Number },
   deadline: { type: Number },
 });
+// Offer.index({ minter: 1, tokenID: -1 }, { unique: true });
 
 mongoose.model("Offer", Offer);

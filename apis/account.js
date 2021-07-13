@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 
 const auth = require("./middleware/auth");
 const Account = mongoose.model("Account");
+const Follow = mongoose.model("Follow");
 
 const pinataSDK = require("@pinata/sdk");
 const pinata = pinataSDK(
@@ -13,26 +14,15 @@ const pinata = pinataSDK(
   process.env.PINATA_SECRET_API_KEY
 );
 
-const jwt = require("jsonwebtoken");
-const jwt_secret = process.env.JWT_SECRET;
+const toLowerCase = require("../utils/utils");
 
-const extractAddress = (req, res) => {
-  let authorization = req.headers.authorization.split(" ")[1],
-    decoded;
-  try {
-    decoded = jwt.verify(authorization, jwt_secret);
-  } catch (e) {
-    return res.status(401).send("unauthorized");
-  }
-  let address = decoded.data;
-  return address;
-};
+const extractAddress = require("../services/address.utils");
 
-const uploadPath = "/home/jason/nft-marketplace/nifty-server/uploads/";
-// const uploadPath = "uploads/";
+const uploadPath = process.env.UPLOAD_PATH;
 
 const pinAccountAvatar = async (account, imgData, userName, address, res) => {
   // check wether the account is new or already existing one -> unpin the file
+  address = toLowerCase(address);
   if (account) {
     let hash = account.imageHash;
     try {
@@ -45,7 +35,7 @@ const pinAccountAvatar = async (account, imgData, userName, address, res) => {
   );
   let fileName = `${userName}${address}.${extension}`;
   let base64Data = imgData.replace(`data:image\/${extension};base64,`, "");
-  await fs.writeFile(uploadPath + fileName, base64Data, "base64", (err) => {
+  fs.writeFile(uploadPath + fileName, base64Data, "base64", (err) => {
     if (err) {
       return res.status(400).json({
         status: "failed to save an image 1",
@@ -77,7 +67,6 @@ const pinAccountAvatar = async (account, imgData, userName, address, res) => {
     } catch (error) {}
     return result.IpfsHash;
   } catch (error) {
-    console.log(error);
     return res.status(400).json({
       status: "failed to save an image 2",
     });
@@ -91,6 +80,7 @@ router.post("/accountdetails", auth, async (req, res) => {
     if (err) {
       return res.status(400).json({
         status: "failed",
+        data: 0,
       });
     }
     let address = extractAddress(req, res);
@@ -99,50 +89,75 @@ router.post("/accountdetails", auth, async (req, res) => {
     let bio = fields.bio;
     let imgData = fields.imgData;
     let account = await Account.findOne({ address: address });
-    if (imgData.startsWith("https")) {
-      if (account) {
-        account.alias = alias;
-        account.email = email;
-        account.bio = bio;
-        let _account = await account.save();
-        return res.json({
-          status: "success",
-          data: _account,
-        });
+    if (imgData) {
+      if (imgData.startsWith("https")) {
+        if (account) {
+          account.alias = alias;
+          account.email = email;
+          account.bio = bio;
+          let _account = await account.save();
+          return res.json({
+            status: "success",
+            data: _account,
+          });
+        } else {
+          return res.status(400).json({
+            status: "failed",
+            data: 1,
+          });
+        }
       } else {
-        return res.status(400).json({
-          status: "failed",
-        });
+        let ipfsHash = await pinAccountAvatar(
+          account,
+          imgData,
+          alias,
+          address,
+          res
+        );
+        if (account) {
+          account.alias = alias;
+          account.email = email;
+          account.bio = bio;
+          account.imageHash = ipfsHash;
+          let _account = await account.save();
+          return res.json({
+            status: "success",
+            data: _account.toAccountJSON(),
+          });
+        } else {
+          let newAccount = new Account();
+          newAccount.address = address;
+          newAccount.alias = alias;
+          newAccount.email = email;
+          newAccount.bio = bio;
+          newAccount.imageHash = ipfsHash;
+          let _account = await newAccount.save();
+          return res.json({
+            status: "success",
+            data: _account.toAccountJSON(),
+          });
+        }
       }
     } else {
-      let ipfsHash = await pinAccountAvatar(
-        account,
-        imgData,
-        alias,
-        address,
-        res
-      );
       if (account) {
         account.alias = alias;
         account.email = email;
         account.bio = bio;
-        account.imageHash = ipfsHash;
         let _account = await account.save();
         return res.json({
           status: "success",
-          data: _account,
+          data: _account.toAccountJSON(),
         });
       } else {
-        let newAccount = new Account();
-        newAccount.address = address;
-        newAccount.alias = alias;
-        newAccount.email = email;
-        newAccount.bio = bio;
-        newAccount.imageHash = ipfsHash;
-        let _account = await newAccount.save();
+        let account = new Account();
+        account.address = address;
+        account.alias = alias;
+        account.email = email;
+        account.bio = bio;
+        let _account = await account.save();
         return res.json({
           status: "success",
-          data: _account,
+          data: _account.toAccountJSON(),
         });
       }
     }
@@ -157,7 +172,7 @@ router.get("/getaccountinfo", auth, async (req, res) => {
   if (account) {
     return res.json({
       status: "success",
-      data: account,
+      data: account.toAccountJSON(),
     });
   } else {
     return res.status(400).json({
@@ -170,15 +185,31 @@ router.get("/getaccountinfo", auth, async (req, res) => {
 
 router.post("/getuseraccountinfo", async (req, res) => {
   let address = req.body.address;
+  address = toLowerCase(address);
   let account = await Account.findOne({ address: address });
+  let followers = await Follow.find({ to: address });
+  let followings = await Follow.find({ from: address });
   if (account) {
     return res.json({
       status: "success",
-      data: account,
+      data: {
+        address: account.address,
+        alias: account.alias,
+        email: account.email,
+        bio: account.bio,
+        imageHash: account.imageHash,
+        bannerHash: account.bannerHash,
+        followers: followers.length,
+        followings: followings.length,
+      },
     });
   } else {
-    return res.status(400).json({
-      status: "failed",
+    return res.json({
+      status: "success",
+      data: {
+        followers: followers.length,
+        followings: followings.length,
+      },
     });
   }
 });

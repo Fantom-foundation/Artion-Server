@@ -6,9 +6,10 @@ const Listing = mongoose.Schema({
   tokenID: { type: Number, required: true },
   quantity: { type: Number, default: 1 },
   price: { type: Number, required: true },
-  startTime: { type: Date, default: new Date() },
+  startTime: { type: Date },
   isPrivate: { type: Boolean, default: false },
   allowedAddress: { type: String },
 });
+Listing.index({ minter: 1, tokenID: -1, owner: 1 }, { unique: true });
 
 mongoose.model("Listing", Listing);

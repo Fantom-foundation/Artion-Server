@@ -1,45 +1,42 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
 const ERC721TOKEN = mongoose.Schema(
   {
     contractAddress: { type: String, required: true },
     tokenID: { type: Number, required: true },
     tokenURI: { type: String, required: true },
+    thumbnailPath: { type: String, default: "-" },
     symbol: { type: String },
+    name: { type: String }, //for search filter
     owner: { type: String, required: true },
     royalty: { type: Number, default: 0 },
     category: [{ type: String }],
-    price: { type: Number, default: 0 },
-    lastSalePrice: { type: Number, default: 0 },
-    viewed: { type: Number, default: 0 },
-    createdAt: { type: Date, default: Date.now },
-    listedAt: { type: Date },
-    soldAt: { type: Date },
-    saleEndsAt: { type: Date },
+    price: { type: Number, default: 0 }, //for most expensive
+    lastSalePrice: { type: Number, default: 0 }, //for highest last sale price
+    viewed: { type: Number, default: 0 }, //for mostly viewed
+    createdAt: { type: Date, default: Date.now }, //for recently created
+    listedAt: { type: Date }, //for recently listed
+    soldAt: { type: Date }, //for recently sold
+    saleEndsAt: { type: Date }, //for auction
   },
   {
     timestamps: true,
-  },
-)
+  }
+);
+ERC721TOKEN.index(
+  { tokenURI: 1, tokenID: -1, contractAddress: -1 },
+  { unique: true }
+);
 
-//*** --- function for response JSON for record list request
-ERC721TOKEN.methods.toERC721TOKENJson = function () {
+ERC721TOKEN.methods.toSimpleJson = function () {
   return {
     contractAddress: this.contractAddress,
     tokenID: this.tokenID,
-    symbol: this.symbol,
     owner: this.owner,
     tokenURI: this.tokenURI,
-    royalty: this.royalty,
-    category: this.category,
-    collectionID: this.collectionID,
-    lastSalePrice: this.lastSalePrice,
+    price: this.price,
     viewed: this.viewed,
-    createdAt: this.createdAt,
-    listedAt: this.listedAt,
-    soldAt: this.soldAt,
-    saleEndsAt: this.saleEndsAt,
-  }
-}
+  };
+};
 
-mongoose.model('ERC721TOKEN', ERC721TOKEN)
+mongoose.model("ERC721TOKEN", ERC721TOKEN);

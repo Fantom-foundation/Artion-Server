@@ -2,11 +2,18 @@ const mongoose = require("mongoose");
 
 const Account = mongoose.Schema(
   {
-    address: { type: String, required: true },
-    alias: { type: String, required: true },
-    email: { type: String, required: true },
-    bio: { type: String, required: true },
+    address: {
+      type: String,
+      required: true,
+      index: {
+        unique: true,
+      },
+    },
+    alias: { type: String },
+    email: { type: String },
+    bio: { type: String },
     imageHash: { type: String },
+    bannerHash: { type: String },
     bundleIDs: [{ type: String }],
   },
   {
@@ -21,8 +28,8 @@ Account.methods.toAccountJSON = function () {
     alias: this.alias,
     email: this.email,
     bio: this.bio,
-    imgHash: this.imgHash,
-    assetTkIds: this.bundleIDs,
+    imageHash: this.imageHash,
+    bannerHash: this.bannerHash,
   };
 };
 
