@@ -165,6 +165,7 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
       // update bundle info
       let bundle = await Bundle.findById(bundleID);
       let bundleName = bundle.name;
+      let oldPrice = bundle.price;
       bundle.price = newPrice;
       await bundle.save();
 
@@ -196,7 +197,8 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
       await Promise.all(promise);
 
       // notify
-      notifications.notifyBundleUpdate(bundleID, bundleName, owner, newPrice);
+      if (oldPrice != newPrice)
+        notifications.notifyBundleUpdate(bundleID, bundleName, owner, newPrice);
     }
     return res.json({});
   } catch (error) {

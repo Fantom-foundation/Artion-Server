@@ -594,6 +594,10 @@ const selectBundles = async (req, res) => {
           price: bundle._doc.price,
           _id: bundle._doc._id,
           name: bundle._doc.name,
+          lastSalePrice: bundle._doc.lastSalePrice,
+          listedAt: bundle._doc.listedAt,
+          soldAt: bundle._doc.soldAt,
+          createdAt: bundle._doc.createdAt,
           items: bundleItems,
         });
       });
@@ -649,6 +653,10 @@ const selectBundles = async (req, res) => {
           price: bundle._doc.price,
           _id: bundle._doc._id,
           name: bundle._doc.name,
+          lastSalePrice: bundle._doc.lastSalePrice,
+          listedAt: bundle._doc.listedAt,
+          soldAt: bundle._doc.soldAt,
+          createdAt: bundle._doc.createdAt,
           items: bundleItems,
         });
       });
@@ -687,6 +695,10 @@ const selectBundles = async (req, res) => {
           price: bundle._doc.price,
           _id: bundle._doc._id,
           name: bundle._doc.name,
+          lastSalePrice: bundle._doc.lastSalePrice,
+          listedAt: bundle._doc.listedAt,
+          soldAt: bundle._doc.soldAt,
+          createdAt: bundle._doc.createdAt,
           items: bundleItems,
         });
       });
