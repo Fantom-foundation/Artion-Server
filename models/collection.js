@@ -2,6 +2,8 @@ const mongoose = require("mongoose");
 
 const Collection = mongoose.Schema({
   erc721Address: { type: String, required: true, index: { unique: true } },
+  owner: { type: String, required: true },
+  email: { type: String },
   collectionName: { type: String, required: true },
   description: { type: String, required: true },
   categories: [{ type: String }],
@@ -12,11 +14,14 @@ const Collection = mongoose.Schema({
   instagramHandle: { type: String },
   mediumHandle: { type: String },
   telegram: { type: String },
+  status: { type: Boolean, default: false },
 });
 
 Collection.methods.toJson = function () {
   return {
     erc721Address: this.erc721Address,
+    owner: this.owner,
+    email: this.email,
     collectionName: this.collectionName,
     description: this.description,
     categories: this.categories,
@@ -27,6 +32,7 @@ Collection.methods.toJson = function () {
     instagramHandle: this.instagramHandle,
     mediumHandle: this.mediumHandle,
     telegram: this.telegram,
+    status: this.status,
   };
 };
 

@@ -34,7 +34,7 @@ const getUserAlias = async (walletAddress) => {
   }
 };
 
-router.post("itemListed", service_auth, async (req, res) => {
+router.post("/itemListed", service_auth, async (req, res) => {
   try {
     let bundleID = req.body.bundleID;
     let owner = req.body.owner;
