@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const Collection = mongoose.Schema({
-  erc721Address: { type: String, required: true, index: { unique: true } },
+  erc721Address: { type: String, required: true },
   owner: { type: String, required: true },
   email: { type: String },
   collectionName: { type: String, required: true },
@@ -16,6 +16,8 @@ const Collection = mongoose.Schema({
   telegram: { type: String },
   status: { type: Boolean, default: false },
 });
+
+Collection.index({ erc721Address: 1 }, { unique: true });
 
 Collection.methods.toJson = function () {
   return {

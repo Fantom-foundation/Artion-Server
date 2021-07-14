@@ -184,15 +184,6 @@ router.post("/reviewApplication", admin_auth, async (req, res) => {
   }
 });
 
-router.post("/registerCollectionFromFactory", auth, async (req, res) => {
-  try {
-  } catch (error) {
-    return res.json({
-      status: "failed",
-    });
-  }
-});
-
 router.post("/searchCollection", auth, async (req, res) => {
   let erc721Address = req.body.erc721Address;
   erc721Address = toLowerCase(erc721Address);

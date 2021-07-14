@@ -5,4 +5,6 @@ const FactoryCollection = mongoose.Schema({
   minter: { type: String, required: true },
 });
 
+FactoryCollection.index({ minter: 1 }, { unique: true });
+
 mongoose.model("FactoryCollection", FactoryCollection);

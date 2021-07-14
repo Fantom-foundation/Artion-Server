@@ -49,7 +49,7 @@ router.get("/getCollections", async (_, res) => {
   all.push(...collections_721);
   all.push(...collections_1155);
   all = sortBy(all, "name", "desc");
-  let allCollections = await Collection.find({});
+  let allCollections = await Collection.find({ status: true });
 
   let savedAddresses = [];
   let allContracts = new Array();
