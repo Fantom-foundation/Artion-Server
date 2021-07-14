@@ -176,6 +176,9 @@ router.post("/reviewApplication", admin_auth, async (req, res) => {
         to: email,
         subject: "Collection Registerd Successfully!",
       });
+      return res.json({
+        status: "success",
+      });
     } else {
       return res.json({
         status: "failed",
