@@ -58,7 +58,7 @@ const notifyAdminForNewCollectionApplication = () => {
   let message = {
     to: adminEmails,
     from: foundationEmail,
-    subject: data.subject,
+    subject: "New Application",
     text: "artion notification",
     html: "New collection has been submitted for your review.",
   };
@@ -81,4 +81,3 @@ const applicationMailer = {
 };
 
 module.exports = applicationMailer;
-
