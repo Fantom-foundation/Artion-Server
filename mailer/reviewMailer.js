@@ -4,6 +4,8 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const foundationEmail = "support.artion@fantom.foundation";
 const team = "Artion team from Fantom Foundation";
 
+const adminEmails = ["fortune.onchain@gmail.com"];
+
 const createDenyMessage = (data) => {
   return {
     to: data.to,
@@ -20,16 +22,19 @@ const createApproveMessage = (data) => {
     from: foundationEmail,
     subject: data.subject,
     text: "artion notification",
-    html: data.message,
+    html: "Dear Artion User! <br/> Your collection has been successfully registered in Artion. <br/><br/> Artion Team",
   };
 };
 
 const sendApplicationDenyEmail = (data) => {
   let message = createDenyMessage(data);
-  sgMail.send(message).then(
-    () => {},
+  sgMail.sendMultiple(message).then(
+    () => {
+      console.log("email sent");
+    },
     (error) => {
       if (error.response) {
+        console.log(error);
       }
     }
   );
@@ -37,10 +42,13 @@ const sendApplicationDenyEmail = (data) => {
 
 const sendApplicationReviewedEmail = (data) => {
   let message = createApproveMessage(data);
-  sgMail.send(message).then(
-    () => {},
+  sgMail.sendMultiple(message).then(
+    () => {
+      console.log("email sent");
+    },
     (error) => {
       if (error.response) {
+        console.log(error);
       }
     }
   );
@@ -48,16 +56,19 @@ const sendApplicationReviewedEmail = (data) => {
 
 const notifyAdminForNewCollectionApplication = () => {
   let message = {
-    to: "fortune.onchain@gmail.com",
+    to: adminEmails,
     from: foundationEmail,
     subject: data.subject,
     text: "artion notification",
-    html: data.message,
+    html: "New collection has been submitted for your review.",
   };
-  sgMail.send(message).then(
-    () => {},
+  sgMail.sendMultiple(message).then(
+    () => {
+      console.log("email sent");
+    },
     (error) => {
       if (error.response) {
+        console.log(error);
       }
     }
   );

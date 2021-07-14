@@ -172,6 +172,10 @@ router.post("/reviewApplication", admin_auth, async (req, res) => {
       collection.status = true;
       await collection.save();
       // send email
+      applicationMailer.sendApplicationReviewedEmail({
+        to: email,
+        subject: "Collection Registerd Successfully!",
+      });
     } else {
       return res.json({
         status: "failed",
