@@ -4,7 +4,7 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const foundationEmail = "support.artion@fantom.foundation";
 const team = "Artion team from Fantom Foundation";
 
-const sendApplicationDenyEmail = (data) => {
+const createDenyMessage = (data) => {
   return {
     to: data.to,
     from: foundationEmail,
