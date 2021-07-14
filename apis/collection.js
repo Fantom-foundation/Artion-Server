@@ -145,6 +145,7 @@ router.post("/reviewApplication", admin_auth, async (req, res) => {
   try {
     let contractAddress = toLowerCase(req.body.contractAddress);
     let status = parseInt(req.body.status);
+    console.log(status);
     let collection = await Collection.findOne({
       erc721Address: contractAddress,
     });
@@ -182,6 +183,7 @@ router.post("/reviewApplication", admin_auth, async (req, res) => {
       });
     }
   } catch (error) {
+    console.log(error);
     return res.json({
       status: "failed",
     });

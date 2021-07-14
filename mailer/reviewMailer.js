@@ -81,3 +81,4 @@ const applicationMailer = {
 };
 
 module.exports = applicationMailer;
+
