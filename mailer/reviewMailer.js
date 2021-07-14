@@ -29,12 +29,9 @@ const createApproveMessage = (data) => {
 const sendApplicationDenyEmail = (data) => {
   let message = createDenyMessage(data);
   sgMail.sendMultiple(message).then(
-    () => {
-      console.log("email sent");
-    },
+    () => {},
     (error) => {
       if (error.response) {
-        console.log(error);
       }
     }
   );
@@ -43,12 +40,9 @@ const sendApplicationDenyEmail = (data) => {
 const sendApplicationReviewedEmail = (data) => {
   let message = createApproveMessage(data);
   sgMail.sendMultiple(message).then(
-    () => {
-      console.log("email sent");
-    },
+    () => {},
     (error) => {
       if (error.response) {
-        console.log(error);
       }
     }
   );
@@ -63,12 +57,9 @@ const notifyAdminForNewCollectionApplication = () => {
     html: "New collection has been submitted for your review.",
   };
   sgMail.sendMultiple(message).then(
-    () => {
-      console.log("email sent");
-    },
+    () => {},
     (error) => {
       if (error.response) {
-        console.log(error);
       }
     }
   );
