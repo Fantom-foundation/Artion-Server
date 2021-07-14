@@ -127,7 +127,7 @@ router.post("/collectiondetails", auth, async (req, res) => {
   }
 });
 
-router.get("/getReviewApplications", admin_auth, async (req, res) => {
+router.post("/getReviewApplications", admin_auth, async (req, res) => {
   try {
     let applications = await Collection.find({ status: false });
     return res.json({
