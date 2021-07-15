@@ -15,6 +15,8 @@ const Collection = mongoose.Schema({
   mediumHandle: { type: String },
   telegram: { type: String },
   status: { type: Boolean, default: false },
+  isInternal: { type: Boolean, default: false },
+  isOwnerble: { type: Boolean, default: false },
 });
 
 Collection.index({ erc721Address: 1 }, { unique: true });
@@ -35,6 +37,8 @@ Collection.methods.toJson = function () {
     mediumHandle: this.mediumHandle,
     telegram: this.telegram,
     status: this.status,
+    isInternal: this.isInternal,
+    isOwnerble: this.isOwnerble,
   };
 };
 
