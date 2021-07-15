@@ -2,7 +2,6 @@ require("dotenv").config();
 const sgMail = require("@sendgrid/mail");
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const foundationEmail = "support.artion@fantom.foundation";
-const team = "Artion team from Fantom Foundation";
 
 const adminEmails = ["fortune.onchain@gmail.com"];
 
@@ -12,7 +11,7 @@ const createDenyMessage = (data) => {
     from: foundationEmail,
     subject: data.subject,
     text: "artion notification",
-    html: `Your collection has been denied to register on Artion. <br/></br> reason : ${data.reason} </br></br> Thank You.  <br/><br/>${team}`,
+    html: `Your collection has been denied to register on Artion. <br/></br> reason : ${data.reason} </br></br> Thank You.  <br/><br/>`,
   };
 };
 
@@ -22,7 +21,7 @@ const createApproveMessage = (data) => {
     from: foundationEmail,
     subject: data.subject,
     text: "artion notification",
-    html: "Dear Artion User! <br/> Your collection has been successfully registered in Artion. <br/><br/> Artion Team",
+    html: "Dear Artion User! <br/> Your collection has been successfully registered in Artion. ",
   };
 };
 

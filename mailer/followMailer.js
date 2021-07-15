@@ -4,7 +4,6 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const app_url = process.env.APP_URL;
 const foundationEmail = "support.artion@fantom.foundation";
-const team = "Artion team from Fantom Foundation";
 
 const mongoose = require("mongoose");
 const toLowerCase = require("../utils/utils");
@@ -51,7 +50,7 @@ const notifyBundleCreation = async (address, bundleID, bundleName) => {
       from: foundationEmail,
       subject: "New Bundle Created",
       text: "artion notification",
-      html: `Dear Artion User! <br/> Artion user(${owner}) has created a  new Bundle(${bundleName}).  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+      html: `Dear Artion User! <br/> Artion user(${owner}) has created a  new Bundle(${bundleName}).  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>`,
     };
     sgMail.sendMultiple(message).then(
       () => {
@@ -85,7 +84,7 @@ const nofifyNFTShowUp = async (address, contractAddress, tokenID) => {
       from: foundationEmail,
       subject: "New NFT Item Created",
       text: "artion notification",
-      html: `Dear Artion User! <br/> New NFT Item(${nftName}) has shown up in ${owner}'s account.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+      html: `Dear Artion User! <br/> New NFT Item(${nftName}) has shown up in ${owner}'s account.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>`,
     };
     sgMail.sendMultiple(message).then(
       () => {},
@@ -120,7 +119,7 @@ const notifyAuctionPriceUpdate = async (contractAddress, tokenID, price) => {
       from: foundationEmail,
       subject: "Auction Reserve Price Update",
       text: "artion notification",
-      html: `Dear Artion User! <br/> Auction price for NFT Item(${nftName}) has updated to ${price} FTM in ${owner}'s account.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+      html: `Dear Artion User! <br/> Auction price for NFT Item(${nftName}) has updated to ${price} FTM in ${owner}'s account.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>`,
     };
     sgMail.sendMultiple(message).then(
       () => {},
@@ -164,7 +163,7 @@ const notifySingleItemListed = async (
       text: "artion notification",
       html: `Dear Artion User! <br/> ${owner} has listed ${quantity} ${nftName}${
         quantity > 1 ? "s" : ""
-      } at ${price} FTM  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+      } at ${price} FTM  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  `,
     };
     sgMail.sendMultiple(message).then(
       () => {},
@@ -197,7 +196,7 @@ const notifyNewAuction = async (contractAddress, tokenID) => {
         from: foundationEmail,
         subject: "New Auction",
         text: "artion notification",
-        html: `Dear Artion User! <br/> NFT Item(${nftName}) is now on Auction.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+        html: `Dear Artion User! <br/> NFT Item(${nftName}) is now on Auction.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>`,
       };
       sgMail.sendMultiple(message).then(
         () => {},
@@ -226,7 +225,7 @@ const notifyBundleListing = async (bundleID, bundleName, address, price) => {
       from: foundationEmail,
       subject: "Bundle Listed",
       text: "artion notification",
-      html: `Dear Artion User! <br/> Artion user(${owner}) has listed a  Bundle(${bundleName}) at ${price} FTM.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+      html: `Dear Artion User! <br/> Artion user(${owner}) has listed a  Bundle(${bundleName}) at ${price} FTM.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  `,
     };
     sgMail.sendMultiple(message).then(
       () => {},
@@ -254,7 +253,7 @@ const notifyBundleUpdate = async (bundleID, bundleName, address, price) => {
       from: foundationEmail,
       subject: "Bundle Updated",
       text: "artion notification",
-      html: `Dear Artion User! <br/> Artion user(${owner}) has updated a Bundle(${bundleName})'s price to ${price} FTM.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+      html: `Dear Artion User! <br/> Artion user(${owner}) has updated a Bundle(${bundleName})'s price to ${price} FTM.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  `,
     };
     sgMail.sendMultiple(message).then(
       () => {},
@@ -288,7 +287,7 @@ const nofityNFTUpdated = async (address, contractAddress, tokenID, price) => {
       from: foundationEmail,
       subject: "Item Update",
       text: "artion notification",
-      html: `Dear Artion User! <br/> ${owner} has updated ${nftName} to ${price} FTM  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+      html: `Dear Artion User! <br/> ${owner} has updated ${nftName} to ${price} FTM  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  `,
     };
     sgMail.sendMultiple(message).then(
       () => {},
