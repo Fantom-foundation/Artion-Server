@@ -14,8 +14,9 @@ const ftmScanApiKey = process.env.FTM_SCAN_API_KEY;
 const isValidERC1155 = require("../utils/1155_validator");
 const isvalidERC721 = require("../services/validator");
 const extractAddress = require("../services/address.utils");
-
 const applicationMailer = require("../mailer/reviewMailer");
+
+const FactoryUtils = require("../services/factory.utils");
 
 router.post("/collectiondetails", auth, async (req, res) => {
   let erc721Address = req.body.erc721Address;
@@ -53,8 +54,6 @@ router.post("/collectiondetails", auth, async (req, res) => {
   let telegram = req.body.telegram;
   let instagram = req.body.instagram;
   let email = req.body.email;
-  let isInternal = req.body.isInternal === "true";
-  let isOwnerble = req.body.isOwnerble === "true";
 
   let collection = await Collection.findOne({ erc721Address: erc721Address });
   if (collection) {
@@ -98,6 +97,8 @@ router.post("/collectiondetails", auth, async (req, res) => {
       category.type = 1155;
       await category.save();
     }
+
+    let isInternal = await FactoryUtils.isInternalCollection(erc721Address);
     // add a new collection
     let _collection = new Collection();
     _collection.erc721Address = erc721Address;
@@ -112,14 +113,18 @@ router.post("/collectiondetails", auth, async (req, res) => {
     _collection.mediumHandle = mediumHandle;
     _collection.telegram = telegram;
     _collection.instagramHandle = instagram;
-    _collection.status = false;
-    _collection.isInternal = isInternal;
-    _collection.isOwnerble = isOwnerble;
+
+    _collection.isInternal = isInternal[0];
+    if (isInternal[0]) {
+      _collection.isOwnerble = isInternal[1];
+      _collection.status = true;
+    } else _collection.status = false;
     _collection.email = email;
     let newCollection = await _collection.save();
     if (newCollection) {
       // notify admin about a new app
-      applicationMailer.notifyAdminForNewCollectionApplication();
+      if (!isInternal[0])
+        applicationMailer.notifyAdminForNewCollectionApplication();
       return res.send({
         status: "success",
         data: newCollection.toJson(),
