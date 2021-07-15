@@ -53,6 +53,8 @@ router.post("/collectiondetails", auth, async (req, res) => {
   let telegram = req.body.telegram;
   let instagram = req.body.instagram;
   let email = req.body.email;
+  let isInternal = req.body.isInternal === "true";
+  let isOwnerble = req.body.isOwnerble === "true";
 
   let collection = await Collection.findOne({ erc721Address: erc721Address });
   if (collection) {
@@ -111,6 +113,8 @@ router.post("/collectiondetails", auth, async (req, res) => {
     _collection.telegram = telegram;
     _collection.instagramHandle = instagram;
     _collection.status = false;
+    _collection.isInternal = isInternal;
+    _collection.isOwnerble = isOwnerble;
     _collection.email = email;
     let newCollection = await _collection.save();
     if (newCollection) {
@@ -124,6 +128,30 @@ router.post("/collectiondetails", auth, async (req, res) => {
       return res.send({
         status: "failed",
       });
+  }
+});
+
+router.post("/getMintableCollections", auth, async (req, res) => {
+  try {
+    let address = extractAddress(req, res);
+    let internalCollections = await Collection.find({
+      isInternal: true,
+      isOwnerble: false,
+    });
+    let myCollections = await Collection.find({
+      owner: address,
+      isInternal: true,
+      isOwnerble: true,
+    });
+    let collections = [...internalCollections, ...myCollections];
+    return res.json({
+      status: "success",
+      data: collections,
+    });
+  } catch (error) {
+    return res.json({
+      status: "failed",
+    });
   }
 });
 
