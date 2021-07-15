@@ -76,6 +76,8 @@ router.get("/getCollections", async (_, res) => {
           telegram: collection.telegram,
           isVerified: true,
           isVisible: true,
+          isInternal: collection.isInternal,
+          isOwnerble: collection.isOwnerble,
         });
       }
     } else {
