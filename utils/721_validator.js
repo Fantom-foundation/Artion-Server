@@ -17,8 +17,8 @@ const isValidERC721 = async (contractAddress) => {
       ERC1155InterfaceID.ABI,
       provider
     );
-    let is1155 = await testContract.supportsInterface(INTERFACEID);
-    return is1155;
+    let is721 = await testContract.supportsInterface(INTERFACEID);
+    return is721;
   } catch (error) {
     return false;
   }
