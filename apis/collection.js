@@ -81,7 +81,6 @@ router.post("/collectiondetails", auth, async (req, res) => {
         status: "failed",
       });
   } else {
-    console.log("else");
     // verify if 1155 smart contracts
     let is1155 = await isValidERC1155(erc721Address);
     if (is1155) {
@@ -98,15 +97,9 @@ router.post("/collectiondetails", auth, async (req, res) => {
       category.type = 1155;
       await category.save();
     } else {
-      let sc_721 = await ERC721CONTRACT.find({ address: erc721Address });
-      if (!sc_721) {
-        let _sc_721 = new ERC721CONTRACT();
-        _sc_721.address = erc721Address;
-        _sc_721.name = collectionName;
-        _sc_721.symbol = "Symbol";
-        _sc_721.isVerified = true;
-        await _sc_721.save();
-      }
+      let category = new Category();
+      category.minterAddress = erc721Address;
+      category.type = 721;
     }
 
     let isInternal = await FactoryUtils.isInternalCollection(erc721Address);
