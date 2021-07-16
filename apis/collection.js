@@ -103,7 +103,6 @@ router.post("/collectiondetails", auth, async (req, res) => {
     }
 
     let isInternal = await FactoryUtils.isInternalCollection(erc721Address);
-    console.log("isInternal", isInternal);
     // add a new collection
     let _collection = new Collection();
     _collection.erc721Address = erc721Address;
@@ -128,8 +127,13 @@ router.post("/collectiondetails", auth, async (req, res) => {
     let newCollection = await _collection.save();
     if (newCollection) {
       // notify admin about a new app
-      if (!isInternal[0])
-        applicationMailer.notifyAdminForNewCollectionApplication();
+      if (!isInternal[0]) {
+        applicationMailer.notifyAdminForNewCollectionApplication(); //notify admin
+        applicationMailer.notifyInternalCollectionDeployment(
+          erc721Address,
+          email
+        ); // notify register
+      }
       return res.send({
         status: "success",
         data: newCollection.toJson(),

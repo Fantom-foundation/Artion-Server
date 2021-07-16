@@ -64,10 +64,29 @@ const notifyAdminForNewCollectionApplication = () => {
   );
 };
 
+const notifyInternalCollectionDeployment = (address, email) => {
+  let message = {
+    to: email,
+    from: foundationEmail,
+    subject: "Collection Created",
+    text: "artion notification",
+    html: `New collection has been deployed with address ${address}`,
+  };
+  sgMail.send(message).then(
+    () => {},
+    (error) => {
+      if (error.response) {
+        console.error(error.response.body);
+      }
+    }
+  );
+};
+
 const applicationMailer = {
   sendApplicationDenyEmail,
   sendApplicationReviewedEmail,
   notifyAdminForNewCollectionApplication,
+  notifyInternalCollectionDeployment,
 };
 
 module.exports = applicationMailer;
