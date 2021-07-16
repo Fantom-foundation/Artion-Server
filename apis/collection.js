@@ -12,7 +12,7 @@ const admin_auth = require("./middleware/auth.admin");
 const toLowerCase = require("../utils/utils");
 const ftmScanApiKey = process.env.FTM_SCAN_API_KEY;
 const isValidERC1155 = require("../utils/1155_validator");
-const isvalidERC721 = require("../services/validator");
+const isvalidERC721 = require("../utils/721_validator");
 const extractAddress = require("../services/address.utils");
 const applicationMailer = require("../mailer/reviewMailer");
 
