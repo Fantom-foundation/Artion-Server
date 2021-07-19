@@ -93,9 +93,8 @@ router.post("/accountdetails", auth, async (req, res) => {
     let signature = fields.signature;
     let isValidSingature = await validateSingature(address, signature);
     if (!isValidSingature)
-      return res.json({
-        status: "failed",
-        data: 0,
+      return res.status(400).json({
+        status: "invalid singature",
       });
     let account = await Account.findOne({ address: address });
     if (imgData) {
