@@ -8,6 +8,8 @@ const auth = require("./middleware/auth");
 const Account = mongoose.model("Account");
 const Follow = mongoose.model("Follow");
 
+const validateSingature = require("../apis/middleware/auth.sign");
+
 const pinataSDK = require("@pinata/sdk");
 const pinata = pinataSDK(
   process.env.PINATA_API_KEY,
@@ -88,6 +90,12 @@ router.post("/accountdetails", auth, async (req, res) => {
     let email = fields.email;
     let bio = fields.bio;
     let imgData = fields.imgData;
+    let signature = fields.signature;
+    let isValidSingature = await validateSingature(address, signature);
+    if (!isValidSingature)
+      return res.status(400).json({
+        status: "invalid singature",
+      });
     let account = await Account.findOne({ address: address });
     if (imgData) {
       if (imgData.startsWith("https")) {
@@ -210,6 +218,32 @@ router.post("/getuseraccountinfo", async (req, res) => {
         followers: followers.length,
         followings: followings.length,
       },
+    });
+  }
+});
+
+router.get("/nonce/:address", auth, async (req, res) => {
+  try {
+    let address = toLowerCase(req.params.address);
+    let account = await Account.findOne({ address: address });
+    if (account) {
+      return res.json({
+        status: "success",
+        data: account.nonce,
+      });
+    } else {
+      let _account = new Account();
+      _account.address = address;
+      _account.nonce = Math.floor(Math.random() * 9999999);
+      let __account = await _account.save();
+      return res.json({
+        status: "success",
+        data: __account.nonce,
+      });
+    }
+  } catch (error) {
+    return res.json({
+      status: "failed",
     });
   }
 });
