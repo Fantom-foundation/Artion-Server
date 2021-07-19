@@ -8,6 +8,8 @@ const auth = require("./middleware/auth");
 const Account = mongoose.model("Account");
 const Follow = mongoose.model("Follow");
 
+const validateSingature = require("../apis/middleware/auth.sign");
+
 const pinataSDK = require("@pinata/sdk");
 const pinata = pinataSDK(
   process.env.PINATA_API_KEY,
@@ -88,6 +90,13 @@ router.post("/accountdetails", auth, async (req, res) => {
     let email = fields.email;
     let bio = fields.bio;
     let imgData = fields.imgData;
+    let signature = fields.signature;
+    let isValidSingature = await validateSingature(address, signature);
+    if (!isValidSingature)
+      return res.json({
+        status: "failed",
+        data: 0,
+      });
     let account = await Account.findOne({ address: address });
     if (imgData) {
       if (imgData.startsWith("https")) {

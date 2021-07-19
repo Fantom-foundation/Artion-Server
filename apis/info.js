@@ -16,7 +16,6 @@ const Auction = mongoose.model("Auction");
 const Bundle = mongoose.model("Bundle");
 
 const toLowerCase = require("../utils/utils");
-const auth = require("./middleware/auth");
 
 // list the newly minted 10 tokens
 router.get("/getNewestTokens", async (_, res) => {

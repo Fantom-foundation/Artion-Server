@@ -3,6 +3,8 @@ const jwt = require("jsonwebtoken");
 const jwt_secret = process.env.JWT_SECRET;
 const router = require("express").Router();
 const ethers = require("ethers");
+const mongoose = require("mongoose");
+const Account = mongoose.model("Account");
 const toLowerCase = require("../utils/utils");
 
 router.post("/getToken", (req, res) => {
@@ -14,6 +16,13 @@ router.post("/getToken", (req, res) => {
       token: "",
     });
   address = toLowerCase(address);
+  // save a new account if not registered
+  let account = await Account.findOne({ address: address });
+  if (!account) {
+    let newAccount = new Account();
+    newAccount.address = address;
+    await newAccount.save();
+  }
   let token = jwt.sign(
     {
       data: address,
