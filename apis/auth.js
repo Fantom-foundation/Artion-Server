@@ -7,7 +7,7 @@ const mongoose = require("mongoose");
 const Account = mongoose.model("Account");
 const toLowerCase = require("../utils/utils");
 
-router.post("/getToken", (req, res) => {
+router.post("/getToken", async (req, res) => {
   let address = req.body.address;
   let isAddress = ethers.utils.isAddress(address);
   if (!isAddress)
