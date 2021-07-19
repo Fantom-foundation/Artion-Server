@@ -20,6 +20,8 @@
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "emailvalid": "^1.0.3",
+    "eth-sig-util": "^3.0.1",
+    "ethereumjs-util": "^6.2.1",
     "ethers": "^5.1.4",
     "express": "^4.17.1",
     "firebase": "^8.2.7",

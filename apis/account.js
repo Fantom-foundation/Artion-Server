@@ -214,4 +214,30 @@ router.post("/getuseraccountinfo", async (req, res) => {
   }
 });
 
+router.get("/nonce/:address", async (req, res) => {
+  try {
+    let address = req.params.address;
+    let account = await Account.findOne({ address: address });
+    if (account) {
+      return res.json({
+        status: "success",
+        data: account.nonce,
+      });
+    } else {
+      let _account = new Account();
+      _account.address = address;
+      _account.nonce = Math.floor(Math.random() * 9999999);
+      let __account = await _account.save();
+      return res.json({
+        status: "success",
+        data: __account.nonce,
+      });
+    }
+  } catch (error) {
+    return res.json({
+      status: "failed",
+    });
+  }
+});
+
 module.exports = router;

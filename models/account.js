@@ -15,6 +15,7 @@ const Account = mongoose.Schema(
     imageHash: { type: String },
     bannerHash: { type: String },
     bundleIDs: [{ type: String }],
+    nonce: { type: Number, default: 0 },
   },
   {
     timestamps: true,
