@@ -222,7 +222,7 @@ router.post("/getuseraccountinfo", async (req, res) => {
   }
 });
 
-router.get("/nonce/:address", async (req, res) => {
+router.get("/nonce/:address", auth, async (req, res) => {
   try {
     let address = req.params.address;
     let account = await Account.findOne({ address: address });
