@@ -167,9 +167,14 @@ router.post("/getMintableCollections", auth, async (req, res) => {
       isOwnerble: true,
     });
     let collections = [...internalCollections, ...myCollections];
+    let data = collections.map((collection) => ({
+      collectionName: collection.collectionName,
+      erc721Address: collection.erc721Address,
+      logoImageHash: collection.logoImageHash,
+    }));
     return res.json({
       status: "success",
-      data: collections,
+      data: data,
     });
   } catch (error) {
     return res.json({
@@ -271,7 +276,7 @@ router.post("/getCollectionInfo", async (req, res) => {
   if (collection)
     return res.json({
       status: "success",
-      data: collection,
+      data: minifyCollection(collection),
     });
   collection = await ERC721CONTRACT.findOne({
     address: address,
@@ -279,7 +284,7 @@ router.post("/getCollectionInfo", async (req, res) => {
   if (collection)
     return res.json({
       status: "success",
-      data: collection,
+      data: minifyCollection(collection),
     });
   collection = await ERC1155CONTRACT.findOne({
     address: address,
@@ -287,7 +292,7 @@ router.post("/getCollectionInfo", async (req, res) => {
   if (collection)
     return res.json({
       status: "success",
-      data: collection,
+      data: minifyCollection(collection),
     });
 });
 
@@ -315,5 +320,43 @@ router.post("/isValidated", auth, async (req, res) => {
     });
   }
 });
+
+const minifyCollection = (collection) => {
+  return {
+    ...(collection.address ? { address: collection.address } : {}),
+    ...(collection.isVerified ? { isVerified: collection.isVerified } : {}),
+    ...(collection.name ? { name: collection.name } : {}),
+    ...(collection.symbol ? { symbol: collection.symbol } : {}),
+
+    ...(collection.categories ? { categories: collection.categories } : {}),
+    ...(collection.collectionName
+      ? { collectionName: collection.collectionName }
+      : {}),
+    ...(collection.description ? { description: collection.description } : {}),
+    ...(collection.discord ? { discord: collection.discord } : {}),
+    ...(collection.email ? { email: collection.email } : {}),
+    ...(collection.erc721Address
+      ? { erc721Address: collection.erc721Address }
+      : {}),
+    ...(collection.isInternal ? { isInternal: collection.isInternal } : {}),
+    ...(collection.isOwnerble ? { isOwnerble: collection.isOwnerble } : {}),
+    ...(collection.logoImageHash
+      ? { logoImageHash: collection.logoImageHash }
+      : {}),
+    ...(collection.mediumHandle
+      ? { mediumHandle: collection.mediumHandle }
+      : {}),
+    ...(collection.owner ? { owner: collection.owner } : {}),
+    ...(collection.siteUrl ? { siteUrl: collection.siteUrl } : {}),
+    ...(collection.status ? { status: collection.status } : {}),
+    ...(collection.telegram ? { telegram: collection.telegram } : {}),
+    ...(collection.twitterHandle
+      ? { twitterHandle: collection.twitterHandle }
+      : {}),
+    ...(collection.instagramHandle
+      ? { instagramHandle: collection.instagramHandle }
+      : {}),
+  };
+};
 
 module.exports = router;
