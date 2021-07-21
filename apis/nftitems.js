@@ -741,22 +741,18 @@ router.post("/fetchTokens", async (req, res) => {
   );
 
   let searchResults = _searchResults.map((sr) => ({
-    ...(sr.hasOwnProperty("contractAddress")
-      ? { contractAddress: sr.contractAddress }
-      : {}),
-    ...(sr.hasOwnProperty("imageURL") ? { imageURL: sr.imageURL } : {}),
-    ...(sr.hasOwnProperty("name") ? { name: sr.name } : {}),
-    ...(sr.hasOwnProperty("price") ? { price: sr.price } : {}),
-    ...(sr.hasOwnProperty("supply") ? { supply: sr.supply } : {}),
-    ...(sr.hasOwnProperty("thumbnailPath")
-      ? { thumbnailPath: sr.thumbnailPath }
-      : {}),
-    ...(sr.hasOwnProperty("tokenID") ? { tokenID: sr.tokenID } : {}),
-    ...(sr.hasOwnProperty("tokenType") ? { tokenType: sr.tokenType } : {}),
-    ...(sr.hasOwnProperty("tokenURI") ? { tokenURI: sr.tokenURI } : {}),
-    ...(sr.hasOwnProperty("items") ? { items: sr.items } : {}),
-    ...(sr.hasOwnProperty("liked") ? { liked: sr.liked } : {}),
-    ...(sr.hasOwnProperty("items") ? { _id: sr._id } : {}),
+    ...(sr.contractAddress ? { contractAddress: sr.contractAddress } : {}),
+    ...(sr.imageURL ? { imageURL: sr.imageURL } : {}),
+    ...(sr.name ? { name: sr.name } : {}),
+    ...(sr.price ? { price: sr.price } : {}),
+    ...(sr.supply ? { supply: sr.supply } : {}),
+    ...(sr.thumbnailPath ? { thumbnailPath: sr.thumbnailPath } : {}),
+    ...(sr.tokenID ? { tokenID: sr.tokenID } : {}),
+    ...(sr.tokenType ? { tokenType: sr.tokenType } : {}),
+    ...(sr.tokenURI ? { tokenURI: sr.tokenURI } : {}),
+    ...(sr.items ? { items: sr.items } : {}),
+    ...(sr.liked ? { liked: sr.liked } : {}),
+    ...(sr.items ? { _id: sr._id } : {}),
   }));
 
   return res.json({
