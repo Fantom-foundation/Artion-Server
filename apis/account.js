@@ -7,6 +7,7 @@ const mongoose = require("mongoose");
 const auth = require("./middleware/auth");
 const Account = mongoose.model("Account");
 const Follow = mongoose.model("Follow");
+const NotificationSetting = mongoose.model("NotificationSetting");
 
 const validateSingature = require("../apis/middleware/auth.sign");
 
@@ -241,6 +242,88 @@ router.get("/nonce/:address", auth, async (req, res) => {
         data: __account.nonce,
       });
     }
+  } catch (error) {
+    return res.json({
+      status: "failed",
+    });
+  }
+});
+
+router.post("/notificationsettings", auth, async (req, res) => {
+  try {
+    let address = extractAddress(req);
+    let signature = req.body.signature;
+    let isValidSingature = await validateSingature(address, signature);
+    if (!isValidSingature)
+      return res.status(400).json({
+        status: "invalid singature",
+      });
+
+    // get individual values
+    let settings = JSON.parse(req.body.settings);
+    let fNotification = toLowerCase(settings.fNotification) == "true";
+    let fBundleCreation = toLowerCase(settings.fBundleCreation) == "true";
+    let fBundleList = toLowerCase(settings.fBundleList) == "true";
+    let fBundlePrice = toLowerCase(settings.fBundlePrice) == "true";
+    let fNftAuctionPrice = toLowerCase(settings.fNftAuctionPrice) == "true";
+    let fNftList = toLowerCase(settings.fNftList) == "true";
+    let fNftAuction = toLowerCase(settings.fNftAuction) == "true";
+    let fNftPrice = toLowerCase(settings.fNftPrice) == "true";
+
+    let sNotification = toLowerCase(settings.sNotification) == "true";
+    let sBundleBuy = toLowerCase(settings.sBundleBuy) == "true";
+    let sBundleSell = toLowerCase(settings.sBundleSell) == "true";
+    let sBundleOffer = toLowerCase(settings.sBundleOffer) == "true";
+    let sBundleOfferCancel = toLowerCase(settings.sBundleOfferCancel) == "true";
+    let sNftAuctionPrice = toLowerCase(settings.sNftAuctionPrice) == "true";
+    let sNftBidToAuction = toLowerCase(settings.sNftBidToAuction) == "true";
+    let sNftBidToAuctionCancel =
+      toLowerCase(settings.sNftBidToAuctionCancel) == "true";
+    let sAuctionWin = toLowerCase(settings.sAuctionWin) == "true";
+    let sAuctionOfBidCancel =
+      toLowerCase(settings.sAuctionOfBidCancel) == "true";
+    let sNftSell = toLowerCase(settings.sNftSell) == "true";
+    let sNftBuy = toLowerCase(settings.sNftBuy) == "true";
+    let sNftOffer = toLowerCase(settings.sNftOffer) == "true";
+    let sNftOfferCancel = toLowerCase(settings.sNftOfferCancel) == "true";
+
+    let notificationSettings = await NotificationSetting.findOne({
+      address: address,
+    });
+    if (!notificationSettings) notificationSettings = new NotificationSetting();
+    notificationSettings.setFNotification(fNotification);
+    if (fNotification) {
+      // need to change individual values
+      notificationSettings.fBundleCreation = fBundleCreation;
+      notificationSettings.fBundleList = fBundleList;
+      notificationSettings.fBundlePrice = fBundlePrice;
+      notificationSettings.fNftAuctionPrice = fNftAuctionPrice;
+      notificationSettings.fNftList = fNftList;
+      notificationSettings.fNftAuction = fNftAuction;
+      notificationSettings.fNftPrice = fNftPrice;
+    }
+    notificationSettings.setSNotification(sNotification);
+    if (sNotification) {
+      // need to change individual values
+      notificationSettings.sNotification = sNotification;
+      notificationSettings.sBundleBuy = sBundleBuy;
+      notificationSettings.sBundleSell = sBundleSell;
+      notificationSettings.sBundleOffer = sBundleOffer;
+      notificationSettings.sBundleOfferCancel = sBundleOfferCancel;
+      notificationSettings.sNftAuctionPrice = sNftAuctionPrice;
+      notificationSettings.sNftBidToAuction = sNftBidToAuction;
+      notificationSettings.sNftBidToAuctionCancel = sNftBidToAuctionCancel;
+      notificationSettings.sAuctionWin = sAuctionWin;
+      notificationSettings.sAuctionOfBidCancel = sAuctionOfBidCancel;
+      notificationSettings.sNftSell = sNftSell;
+      notificationSettings.sNftBuy = sNftBuy;
+      notificationSettings.sNftOffer = sNftOffer;
+      notificationSettings.sNftOfferCancel = sNftOfferCancel;
+    }
+    await notificationSettings.save();
+    return res.json({
+      status: "success",
+    });
   } catch (error) {
     return res.json({
       status: "failed",

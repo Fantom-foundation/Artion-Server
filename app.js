@@ -43,6 +43,7 @@ require("./models/follow");
 require("./models/like");
 require("./models/bundlelike");
 require("./models/factorycollection");
+require("./models/notificationsetting");
 
 app.use(bodyParser.json());
 app.options("*", cors()); // include before other routes
