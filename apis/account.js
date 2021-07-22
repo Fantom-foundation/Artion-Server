@@ -263,31 +263,29 @@ router.post("/notificationsettings", auth, async (req, res) => {
     let settings = req.body.settings;
     settings = JSON.parse(settings);
     console.log(settings);
-    let fNotification = toLowerCase(settings.fNotification) == "true";
-    let fBundleCreation = toLowerCase(settings.fBundleCreation) == "true";
-    let fBundleList = toLowerCase(settings.fBundleList) == "true";
-    let fBundlePrice = toLowerCase(settings.fBundlePrice) == "true";
-    let fNftAuctionPrice = toLowerCase(settings.fNftAuctionPrice) == "true";
-    let fNftList = toLowerCase(settings.fNftList) == "true";
-    let fNftAuction = toLowerCase(settings.fNftAuction) == "true";
-    let fNftPrice = toLowerCase(settings.fNftPrice) == "true";
+    let fNotification = settings.fNotification;
+    let fBundleCreation = settings.fBundleCreation;
+    let fBundleList = settings.fBundleList;
+    let fBundlePrice = settings.fBundlePrice;
+    let fNftAuctionPrice = settings.fNftAuctionPrice;
+    let fNftList = settings.fNftList;
+    let fNftAuction = settings.fNftAuction;
+    let fNftPrice = settings.fNftPrice;
 
-    let sNotification = toLowerCase(settings.sNotification) == "true";
-    let sBundleBuy = toLowerCase(settings.sBundleBuy) == "true";
-    let sBundleSell = toLowerCase(settings.sBundleSell) == "true";
-    let sBundleOffer = toLowerCase(settings.sBundleOffer) == "true";
-    let sBundleOfferCancel = toLowerCase(settings.sBundleOfferCancel) == "true";
-    let sNftAuctionPrice = toLowerCase(settings.sNftAuctionPrice) == "true";
-    let sNftBidToAuction = toLowerCase(settings.sNftBidToAuction) == "true";
-    let sNftBidToAuctionCancel =
-      toLowerCase(settings.sNftBidToAuctionCancel) == "true";
-    let sAuctionWin = toLowerCase(settings.sAuctionWin) == "true";
-    let sAuctionOfBidCancel =
-      toLowerCase(settings.sAuctionOfBidCancel) == "true";
-    let sNftSell = toLowerCase(settings.sNftSell) == "true";
-    let sNftBuy = toLowerCase(settings.sNftBuy) == "true";
-    let sNftOffer = toLowerCase(settings.sNftOffer) == "true";
-    let sNftOfferCancel = toLowerCase(settings.sNftOfferCancel) == "true";
+    let sNotification = settings.sNotification;
+    let sBundleBuy = settings.sBundleBuy;
+    let sBundleSell = settings.sBundleSell;
+    let sBundleOffer = settings.sBundleOffer;
+    let sBundleOfferCancel = settings.sBundleOfferCancel;
+    let sNftAuctionPrice = settings.sNftAuctionPrice;
+    let sNftBidToAuction = settings.sNftBidToAuction;
+    let sNftBidToAuctionCancel = settings.sNftBidToAuctionCancel;
+    let sAuctionWin = settings.sAuctionWin;
+    let sAuctionOfBidCancel = settings.sAuctionOfBidCancel;
+    let sNftSell = settings.sNftSell;
+    let sNftBuy = settings.sNftBuy;
+    let sNftOffer = settings.sNftOffer;
+    let sNftOfferCancel = settings.sNftOfferCancel;
 
     let notificationSettings = await NotificationSetting.findOne({
       address: address,
