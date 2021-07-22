@@ -251,7 +251,7 @@ router.get("/nonce/:address", auth, async (req, res) => {
 
 router.post("/notificationsettings", auth, async (req, res) => {
   try {
-    let address = extractAddress(req);
+    let address = extractAddress(req, res);
     let signature = req.body.signature;
     let isValidSingature = await validateSingature(address, signature);
     if (!isValidSingature)

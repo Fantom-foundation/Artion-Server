@@ -46,6 +46,7 @@ require("./models/factorycollection");
 require("./models/notificationsetting");
 
 app.use(bodyParser.json());
+app.use(express.json());
 app.options("*", cors()); // include before other routes
 app.use(cors());
 app.use(require("./apis"));
