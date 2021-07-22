@@ -325,6 +325,7 @@ router.post("/notificationsettings", auth, async (req, res) => {
       status: "success",
     });
   } catch (error) {
+    console.log(error);
     return res.json({
       status: "failed",
     });
