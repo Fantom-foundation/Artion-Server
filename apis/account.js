@@ -261,6 +261,8 @@ router.post("/notificationsettings", auth, async (req, res) => {
 
     // get individual values
     let settings = req.body.settings;
+    console.log(settings);
+    console.log(JSON.parse(settings));
     let fNotification = toLowerCase(settings.fNotification) == "true";
     let fBundleCreation = toLowerCase(settings.fBundleCreation) == "true";
     let fBundleList = toLowerCase(settings.fBundleList) == "true";
