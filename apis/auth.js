@@ -25,6 +25,12 @@ router.post("/getToken", async (req, res) => {
       newAccount.address = address;
       await newAccount.save();
     } catch (error) {}
+  }
+
+  let notificationSettings = await NotificationSetting.findOne({
+    address: address,
+  });
+  if (!notificationSettings)
     try {
       let ns = new NotificationSetting();
       ns.address = address;
@@ -33,7 +39,6 @@ router.post("/getToken", async (req, res) => {
     } catch (error) {
       console.log(error);
     }
-  }
   let token = jwt.sign(
     {
       data: address,
