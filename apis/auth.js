@@ -24,10 +24,13 @@ router.post("/getToken", async (req, res) => {
       let newAccount = new Account();
       newAccount.address = address;
       await newAccount.save();
+    } catch (error) {}
+    try {
+    } catch (error) {
       let ns = new NotificationSetting();
       ns.address = address;
       await ns.save();
-    } catch (error) {}
+    }
   }
   let token = jwt.sign(
     {

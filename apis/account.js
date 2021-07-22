@@ -333,7 +333,7 @@ router.post("/notificationsettings", auth, async (req, res) => {
 
 router.get("/getnotificationsettings", auth, async (req, res) => {
   try {
-    let address = extractAddress(req);
+    let address = extractAddress(req, res);
     let ns = await NotificationSetting.findOne({ address: address });
     return res.json({
       status: "success",
