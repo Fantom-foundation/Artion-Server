@@ -291,7 +291,7 @@ router.post("/notificationsettings", auth, async (req, res) => {
       address: address,
     });
     if (!notificationSettings) notificationSettings = new NotificationSetting();
-    notificationSettings.setFNotification(fNotification);
+    notificationSettings.fNotification = fNotification;
     if (fNotification) {
       // need to change individual values
       notificationSettings.fBundleCreation = fBundleCreation;
@@ -301,11 +301,18 @@ router.post("/notificationsettings", auth, async (req, res) => {
       notificationSettings.fNftList = fNftList;
       notificationSettings.fNftAuction = fNftAuction;
       notificationSettings.fNftPrice = fNftPrice;
+    } else {
+      notificationSettings.fBundleCreation = false;
+      notificationSettings.fBundleList = false;
+      notificationSettings.fBundlePrice = false;
+      notificationSettings.fNftAuctionPrice = false;
+      notificationSettings.fNftList = false;
+      notificationSettings.fNftAuction = false;
+      notificationSettings.fNftPrice = false;
     }
-    notificationSettings.setSNotification(sNotification);
+    notificationSettings.sNotification = sNotification;
     if (sNotification) {
       // need to change individual values
-      notificationSettings.sNotification = sNotification;
       notificationSettings.sBundleBuy = sBundleBuy;
       notificationSettings.sBundleSell = sBundleSell;
       notificationSettings.sBundleOffer = sBundleOffer;
@@ -319,6 +326,20 @@ router.post("/notificationsettings", auth, async (req, res) => {
       notificationSettings.sNftBuy = sNftBuy;
       notificationSettings.sNftOffer = sNftOffer;
       notificationSettings.sNftOfferCancel = sNftOfferCancel;
+    } else {
+      notificationSettings.sBundleBuy = false;
+      notificationSettings.sBundleSell = false;
+      notificationSettings.sBundleOffer = false;
+      notificationSettings.sBundleOfferCancel = false;
+      notificationSettings.sNftAuctionPrice = false;
+      notificationSettings.sNftBidToAuction = false;
+      notificationSettings.sNftBidToAuctionCancel = false;
+      notificationSettings.sAuctionWin = false;
+      notificationSettings.sAuctionOfBidCancel = false;
+      notificationSettings.sNftSell = false;
+      notificationSettings.sNftBuy = false;
+      notificationSettings.sNftOffer = false;
+      notificationSettings.sNftOfferCancel = false;
     }
     await notificationSettings.save();
     return res.json({
