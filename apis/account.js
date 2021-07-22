@@ -331,4 +331,19 @@ router.post("/notificationsettings", auth, async (req, res) => {
   }
 });
 
+router.get("/getnotificationsettings", auth, async (req, res) => {
+  try {
+    let address = extractAddress(req);
+    let ns = await NotificationSetting.findOne({ address: address });
+    return res.json({
+      status: "success",
+      data: ns,
+    });
+  } catch (error) {
+    return res.json({
+      status: "failed",
+    });
+  }
+});
+
 module.exports = router;
