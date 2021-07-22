@@ -5,6 +5,7 @@ const router = require("express").Router();
 const ethers = require("ethers");
 const mongoose = require("mongoose");
 const Account = mongoose.model("Account");
+const NotificationSetting = mongoose.model("NotificationSetting");
 const toLowerCase = require("../utils/utils");
 
 router.post("/getToken", async (req, res) => {
@@ -19,9 +20,14 @@ router.post("/getToken", async (req, res) => {
   // save a new account if not registered
   let account = await Account.findOne({ address: address });
   if (!account) {
-    let newAccount = new Account();
-    newAccount.address = address;
-    await newAccount.save();
+    try {
+      let newAccount = new Account();
+      newAccount.address = address;
+      await newAccount.save();
+      let ns = new NotificationSetting();
+      ns.address = address;
+      await ns.save();
+    } catch (error) {}
   }
   let token = jwt.sign(
     {
