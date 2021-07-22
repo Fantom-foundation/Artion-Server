@@ -262,7 +262,6 @@ router.post("/notificationsettings", auth, async (req, res) => {
     // get individual values
     let settings = req.body.settings;
     settings = JSON.parse(settings);
-    console.log(settings);
     let fNotification = settings.fNotification;
     let fBundleCreation = settings.fBundleCreation;
     let fBundleList = settings.fBundleList;
