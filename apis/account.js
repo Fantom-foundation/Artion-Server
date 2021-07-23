@@ -251,7 +251,7 @@ router.get("/nonce/:address", auth, async (req, res) => {
 
 router.post("/notificationsettings", auth, async (req, res) => {
   try {
-    let address = extractAddress(req);
+    let address = extractAddress(req, res);
     let signature = req.body.signature;
     let isValidSingature = await validateSingature(address, signature);
     if (!isValidSingature)
@@ -260,38 +260,37 @@ router.post("/notificationsettings", auth, async (req, res) => {
       });
 
     // get individual values
-    let settings = JSON.parse(req.body.settings);
-    let fNotification = toLowerCase(settings.fNotification) == "true";
-    let fBundleCreation = toLowerCase(settings.fBundleCreation) == "true";
-    let fBundleList = toLowerCase(settings.fBundleList) == "true";
-    let fBundlePrice = toLowerCase(settings.fBundlePrice) == "true";
-    let fNftAuctionPrice = toLowerCase(settings.fNftAuctionPrice) == "true";
-    let fNftList = toLowerCase(settings.fNftList) == "true";
-    let fNftAuction = toLowerCase(settings.fNftAuction) == "true";
-    let fNftPrice = toLowerCase(settings.fNftPrice) == "true";
+    let settings = req.body.settings;
+    settings = JSON.parse(settings);
+    let fNotification = settings.fNotification;
+    let fBundleCreation = settings.fBundleCreation;
+    let fBundleList = settings.fBundleList;
+    let fBundlePrice = settings.fBundlePrice;
+    let fNftAuctionPrice = settings.fNftAuctionPrice;
+    let fNftList = settings.fNftList;
+    let fNftAuction = settings.fNftAuction;
+    let fNftPrice = settings.fNftPrice;
 
-    let sNotification = toLowerCase(settings.sNotification) == "true";
-    let sBundleBuy = toLowerCase(settings.sBundleBuy) == "true";
-    let sBundleSell = toLowerCase(settings.sBundleSell) == "true";
-    let sBundleOffer = toLowerCase(settings.sBundleOffer) == "true";
-    let sBundleOfferCancel = toLowerCase(settings.sBundleOfferCancel) == "true";
-    let sNftAuctionPrice = toLowerCase(settings.sNftAuctionPrice) == "true";
-    let sNftBidToAuction = toLowerCase(settings.sNftBidToAuction) == "true";
-    let sNftBidToAuctionCancel =
-      toLowerCase(settings.sNftBidToAuctionCancel) == "true";
-    let sAuctionWin = toLowerCase(settings.sAuctionWin) == "true";
-    let sAuctionOfBidCancel =
-      toLowerCase(settings.sAuctionOfBidCancel) == "true";
-    let sNftSell = toLowerCase(settings.sNftSell) == "true";
-    let sNftBuy = toLowerCase(settings.sNftBuy) == "true";
-    let sNftOffer = toLowerCase(settings.sNftOffer) == "true";
-    let sNftOfferCancel = toLowerCase(settings.sNftOfferCancel) == "true";
+    let sNotification = settings.sNotification;
+    let sBundleBuy = settings.sBundleBuy;
+    let sBundleSell = settings.sBundleSell;
+    let sBundleOffer = settings.sBundleOffer;
+    let sBundleOfferCancel = settings.sBundleOfferCancel;
+    let sNftAuctionPrice = settings.sNftAuctionPrice;
+    let sNftBidToAuction = settings.sNftBidToAuction;
+    let sNftBidToAuctionCancel = settings.sNftBidToAuctionCancel;
+    let sAuctionWin = settings.sAuctionWin;
+    let sAuctionOfBidCancel = settings.sAuctionOfBidCancel;
+    let sNftSell = settings.sNftSell;
+    let sNftBuy = settings.sNftBuy;
+    let sNftOffer = settings.sNftOffer;
+    let sNftOfferCancel = settings.sNftOfferCancel;
 
     let notificationSettings = await NotificationSetting.findOne({
       address: address,
     });
     if (!notificationSettings) notificationSettings = new NotificationSetting();
-    notificationSettings.setFNotification(fNotification);
+    notificationSettings.fNotification = fNotification;
     if (fNotification) {
       // need to change individual values
       notificationSettings.fBundleCreation = fBundleCreation;
@@ -301,11 +300,18 @@ router.post("/notificationsettings", auth, async (req, res) => {
       notificationSettings.fNftList = fNftList;
       notificationSettings.fNftAuction = fNftAuction;
       notificationSettings.fNftPrice = fNftPrice;
+    } else {
+      notificationSettings.fBundleCreation = false;
+      notificationSettings.fBundleList = false;
+      notificationSettings.fBundlePrice = false;
+      notificationSettings.fNftAuctionPrice = false;
+      notificationSettings.fNftList = false;
+      notificationSettings.fNftAuction = false;
+      notificationSettings.fNftPrice = false;
     }
-    notificationSettings.setSNotification(sNotification);
+    notificationSettings.sNotification = sNotification;
     if (sNotification) {
       // need to change individual values
-      notificationSettings.sNotification = sNotification;
       notificationSettings.sBundleBuy = sBundleBuy;
       notificationSettings.sBundleSell = sBundleSell;
       notificationSettings.sBundleOffer = sBundleOffer;
@@ -319,12 +325,27 @@ router.post("/notificationsettings", auth, async (req, res) => {
       notificationSettings.sNftBuy = sNftBuy;
       notificationSettings.sNftOffer = sNftOffer;
       notificationSettings.sNftOfferCancel = sNftOfferCancel;
+    } else {
+      notificationSettings.sBundleBuy = false;
+      notificationSettings.sBundleSell = false;
+      notificationSettings.sBundleOffer = false;
+      notificationSettings.sBundleOfferCancel = false;
+      notificationSettings.sNftAuctionPrice = false;
+      notificationSettings.sNftBidToAuction = false;
+      notificationSettings.sNftBidToAuctionCancel = false;
+      notificationSettings.sAuctionWin = false;
+      notificationSettings.sAuctionOfBidCancel = false;
+      notificationSettings.sNftSell = false;
+      notificationSettings.sNftBuy = false;
+      notificationSettings.sNftOffer = false;
+      notificationSettings.sNftOfferCancel = false;
     }
     await notificationSettings.save();
     return res.json({
       status: "success",
     });
   } catch (error) {
+    console.log(error);
     return res.json({
       status: "failed",
     });
@@ -333,7 +354,7 @@ router.post("/notificationsettings", auth, async (req, res) => {
 
 router.get("/getnotificationsettings", auth, async (req, res) => {
   try {
-    let address = extractAddress(req);
+    let address = extractAddress(req, res);
     let ns = await NotificationSetting.findOne({ address: address });
     return res.json({
       status: "success",

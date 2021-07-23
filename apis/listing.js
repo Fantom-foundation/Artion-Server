@@ -5,6 +5,8 @@ const mongoose = require("mongoose");
 const Listing = mongoose.model("Listing");
 const Account = mongoose.model("Account");
 
+const orderBy = require("lodash.orderby");
+
 const toLowerCase = require("../utils/utils");
 
 router.post("/getListings", async (req, res) => {
@@ -29,6 +31,7 @@ router.post("/getListings", async (req, res) => {
       });
     });
     await Promise.all(promise);
+    listings = orderBy(listings, "price", "asc");
     return res.json({
       status: "success",
       data: listings,
