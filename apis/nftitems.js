@@ -840,6 +840,7 @@ router.post("/getMoreItemsFromCollection", async (req, res) => {
         "name",
         "imageURL",
         "liked",
+        "contractAddress",
       ]);
     return res.json({
       status: "success",
