@@ -753,6 +753,7 @@ router.post("/fetchTokens", async (req, res) => {
     ...(sr.items ? { items: sr.items } : {}),
     ...(sr.liked ? { liked: sr.liked } : {}),
     ...(sr.items ? { _id: sr._id } : {}),
+    ...(sr.holderSupply ? { holderSupply: sr.holderSupply } : {}),
   }));
 
   return res.json({
