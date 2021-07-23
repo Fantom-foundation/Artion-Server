@@ -7,6 +7,9 @@ const mongoose = require("mongoose");
 const auth = require("./middleware/auth");
 const Account = mongoose.model("Account");
 const Follow = mongoose.model("Follow");
+const NotificationSetting = mongoose.model("NotificationSetting");
+
+const validateSingature = require("../apis/middleware/auth.sign");
 
 const pinataSDK = require("@pinata/sdk");
 const pinata = pinataSDK(
@@ -88,6 +91,12 @@ router.post("/accountdetails", auth, async (req, res) => {
     let email = fields.email;
     let bio = fields.bio;
     let imgData = fields.imgData;
+    let signature = fields.signature;
+    let isValidSingature = await validateSingature(address, signature);
+    if (!isValidSingature)
+      return res.status(400).json({
+        status: "invalid singature",
+      });
     let account = await Account.findOne({ address: address });
     if (imgData) {
       if (imgData.startsWith("https")) {
@@ -210,6 +219,150 @@ router.post("/getuseraccountinfo", async (req, res) => {
         followers: followers.length,
         followings: followings.length,
       },
+    });
+  }
+});
+
+router.get("/nonce/:address", auth, async (req, res) => {
+  try {
+    let address = toLowerCase(req.params.address);
+    let account = await Account.findOne({ address: address });
+    if (account) {
+      return res.json({
+        status: "success",
+        data: account.nonce,
+      });
+    } else {
+      let _account = new Account();
+      _account.address = address;
+      _account.nonce = Math.floor(Math.random() * 9999999);
+      let __account = await _account.save();
+      return res.json({
+        status: "success",
+        data: __account.nonce,
+      });
+    }
+  } catch (error) {
+    return res.json({
+      status: "failed",
+    });
+  }
+});
+
+router.post("/notificationsettings", auth, async (req, res) => {
+  try {
+    let address = extractAddress(req, res);
+    let signature = req.body.signature;
+    let isValidSingature = await validateSingature(address, signature);
+    if (!isValidSingature)
+      return res.status(400).json({
+        status: "invalid singature",
+      });
+
+    // get individual values
+    let settings = req.body.settings;
+    settings = JSON.parse(settings);
+    let fNotification = settings.fNotification;
+    let fBundleCreation = settings.fBundleCreation;
+    let fBundleList = settings.fBundleList;
+    let fBundlePrice = settings.fBundlePrice;
+    let fNftAuctionPrice = settings.fNftAuctionPrice;
+    let fNftList = settings.fNftList;
+    let fNftAuction = settings.fNftAuction;
+    let fNftPrice = settings.fNftPrice;
+
+    let sNotification = settings.sNotification;
+    let sBundleBuy = settings.sBundleBuy;
+    let sBundleSell = settings.sBundleSell;
+    let sBundleOffer = settings.sBundleOffer;
+    let sBundleOfferCancel = settings.sBundleOfferCancel;
+    let sNftAuctionPrice = settings.sNftAuctionPrice;
+    let sNftBidToAuction = settings.sNftBidToAuction;
+    let sNftBidToAuctionCancel = settings.sNftBidToAuctionCancel;
+    let sAuctionWin = settings.sAuctionWin;
+    let sAuctionOfBidCancel = settings.sAuctionOfBidCancel;
+    let sNftSell = settings.sNftSell;
+    let sNftBuy = settings.sNftBuy;
+    let sNftOffer = settings.sNftOffer;
+    let sNftOfferCancel = settings.sNftOfferCancel;
+
+    let notificationSettings = await NotificationSetting.findOne({
+      address: address,
+    });
+    if (!notificationSettings) notificationSettings = new NotificationSetting();
+    notificationSettings.fNotification = fNotification;
+    if (fNotification) {
+      // need to change individual values
+      notificationSettings.fBundleCreation = fBundleCreation;
+      notificationSettings.fBundleList = fBundleList;
+      notificationSettings.fBundlePrice = fBundlePrice;
+      notificationSettings.fNftAuctionPrice = fNftAuctionPrice;
+      notificationSettings.fNftList = fNftList;
+      notificationSettings.fNftAuction = fNftAuction;
+      notificationSettings.fNftPrice = fNftPrice;
+    } else {
+      notificationSettings.fBundleCreation = false;
+      notificationSettings.fBundleList = false;
+      notificationSettings.fBundlePrice = false;
+      notificationSettings.fNftAuctionPrice = false;
+      notificationSettings.fNftList = false;
+      notificationSettings.fNftAuction = false;
+      notificationSettings.fNftPrice = false;
+    }
+    notificationSettings.sNotification = sNotification;
+    if (sNotification) {
+      // need to change individual values
+      notificationSettings.sBundleBuy = sBundleBuy;
+      notificationSettings.sBundleSell = sBundleSell;
+      notificationSettings.sBundleOffer = sBundleOffer;
+      notificationSettings.sBundleOfferCancel = sBundleOfferCancel;
+      notificationSettings.sNftAuctionPrice = sNftAuctionPrice;
+      notificationSettings.sNftBidToAuction = sNftBidToAuction;
+      notificationSettings.sNftBidToAuctionCancel = sNftBidToAuctionCancel;
+      notificationSettings.sAuctionWin = sAuctionWin;
+      notificationSettings.sAuctionOfBidCancel = sAuctionOfBidCancel;
+      notificationSettings.sNftSell = sNftSell;
+      notificationSettings.sNftBuy = sNftBuy;
+      notificationSettings.sNftOffer = sNftOffer;
+      notificationSettings.sNftOfferCancel = sNftOfferCancel;
+    } else {
+      notificationSettings.sBundleBuy = false;
+      notificationSettings.sBundleSell = false;
+      notificationSettings.sBundleOffer = false;
+      notificationSettings.sBundleOfferCancel = false;
+      notificationSettings.sNftAuctionPrice = false;
+      notificationSettings.sNftBidToAuction = false;
+      notificationSettings.sNftBidToAuctionCancel = false;
+      notificationSettings.sAuctionWin = false;
+      notificationSettings.sAuctionOfBidCancel = false;
+      notificationSettings.sNftSell = false;
+      notificationSettings.sNftBuy = false;
+      notificationSettings.sNftOffer = false;
+      notificationSettings.sNftOfferCancel = false;
+    }
+    await notificationSettings.save();
+    return res.json({
+      status: "success",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.json({
+      status: "failed",
+    });
+  }
+});
+
+router.get("/getnotificationsettings", auth, async (req, res) => {
+  try {
+    let address = extractAddress(req, res);
+    let ns = await NotificationSetting.findOne({ address: address });
+    return res.json({
+      status: "success",
+      data: ns,
+    });
+  } catch (error) {
+    return res.json({
+      status: "failed",
     });
   }
 });

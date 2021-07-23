@@ -9,7 +9,6 @@ const createMessage = (data) => {
   let message = {};
   let event = data.event;
   const artionUri = `${app_url}bundle/${data.bundleID}`;
-  const team = "Artion team from Fantom Foundation";
   switch (event) {
     case "ItemSold":
       {
@@ -19,7 +18,7 @@ const createMessage = (data) => {
             from: foundationEmail,
             subject: "You purchased a new bundle!",
             text: "artion notification",
-            html: `<p>Dear ${data.alias}<p/> You have bought a new NFT Bundle, ${data.bundleName} at ${data.price} FTM. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+            html: `<p>Dear ${data.alias}<p/> You have bought a new NFT Bundle, ${data.bundleName} at ${data.price} FTM. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>`,
           };
         } else {
           message = {
@@ -27,7 +26,7 @@ const createMessage = (data) => {
             from: foundationEmail,
             subject: "You sold out your bundle!",
             text: "artion notification",
-            html: `<p>Dear ${data.alias}<p/> You have sold a new NFT Bundle, ${data.bundleName} at ${data.price} FTM. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+            html: `<p>Dear ${data.alias}<p/> You have sold a new NFT Bundle, ${data.bundleName} at ${data.price} FTM. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>`,
           };
         }
       }
@@ -38,7 +37,7 @@ const createMessage = (data) => {
         from: foundationEmail,
         subject: "You received an offer for your bundle!",
         text: "artion notification",
-        html: `<p>Dear ${data.alias}!</p> You have received an offer from ${data.from} for your bundle ${data.bundleName} at ${data.price} wFTM. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+        html: `<p>Dear ${data.alias}!</p> You have received an offer from ${data.from} for your bundle ${data.bundleName} at ${data.price} wFTM. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>`,
       };
       break;
     case "OfferCanceled":
@@ -48,7 +47,7 @@ const createMessage = (data) => {
           from: foundationEmail,
           subject: "Offer withdrawn!",
           text: "artion notification",
-          html: `<p>Dear ${data.alias}!</p> An Offer from ${data.from} for your bundle ${data.bundleName} has been withdrawn. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+          html: `<p>Dear ${data.alias}!</p> An Offer from ${data.from} for your bundle ${data.bundleName} has been withdrawn. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>`,
         };
       }
       break;

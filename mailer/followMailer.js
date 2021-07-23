@@ -4,13 +4,13 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const app_url = process.env.APP_URL;
 const foundationEmail = "support.artion@fantom.foundation";
-const team = "Artion team from Fantom Foundation";
 
 const mongoose = require("mongoose");
 const toLowerCase = require("../utils/utils");
 const Account = mongoose.model("Account");
 const Follow = mongoose.model("Follow");
 const NFTITEM = mongoose.model("NFTITEM");
+const NotificationSetting = mongoose.model("NotificationSetting");
 
 const getUserAlias = async (walletAddress) => {
   try {
@@ -40,6 +40,10 @@ const notifyBundleCreation = async (address, bundleID, bundleName) => {
   try {
     const followers = await Follow.find({ to: address });
     let addresses = followers.map((follower) => follower.from);
+    addresses = await extractEmailSubscribedAddresses(
+      addresses,
+      "fBundleCreation"
+    );
     let accounts = await Account.find({ address: { $in: addresses } });
     let emails = accounts.map((account) =>
       account.email ? account.email : null
@@ -51,7 +55,7 @@ const notifyBundleCreation = async (address, bundleID, bundleName) => {
       from: foundationEmail,
       subject: "New Bundle Created",
       text: "artion notification",
-      html: `Dear Artion User! <br/> Artion user(${owner}) has created a  new Bundle(${bundleName}).  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+      html: `Dear Artion User! <br/> Artion user(${owner}) has created a  new Bundle(${bundleName}).  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>`,
     };
     sgMail.sendMultiple(message).then(
       () => {
@@ -85,7 +89,7 @@ const nofifyNFTShowUp = async (address, contractAddress, tokenID) => {
       from: foundationEmail,
       subject: "New NFT Item Created",
       text: "artion notification",
-      html: `Dear Artion User! <br/> New NFT Item(${nftName}) has shown up in ${owner}'s account.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+      html: `Dear Artion User! <br/> New NFT Item(${nftName}) has shown up in ${owner}'s account.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>`,
     };
     sgMail.sendMultiple(message).then(
       () => {},
@@ -111,6 +115,10 @@ const notifyAuctionPriceUpdate = async (contractAddress, tokenID, price) => {
 
     const followers = await Follow.find({ to: address });
     let addresses = followers.map((follower) => follower.from);
+    addresses = await extractEmailSubscribedAddresses(
+      addresses,
+      "fNftAuctionPrice"
+    );
     let accounts = await Account.find({ address: { $in: addresses } });
     let emails = accounts.map((account) =>
       account.email ? account.email : null
@@ -120,7 +128,7 @@ const notifyAuctionPriceUpdate = async (contractAddress, tokenID, price) => {
       from: foundationEmail,
       subject: "Auction Reserve Price Update",
       text: "artion notification",
-      html: `Dear Artion User! <br/> Auction price for NFT Item(${nftName}) has updated to ${price} FTM in ${owner}'s account.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+      html: `Dear Artion User! <br/> Auction price for NFT Item(${nftName}) has updated to ${price} FTM in ${owner}'s account.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>`,
     };
     sgMail.sendMultiple(message).then(
       () => {},
@@ -151,6 +159,7 @@ const notifySingleItemListed = async (
 
     const followers = await Follow.find({ to: address });
     let addresses = followers.map((follower) => follower.from);
+    addresses = await extractEmailSubscribedAddresses(addresses, "fNftList");
     let accounts = await Account.find({ address: { $in: addresses } });
     let emails = accounts.map((account) =>
       account.email ? account.email : null
@@ -164,7 +173,7 @@ const notifySingleItemListed = async (
       text: "artion notification",
       html: `Dear Artion User! <br/> ${owner} has listed ${quantity} ${nftName}${
         quantity > 1 ? "s" : ""
-      } at ${price} FTM  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+      } at ${price} FTM  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  `,
     };
     sgMail.sendMultiple(message).then(
       () => {},
@@ -187,6 +196,10 @@ const notifyNewAuction = async (contractAddress, tokenID) => {
       let address = nftItem.owner;
       const followers = await Follow.find({ to: address });
       let addresses = followers.map((follower) => follower.from);
+      addresses = await extractEmailSubscribedAddresses(
+        addresses,
+        "fNftAuction"
+      );
       let accounts = await Account.find({ address: { $in: addresses } });
       let emails = accounts.map((account) =>
         account.email ? account.email : null
@@ -197,7 +210,7 @@ const notifyNewAuction = async (contractAddress, tokenID) => {
         from: foundationEmail,
         subject: "New Auction",
         text: "artion notification",
-        html: `Dear Artion User! <br/> NFT Item(${nftName}) is now on Auction.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+        html: `Dear Artion User! <br/> NFT Item(${nftName}) is now on Auction.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>`,
       };
       sgMail.sendMultiple(message).then(
         () => {},
@@ -215,6 +228,7 @@ const notifyBundleListing = async (bundleID, bundleName, address, price) => {
   try {
     const followers = await Follow.find({ to: address });
     let addresses = followers.map((follower) => follower.from);
+    addresses = await extractEmailSubscribedAddresses(addresses, "fBundleList");
     let accounts = await Account.find({ address: { $in: addresses } });
     let emails = accounts.map((account) =>
       account.email ? account.email : null
@@ -226,7 +240,7 @@ const notifyBundleListing = async (bundleID, bundleName, address, price) => {
       from: foundationEmail,
       subject: "Bundle Listed",
       text: "artion notification",
-      html: `Dear Artion User! <br/> Artion user(${owner}) has listed a  Bundle(${bundleName}) at ${price} FTM.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+      html: `Dear Artion User! <br/> Artion user(${owner}) has listed a  Bundle(${bundleName}) at ${price} FTM.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  `,
     };
     sgMail.sendMultiple(message).then(
       () => {},
@@ -243,6 +257,10 @@ const notifyBundleUpdate = async (bundleID, bundleName, address, price) => {
   try {
     const followers = await Follow.find({ to: address });
     let addresses = followers.map((follower) => follower.from);
+    addresses = await extractEmailSubscribedAddresses(
+      addresses,
+      "fBundlePrice"
+    );
     let accounts = await Account.find({ address: { $in: addresses } });
     let emails = accounts.map((account) =>
       account.email ? account.email : null
@@ -254,7 +272,7 @@ const notifyBundleUpdate = async (bundleID, bundleName, address, price) => {
       from: foundationEmail,
       subject: "Bundle Updated",
       text: "artion notification",
-      html: `Dear Artion User! <br/> Artion user(${owner}) has updated a Bundle(${bundleName})'s price to ${price} FTM.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+      html: `Dear Artion User! <br/> Artion user(${owner}) has updated a Bundle(${bundleName})'s price to ${price} FTM.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  `,
     };
     sgMail.sendMultiple(message).then(
       () => {},
@@ -279,6 +297,7 @@ const nofityNFTUpdated = async (address, contractAddress, tokenID, price) => {
 
     const followers = await Follow.find({ to: address });
     let addresses = followers.map((follower) => follower.from);
+    addresses = await extractEmailSubscribedAddresses(addresses, "fNftPrice");
     let accounts = await Account.find({ address: { $in: addresses } });
     let emails = accounts.map((account) =>
       account.email ? account.email : null
@@ -288,7 +307,7 @@ const nofityNFTUpdated = async (address, contractAddress, tokenID, price) => {
       from: foundationEmail,
       subject: "Item Update",
       text: "artion notification",
-      html: `Dear Artion User! <br/> ${owner} has updated ${nftName} to ${price} FTM  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+      html: `Dear Artion User! <br/> ${owner} has updated ${nftName} to ${price} FTM  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  `,
     };
     sgMail.sendMultiple(message).then(
       () => {},
@@ -298,6 +317,182 @@ const nofityNFTUpdated = async (address, contractAddress, tokenID, price) => {
       }
     );
   } catch (error) {}
+};
+
+const extractEmailSubscribedAddresses = async (addresses, option) => {
+  let notificationSettings;
+  switch (option) {
+    case "fBundleCreation":
+      {
+        notificationSettings = await NotificationSetting.find({
+          fBundleCreation: true,
+          address: { $in: addresses },
+        });
+      }
+      break;
+    case "fBundleList":
+      {
+        notificationSettings = await NotificationSetting.find({
+          fBundleList: true,
+          address: { $in: addresses },
+        });
+      }
+      break;
+    case "fBundlePrice":
+      {
+        notificationSettings = await NotificationSetting.find({
+          fBundlePrice: true,
+          address: { $in: addresses },
+        });
+      }
+      break;
+    case "fNftAuctionPrice":
+      {
+        notificationSettings = await NotificationSetting.find({
+          fNftAuctionPrice: true,
+          address: { $in: addresses },
+        });
+      }
+      break;
+    case "fNftList":
+      {
+        notificationSettings = await NotificationSetting.find({
+          fNftList: true,
+          address: { $in: addresses },
+        });
+      }
+      break;
+    case "fNftAuction":
+      {
+        notificationSettings = await NotificationSetting.find({
+          fNftAuction: true,
+          address: { $in: addresses },
+        });
+      }
+      break;
+    case "fNftPrice":
+      {
+        notificationSettings = await NotificationSetting.find({
+          fNftPrice: true,
+          address: { $in: addresses },
+        });
+      }
+      break;
+
+    case "sBundleBuy":
+      {
+        notificationSettings = await NotificationSetting.find({
+          sBundleBuy: true,
+          address: { $in: addresses },
+        });
+      }
+      break;
+    case "sBundleSell":
+      {
+        notificationSettings = await NotificationSetting.find({
+          sBundleSell: true,
+          address: { $in: addresses },
+        });
+      }
+      break;
+    case "sBundleOffer":
+      {
+        notificationSettings = await NotificationSetting.find({
+          sBundleOffer: true,
+          address: { $in: addresses },
+        });
+      }
+      break;
+    case "sBundleOfferCancel":
+      {
+        notificationSettings = await NotificationSetting.find({
+          sBundleOfferCancel: true,
+          address: { $in: addresses },
+        });
+      }
+      break;
+    case "sNftAuctionPrice":
+      {
+        notificationSettings = await NotificationSetting.find({
+          sNftAuctionPrice: true,
+          address: { $in: addresses },
+        });
+      }
+      break;
+    case "sNftBidToAuction":
+      {
+        notificationSettings = await NotificationSetting.find({
+          sNftBidToAuction: true,
+          address: { $in: addresses },
+        });
+      }
+      break;
+    case "sNftBidToAuctionCancel":
+      {
+        notificationSettings = await NotificationSetting.find({
+          sNftBidToAuctionCancel: true,
+          address: { $in: addresses },
+        });
+      }
+      break;
+    case "sAuctionWin":
+      {
+        notificationSettings = await NotificationSetting.find({
+          sAuctionWin: true,
+          address: { $in: addresses },
+        });
+      }
+      break;
+    case "sAuctionOfBidCancel":
+      {
+        notificationSettings = await NotificationSetting.find({
+          sAuctionOfBidCancel: true,
+          address: { $in: addresses },
+        });
+      }
+      break;
+    case "sNftSell":
+      {
+        notificationSettings = await NotificationSetting.find({
+          sNftSell: true,
+          address: { $in: addresses },
+        });
+      }
+      break;
+    case "sNftBuy":
+      {
+        notificationSettings = await NotificationSetting.find({
+          sNftBuy: true,
+          address: { $in: addresses },
+        });
+      }
+      break;
+    case "sNftOffer":
+      {
+        notificationSettings = await NotificationSetting.find({
+          sNftOffer: true,
+          address: { $in: addresses },
+        });
+      }
+      break;
+    case "sNftOfferCancel":
+      {
+        notificationSettings = await NotificationSetting.find({
+          sNftOfferCancel: true,
+          address: { $in: addresses },
+        });
+      }
+      break;
+    default: {
+      notificationSettings = [];
+    }
+  }
+  let subscribedAddresses = [];
+  addresses.map((address) => {
+    if (notificationSettings.includes(address))
+      subscribedAddresses.push(address);
+  });
+  return subscribedAddresses;
 };
 
 const notifications = {

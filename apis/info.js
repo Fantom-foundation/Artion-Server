@@ -16,7 +16,6 @@ const Auction = mongoose.model("Auction");
 const Bundle = mongoose.model("Bundle");
 
 const toLowerCase = require("../utils/utils");
-const auth = require("./middleware/auth");
 
 // list the newly minted 10 tokens
 router.get("/getNewestTokens", async (_, res) => {
@@ -49,48 +48,44 @@ router.get("/getCollections", async (_, res) => {
   all.push(...collections_721);
   all.push(...collections_1155);
   all = sortBy(all, "name", "desc");
-  let allCollections = await Collection.find({});
+  let allCollections = await Collection.find({ status: true });
 
   let savedAddresses = [];
   let allContracts = new Array();
 
-  for (let i = 0; i < all.length; ++i) {
-    let contract = all[i];
-    let collection = allCollections.find(
-      (col) => col.erc721Address.toLowerCase() == contract.address.toLowerCase()
-    );
+  allCollections.map((collection) => {
+    savedAddresses.push(collection.erc721Address);
+    allContracts.push({
+      address: collection.erc721Address,
+      collectionName: collection.collectionName,
+      description: collection.description,
+      categories: collection.categories,
+      logoImageHash: collection.logoImageHash,
+      siteUrl: collection.siteUrl,
+      discord: collection.discord,
+      twitterHandle: collection.twitterHandle,
+      mediumHandle: collection.mediumHandle,
+      telegram: collection.telegram,
+      isVerified: true,
+      isVisible: true,
+      isInternal: collection.isInternal,
+      isOwnerble: collection.isOwnerble,
+    });
+  });
 
-    if (collection) {
-      if (!savedAddresses.includes(collection.erc721Address)) {
-        savedAddresses.push(collection.erc721Address);
-        allContracts.push({
-          address: collection.erc721Address,
-          collectionName: collection.collectionName,
-          description: collection.description,
-          categories: collection.categories,
-          logoImageHash: collection.logoImageHash,
-          siteUrl: collection.siteUrl,
-          discord: collection.discord,
-          twitterHandle: collection.twitterHandle,
-          mediumHandle: collection.mediumHandle,
-          telegram: collection.telegram,
-          isVerified: true,
-          isVisible: true,
-        });
-      }
-    } else {
-      if (!savedAddresses.includes(contract.address)) {
-        savedAddresses.push(contract.address);
-        allContracts.push({
-          address: contract.address,
-          name: contract.name != "name" ? contract.name : "",
-          symbol: contract.symbol != "symbol" ? contract.symbol : "",
-          isVerified: false,
-          isVisible: contract.isVerified,
-        });
-      }
+  all.map((contract) => {
+    if (!savedAddresses.includes(contract.address)) {
+      savedAddresses.push(contract.address);
+      allContracts.push({
+        address: contract.address,
+        name: contract.name != "name" ? contract.name : "",
+        symbol: contract.symbol != "symbol" ? contract.symbol : "",
+        isVerified: false,
+        isVisible: contract.isVerified,
+      });
     }
-  }
+  });
+
   return res.json({
     status: "success",
     data: allContracts,

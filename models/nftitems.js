@@ -22,6 +22,7 @@ const NFTITEM = mongoose.Schema(
     saleEndsAt: { type: Date }, //for auction
     tokenType: { type: Number, default: 721 },
     liked: { type: Number, default: 0, index: true },
+    contentType: { type: String, default: "image" },
   },
   {
     timestamps: true,
@@ -41,6 +42,7 @@ NFTITEM.methods.toSimpleJson = function () {
     price: this.price,
     viewed: this.viewed,
     liked: this.liked,
+    contentType: this.contentType,
   };
 };
 

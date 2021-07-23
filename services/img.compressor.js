@@ -2,7 +2,6 @@ require("dotenv").config();
 const axios = require("axios");
 
 const IMG_BB_PK = process.env.IMGBB_API_KEY;
-const IMG_BB_API = "https://api.imgbb.com/1/upload";
 
 const uploadImage = async (imgData) => {
   let response = await axios.post("IMG_BB_API", {

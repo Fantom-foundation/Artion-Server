@@ -42,8 +42,11 @@ require("./models/bundleHistory");
 require("./models/follow");
 require("./models/like");
 require("./models/bundlelike");
+require("./models/factorycollection");
+require("./models/notificationsetting");
 
 app.use(bodyParser.json());
+app.use(express.json());
 app.options("*", cors()); // include before other routes
 app.use(cors());
 app.use(require("./apis"));

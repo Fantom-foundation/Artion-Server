@@ -3,9 +3,12 @@ const jwt = require("jsonwebtoken");
 const jwt_secret = process.env.JWT_SECRET;
 const router = require("express").Router();
 const ethers = require("ethers");
+const mongoose = require("mongoose");
+const Account = mongoose.model("Account");
+const NotificationSetting = mongoose.model("NotificationSetting");
 const toLowerCase = require("../utils/utils");
 
-router.post("/getToken", (req, res) => {
+router.post("/getToken", async (req, res) => {
   let address = req.body.address;
   let isAddress = ethers.utils.isAddress(address);
   if (!isAddress)
@@ -14,6 +17,28 @@ router.post("/getToken", (req, res) => {
       token: "",
     });
   address = toLowerCase(address);
+  // save a new account if not registered
+  let account = await Account.findOne({ address: address });
+  if (!account) {
+    try {
+      let newAccount = new Account();
+      newAccount.address = address;
+      await newAccount.save();
+    } catch (error) {}
+  }
+
+  let notificationSettings = await NotificationSetting.findOne({
+    address: address,
+  });
+  if (!notificationSettings)
+    try {
+      let ns = new NotificationSetting();
+      ns.address = address;
+      let _ns = await ns.save();
+      console.log(_ns);
+    } catch (error) {
+      console.log(error);
+    }
   let token = jwt.sign(
     {
       data: address,

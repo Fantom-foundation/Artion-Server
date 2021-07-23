@@ -689,6 +689,16 @@ const selectBundles = async (req, res) => {
         let bundleItems = bundleInfos.filter(
           (bundleInfo) => bundleInfo.bundleID == bundle._id
         );
+        bundleItems = bundleItems.map((bi) => ({
+          bundleID: bi.bundleID,
+          contractAddress: bi.contractAddress,
+          imageURL: bi.imageURL,
+          supply: bi.supply,
+          thumbnailPath: bi.thumbnailPath,
+          tokenID: bi.tokenID,
+          tokenType: bi.tokenType,
+          tokenURI: bi.tokenURI,
+        }));
         data.push({
           viewed: bundle._doc.viewed,
           liked: bundle._doc.liked,
@@ -725,10 +735,26 @@ router.post("/fetchTokens", async (req, res) => {
   }
 
   let data = sortItems(items, sortby);
-  let searchResults = data.slice(
+  let _searchResults = data.slice(
     step * FETCH_COUNT_PER_TIME,
     (step + 1) * FETCH_COUNT_PER_TIME
   );
+
+  let searchResults = _searchResults.map((sr) => ({
+    ...(sr.contractAddress ? { contractAddress: sr.contractAddress } : {}),
+    ...(sr.imageURL ? { imageURL: sr.imageURL } : {}),
+    ...(sr.name ? { name: sr.name } : {}),
+    ...(sr.price ? { price: sr.price } : {}),
+    ...(sr.supply ? { supply: sr.supply } : {}),
+    ...(sr.thumbnailPath ? { thumbnailPath: sr.thumbnailPath } : {}),
+    ...(sr.tokenID ? { tokenID: sr.tokenID } : {}),
+    ...(sr.tokenType ? { tokenType: sr.tokenType } : {}),
+    ...(sr.tokenURI ? { tokenURI: sr.tokenURI } : {}),
+    ...(sr.items ? { items: sr.items } : {}),
+    ...(sr.liked ? { liked: sr.liked } : {}),
+    ...(sr.items ? { _id: sr._id } : {}),
+  }));
+
   return res.json({
     status: "success",
     data: {

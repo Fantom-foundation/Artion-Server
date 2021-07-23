@@ -9,7 +9,6 @@ const createMessage = (data) => {
   let message = {};
   let event = data.event;
   const artionUri = `${app_url}${data.nftAddress}/${data.tokenID}`;
-  const team = "Artion team from Fantom Foundation";
   switch (event) {
     case "ItemSold":
       {
@@ -19,7 +18,7 @@ const createMessage = (data) => {
             from: foundationEmail,
             subject: data.subject,
             text: "artion notification",
-            html: `<p>Dear ${data.alias}<p/> You have bought a new NFT item, ${data.collectionName}'s ${data.tokenName} at ${data.price} FTM. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+            html: `<p>Dear ${data.alias}<p/> You have bought a new NFT item, ${data.collectionName}'s ${data.tokenName} at ${data.price} FTM. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  `,
           };
         } else {
           message = {
@@ -27,7 +26,7 @@ const createMessage = (data) => {
             from: foundationEmail,
             subject: data.subject,
             text: "artion notification",
-            html: `<p>Dear ${data.alias}<p/> You have sold a new NFT item, ${data.collectionName}'s ${data.tokenName} at ${data.price} FTM. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+            html: `<p>Dear ${data.alias}<p/> You have sold a new NFT item, ${data.collectionName}'s ${data.tokenName} at ${data.price} FTM. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  `,
           };
         }
       }
@@ -40,7 +39,7 @@ const createMessage = (data) => {
             from: foundationEmail,
             subject: data.subject,
             text: "artion notification",
-            html: `<p>Dear ${data.alias}!</p> You have received an offer from ${data.from} for your item ${data.tokenID} of ${data.collectionName} collection at ${data.price} wFTM. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+            html: `<p>Dear ${data.alias}!</p> You have received an offer from ${data.from} for your item ${data.tokenID} of ${data.collectionName} collection at ${data.price} wFTM. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  `,
           };
         } else {
         }
@@ -54,7 +53,7 @@ const createMessage = (data) => {
             from: foundationEmail,
             subject: data.subject,
             text: "artion notification",
-            html: `<p>Dear ${data.alias}!</p> An Offer from ${data.from} for your item ${data.tokenID} of ${data.collectionName} collection has been withdrawn. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  ${team}`,
+            html: `<p>Dear ${data.alias}!</p> An Offer from ${data.from} for your item ${data.tokenID} of ${data.collectionName} collection has been withdrawn. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  `,
           };
         } else {
         }
