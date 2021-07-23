@@ -7,6 +7,7 @@ const Account = mongoose.model("Account");
 const Bid = mongoose.model("Bid");
 const NFTITEM = mongoose.model("NFTITEM");
 const TradeHistory = mongoose.model("TradeHistory");
+const NotificationSetting = mongoose.model("NotificationSetting");
 
 const sendEmail = require("../mailer/auctionMailer");
 const getCollectionName = require("../mailer/utils");
@@ -152,7 +153,9 @@ router.post("/updateAuctionReservePrice", service_auth, async (req, res) => {
       let bidder = bid.bidder;
       let account = await Account.findOne({ address: bidder });
 
-      if (account) {
+      // check if user is listening for this event
+      let ns = await NotificationSetting.findOne({ address: bidder });
+      if (account && ns.sNftAuctionPrice) {
         let to = account.email;
         let alias = account.alias;
         let collectionName = await getCollectionName(nftAddress);
@@ -198,7 +201,9 @@ router.post("/bidPlaced", service_auth, async (req, res) => {
       if (tk) {
         let address = tk.owner;
         let account = await Account.findOne({ address: address });
-        if (account) {
+        // check if user is listening for this event
+        let ns = await NotificationSetting.findOne({ address: address });
+        if (account && ns.sNftBidToAuction) {
           let to = account.email;
           let alias = account.alias;
           let collectionName = await getCollectionName(nftAddress);
@@ -253,7 +258,9 @@ router.post("/bidWithdrawn", service_auth, async (req, res) => {
     if (tk) {
       let address = tk.owner;
       let account = await Account.findOne({ address: address });
-      if (account) {
+      // check if user is listening
+      let ns = await NotificationSetting.findOne({ address: address });
+      if (account && ns.sNftBidToAuctionCancel) {
         let to = account.email;
         let alias = account.alias;
         let collectionName = await getCollectionName(nftAddress);
@@ -303,7 +310,9 @@ router.post("/auctionResulted", service_auth, async (req, res) => {
       // send mail
       try {
         let account = await Account.findOne({ address: winner });
-        if (account) {
+        // check if user listens
+        let ns = await NotificationSetting.findOne({ address: winner });
+        if (account && ns.sAuctionWin) {
           let to = account.email;
           let alias = account.alias;
           let collectionName = await getCollectionName(nftAddress);
@@ -380,7 +389,9 @@ router.post("/auctionCancelled", service_auth, async (req, res) => {
     if (bid) {
       let bidder = bid.bidder;
       let account = await Account.findOne({ address: bidder });
-      if (account) {
+      // check if user listens
+      let ns = await NotificationSetting.findOne({ address: bidder });
+      if (account && ns.sAuctionOfBidCancel) {
         let to = account.email;
         let alias = account.alias;
         let collectionName = await getCollectionName(nftAddress);
