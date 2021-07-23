@@ -153,7 +153,7 @@ router.post("/itemSold", service_auth, async (req, res) => {
       }
       // checks if user listens
       account = await Account.findOne({ address: seller });
-      let ns = await NotificationSetting.findOne({ address: seller });
+      ns = await NotificationSetting.findOne({ address: seller });
       if (account && ns.sNftSell) {
         let to = account.email;
         let alias = account.alias;
