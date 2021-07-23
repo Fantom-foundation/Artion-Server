@@ -5,10 +5,10 @@ const BundleTradeHistory = mongoose.model("BundleTradeHistory");
 const Bundle = mongoose.model("Bundle");
 const BundleInfo = mongoose.model("BundleInfo");
 const BundleOffer = mongoose.model("BundleOffer");
-
 const Account = mongoose.model("Account");
 const Category = mongoose.model("Category");
 const NFTITEM = mongoose.model("NFTITEM");
+const NotificationSetting = mongoose.model("NotificationSetting");
 
 const router = require("express").Router();
 const service_auth = require("./middleware/auth.tracker");
@@ -104,7 +104,9 @@ router.post("/itemSold", service_auth, async (req, res) => {
       let account = await Account.findOne({
         address: seller,
       });
-      if (account) {
+      // check if user listens
+      let ns = await NotificationSetting.findOne({ address: seller });
+      if (account && ns.sBundleSell) {
         let to = account.email;
         let sellerAlias = await getUserAlias(seller);
         let bundleName = bundle.name;
@@ -125,7 +127,9 @@ router.post("/itemSold", service_auth, async (req, res) => {
       let account = await Account.findOne({
         address: buyer,
       });
-      if (account) {
+      // check if user listens
+      let ns = await NotificationSetting.findOne({ address: buyer });
+      if (account && ns.sBundleBuy) {
         let to = account.email;
         let buyerAlias = await getUserAlias(buyer);
         let bundleName = bundle.name;
@@ -249,7 +253,9 @@ router.post("/offerCreated", service_auth, async (req, res) => {
       let ownerAccount = await Account.findOne({
         address: owner,
       });
-      if (ownerAccount) {
+      // check if user listens
+      let ns = await NotificationSetting.findOne({ address: owner });
+      if (ownerAccount && ns.sBundleOffer) {
         let to = ownerAccount.email;
         let ownerAlias = await getUserAlias(owner);
         let creatorAlias = await getUserAlias(creator);
@@ -287,7 +293,9 @@ router.post("/offerCanceled", service_auth, async (req, res) => {
       let ownerAccount = await Account.findOne({
         address: owner,
       });
-      if (ownerAccount) {
+      // check if user listens
+      let ns = await NotificationSetting.findOne({ address: owner });
+      if (ownerAccount && ns.sBundleOfferCancel) {
         let to = ownerAccount.email;
         let ownerAlias = await getUserAlias(owner);
         let creatorAlias = await getUserAlias(creator);
