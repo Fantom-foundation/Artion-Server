@@ -8,6 +8,7 @@ const Offer = mongoose.model("Offer");
 const NFTITEM = mongoose.model("NFTITEM");
 const Category = mongoose.model("Category");
 const Account = mongoose.model("Account");
+const NotificationSetting = mongoose.model("NotificationSetting");
 
 const service_auth = require("./middleware/auth.tracker");
 
@@ -128,7 +129,9 @@ router.post("/itemSold", service_auth, async (req, res) => {
       }
       // send mail here to buyer first
       let account = await Account.findOne({ address: buyer });
-      if (account) {
+      // checks if user listens
+      let ns = await NotificationSetting.findOne({ address: buyer });
+      if (account && ns.sNftBuy) {
         let to = account.email;
         let alias = account.alias;
         let collectionName = await getCollectionName(nft);
@@ -148,8 +151,10 @@ router.post("/itemSold", service_auth, async (req, res) => {
         };
         sendEmail(data);
       }
+      // checks if user listens
       account = await Account.findOne({ address: seller });
-      if (account) {
+      let ns = await NotificationSetting.findOne({ address: seller });
+      if (account && ns.sNftSell) {
         let to = account.email;
         let alias = account.alias;
         let collectionName = await getCollectionName(nft);
@@ -308,7 +313,11 @@ router.post("/offerCreated", service_auth, async (req, res) => {
           let owner = await Account.findOne({
             address: tokenOwner.owner,
           });
-          if (owner) {
+          // checks if user listens
+          let ns = await NotificationSetting.findOne({
+            address: tokenOwner.owner,
+          });
+          if (owner && ns.sNftOffer) {
             let alias = await getUserAlias(owner.address);
             let tokenName = await getNFTItemName(nft, tokenID);
             let creatorAlias = await getUserAlias(creator);
@@ -365,7 +374,11 @@ router.post("/offerCanceled", service_auth, async (req, res) => {
           let owner = await Account.findOne({
             address: tokenOwner.owner,
           });
-          if (owner) {
+          // checks if user listens
+          let ns = await NotificationSetting.findOne({
+            address: tokenOwner.owner,
+          });
+          if (owner && ns.sNftOfferCancel) {
             let isNotifiable = await isOfferCancelNotifiable(
               owner.address,
               nft,
