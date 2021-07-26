@@ -191,6 +191,7 @@ router.post("/getBundleByID", async (req, res) => {
         thumbnailPath: token.thumbnailPath,
         name: token.name,
         supply: holding.supply,
+        contentType : token.contentType
       });
     });
     await Promise.all(promise);
