@@ -69,6 +69,7 @@ router.post("/itemListed", service_auth, async (req, res) => {
     notifications.notifyBundleListing(bundleID, bundleName, owner, price);
     return res.json({});
   } catch (error) {
+    console.log(error)
     return res.json({ status: "failed" });
   }
 });
