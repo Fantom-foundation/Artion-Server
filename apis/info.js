@@ -134,28 +134,6 @@ router.post("/searchNames", async (req, res) => {
   }
 });
 
-router.get("/getTokenType/:address", async (req, res) => {
-  try {
-    let address = toLowerCase(req.params.address);
-    let category = await Category.findOne({ minterAddress: address });
-    if (category) {
-      return res.json({
-        status: "success",
-        data: parseInt(category.type),
-      });
-    } else {
-      return res.json({
-        status: "success",
-        data: 721,
-      });
-    }
-  } catch (error) {
-    return res.json({
-      status: "success",
-      data: 721,
-    });
-  }
-});
 
 router.get("/getOwnership/:address/:tokenID", async (req, res) => {
   try {
