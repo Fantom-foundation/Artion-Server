@@ -15,6 +15,7 @@ const BundleInfo = mongoose.model("BundleInfo");
 const Bundle = mongoose.model("Bundle");
 const BundleListing = mongoose.model("BundleListing");
 const BundleOffer = mongoose.model("BundleOffer");
+const TradeHistory = mongoose.model("TradeHistory");
 
 const orderBy = require("lodash.orderby");
 const toLowerCase = require("../utils/utils");
@@ -32,7 +33,7 @@ router.post("/increaseViews", async (req, res) => {
   try {
     let contractAddress = req.body.contractAddress;
     contractAddress = toLowerCase(contractAddress);
-    let tokenID = req.body.tokenID;
+    let tokenID = parseInt(req.body.tokenID);
     let token = await NFTITEM.findOne({
       contractAddress: contractAddress,
       tokenID: tokenID,
@@ -50,28 +51,6 @@ router.post("/increaseViews", async (req, res) => {
   }
 });
 
-router.post("/getTokenURI", async (req, res) => {
-  try {
-    let address = req.body.contractAddress;
-    address = toLowerCase(address);
-    let tokenID = req.body.tokenID;
-    let uri = "";
-    let tk = await NFTITEM.findOne({
-      contractAddress: address,
-      tokenID: tokenID,
-    });
-    uri = tk.tokenURI;
-    return res.json({
-      status: "success",
-      data: uri,
-    });
-  } catch (error) {
-    return res.status(400).json({
-      status: "failed",
-      data: "token id out of total balance",
-    });
-  }
-});
 
 const sortItems = (_allTokens, sortby) => {
   let tmp = [];
@@ -803,30 +782,101 @@ router.post("/transfer1155History", async (req, res) => {
   }
 });
 
-router.get("/getLikesCount/:address/:tokenID", async (req, res) => {
+
+router.post("/getSingleItemDetails", async(req,res) => {
   try {
-    let address = toLowerCase(req.params.address);
-    let tokenID = parseInt(req.params.tokenID);
+    let contractAddress = toLowerCase(req.body.contractAddress);
+    let tokenID = parseInt(req.body.tokenID);
+    let category = await Category.findOne({ minterAddress: contractAddress });
+    // token type
+    let tokenType = category ?  category.type : 721
     let nft = await NFTITEM.findOne({
-      contractAddress: address,
+      contractAddress: contractAddress,
       tokenID: tokenID,
     });
-    return res.json({
-      status: "success",
-      data: nft.liked,
+    // likes count
+    let likes = nft ? nft.liked : 0
+    // token uri
+    let uri = nft ? nft.tokenURI : ""
+    // get listings
+    let listings = [];
+    let _listings = await Listing.find({ minter: contractAddress, tokenID: tokenID });
+    let listingPromise = _listings.map(async (list) => {
+      let account = await getAccountInfo(list.owner);
+      listings.push({
+        quantity: list.quantity,
+        startTime: list.startTime,
+        owner: list.owner,
+        minter: list.minter,
+        tokenID: list.tokenID,
+        price: list.price,
+        alias: account ? account[0] : null,
+        image: account ? account[1] : null,
+      });
     });
-  } catch (error) {
-    return res.json({
-      status: "failed",
-    });
-  }
-});
+    await Promise.all(listingPromise);
+    listings = orderBy(listings, "price", "asc");
 
-router.post("/getMoreItemsFromCollection", async (req, res) => {
-  try {
-    let address = toLowerCase(req.body.address);
+    // get offers
+    let offers = [];
+
+    let _offers = await Offer.find({
+      minter: { $regex: new RegExp(contractAddress, "i") },
+      tokenID: tokenID,
+    });
+    let offerPromise = _offers.map(async (offer) => {
+      let account = await getAccountInfo(offer.creator);
+      offers.push({
+        creator: offer.creator,
+        minter: offer.minter,
+        tokenID: offer.tokenID,
+        quantity: offer.quantity,
+        pricePerItem: offer.pricePerItem,
+        deadline: offer.deadline,
+        alias: account ? account[0] : null,
+        image: account ? account[1] : null,
+      });
+    });
+    await Promise.all(offerPromise);
+    // get trade history
+    let _history = await TradeHistory.find({
+      collectionAddress: { $regex: new RegExp(contractAddress, "i") },
+      tokenID: tokenID,
+    })
+      .select([
+        "from",
+        "to",
+        "tokenID",
+        "price",
+        "value",
+        "createdAt",
+        "isAuction",
+      ])
+      .sort({ createdAt: "desc" });
+    let history = [];
+  
+    let historyPromise = _history.map(async (hist) => {
+      let sender = await getAccountInfo(hist.from);
+      let receiver = await getAccountInfo(hist.to);
+      history.push({
+        from: hist.from,
+        to: hist.to,
+        tokenID: hist.tokenID,
+        price: hist.price,
+        value: hist.value,
+        createdAt: hist.createdAt,
+        isAuction: hist.isAuction,
+        fromAlias: sender ? sender[0] : null,
+        fromImage: sender ? sender[1] : null,
+        toAlias: receiver ? receiver[0] : null,
+        toImage: receiver ? receiver[1] : null,
+      });
+    });
+    await Promise.all(historyPromise);
+    // more from this collection
     let nfts = await NFTITEM.find({
-      contractAddress: address,
+      contractAddress: contractAddress,
+      tokenID : {$ne : tokenID}
     })
       .sort({ price: "desc" })
       .limit(10)
@@ -843,15 +893,24 @@ router.post("/getMoreItemsFromCollection", async (req, res) => {
         "contractAddress",
       ]);
     return res.json({
-      status: "success",
-      data: nfts,
-    });
+      status : "success",
+      data : {
+        tokenType,
+        likes ,
+        uri ,
+        listings,
+        offers,
+        history,
+        nfts
+      }
+    })
   } catch (error) {
+    console.log(error)
     return res.json({
-      status: "failed",
-    });
+      status : "failed"
+    })
   }
-});
+})
 
 const getBlockTime = async (blockNumber) => {
   let block = await provider.getBlock(blockNumber);
