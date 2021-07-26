@@ -794,6 +794,8 @@ router.post("/getSingleItemDetails", async(req,res) => {
       contractAddress: contractAddress,
       tokenID: tokenID,
     });
+    // content type
+    let contentType = nft.contentType
     // likes count
     let likes = nft ? nft.liked : 0
     // token uri
@@ -901,7 +903,8 @@ router.post("/getSingleItemDetails", async(req,res) => {
         listings,
         offers,
         history,
-        nfts
+        nfts,
+        contentType
       }
     })
   } catch (error) {
