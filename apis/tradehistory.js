@@ -52,6 +52,7 @@ router.post("/getBundleTradeHistory", async (req, res) => {
     let bundleID = req.body.bundleID;
     let _history = await BundleTradeHistory.find({
       bundleID: { $regex: new RegExp(bundleID, "i") },
+      activity : "Sale"
     })
       .select([
         "bundleID",
