@@ -880,7 +880,7 @@ router.post("/getSingleItemDetails", async(req,res) => {
       contractAddress: contractAddress,
       tokenID : {$ne : tokenID}
     })
-      .sort({ price: "desc" })
+      .sort({ viewed: "desc" })
       .limit(10)
       .select([
         "thumbnailPath",
