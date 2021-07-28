@@ -48,7 +48,7 @@ const notifyBundleCreation = async (address, bundleID, bundleName) => {
     let emails = accounts.map((account) =>
       account.email ? account.email : null
     );
-
+    emails = emails.filter((email) => email);
     let owner = await getUserAlias(address);
     let message = {
       to: emails,
@@ -84,6 +84,7 @@ const nofifyNFTShowUp = async (address, contractAddress, tokenID) => {
     let emails = accounts.map((account) =>
       account.email ? account.email : null
     );
+    emails = emails.filter((email) => email);
 
     let owner = await getUserAlias(address);
     let nftName = await getNFTItemName(contractAddress, tokenID);
@@ -129,6 +130,7 @@ const notifyAuctionPriceUpdate = async (contractAddress, tokenID, price) => {
     let emails = accounts.map((account) =>
       account.email ? account.email : null
     );
+    emails = emails.filter((email) => email);
     let message = {
       to: emails,
       from: foundationEmail,
@@ -175,6 +177,7 @@ const notifySingleItemListed = async (
     let emails = accounts.map((account) =>
       account.email ? account.email : null
     );
+    emails = emails.filter((email) => email);
     console.log("emails are ");
     console.log(emails);
     let message = {
@@ -218,6 +221,7 @@ const notifyNewAuction = async (contractAddress, tokenID) => {
       let emails = accounts.map((account) =>
         account.email ? account.email : null
       );
+      emails = emails.filter((email) => email);
       let nftName = nftItem.name;
       let message = {
         to: emails,
@@ -255,6 +259,7 @@ const notifyBundleListing = async (bundleID, bundleName, address, price) => {
     let emails = accounts.map((account) =>
       account.email ? account.email : null
     );
+    emails = emails.filter((email) => email);
 
     let owner = await getUserAlias(address);
     let message = {
@@ -339,6 +344,7 @@ const nofityNFTUpdated = async (address, contractAddress, tokenID, price) => {
     let emails = accounts.map((account) =>
       account.email ? account.email : null
     );
+    emails = emails.filter((email) => email);
     let message = {
       to: emails,
       from: foundationEmail,
