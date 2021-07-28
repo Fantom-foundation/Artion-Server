@@ -496,9 +496,14 @@ const extractEmailSubscribedAddresses = async (addresses, option) => {
   }
   console.log("notification setting is ");
   console.log(notificationSettings);
+  let notificationAddresses = [];
+  notificationSettings.map((nss) => {
+    if (!notificationAddresses.includes(nss.address))
+      notificationAddresses.push(nss.address);
+  });
   let subscribedAddresses = [];
   addresses.map((address) => {
-    if (notificationSettings.includes(address))
+    if (notificationAddresses.includes(address))
       subscribedAddresses.push(address);
   });
   console.log("subscriber addresses are");
