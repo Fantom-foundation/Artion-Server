@@ -9,7 +9,7 @@ const Account = mongoose.model("Account");
 const Follow = mongoose.model("Follow");
 const NotificationSetting = mongoose.model("NotificationSetting");
 
-const validateSingature = require("../apis/middleware/auth.sign");
+const validateSignature = require("../apis/middleware/auth.sign");
 
 const pinataSDK = require("@pinata/sdk");
 const pinata = pinataSDK(
@@ -92,10 +92,10 @@ router.post("/accountdetails", auth, async (req, res) => {
     let bio = fields.bio;
     let imgData = fields.imgData;
     let signature = fields.signature;
-    let isValidSingature = await validateSingature(address, signature);
-    if (!isValidSingature)
+    let isValidsignature = await validateSignature(address, signature);
+    if (!isValidsignature)
       return res.status(400).json({
-        status: "invalid singature",
+        status: "invalid signature",
       });
     let account = await Account.findOne({ address: address });
     if (imgData) {
@@ -253,10 +253,10 @@ router.post("/notificationsettings", auth, async (req, res) => {
   try {
     let address = extractAddress(req, res);
     let signature = req.body.signature;
-    let isValidSingature = await validateSingature(address, signature);
-    if (!isValidSingature)
+    let isValidsignature = await validateSignature(address, signature);
+    if (!isValidsignature)
       return res.status(400).json({
-        status: "invalid singature",
+        status: "invalid signature",
       });
 
     // get individual values
