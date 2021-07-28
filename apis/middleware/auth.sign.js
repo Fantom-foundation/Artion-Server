@@ -7,7 +7,7 @@ const Account = mongoose.model("Account");
 
 const toLowerCase = require("../../utils/utils");
 
-const validateSingature = async (publicKey, signature) => {
+const validateSignature = async (publicKey, signature) => {
   try {
     publicKey = toLowerCase(publicKey);
     let account = await Account.findOne({ address: publicKey });
@@ -28,4 +28,4 @@ const validateSingature = async (publicKey, signature) => {
   }
 };
 
-module.exports = validateSingature;
+module.exports = validateSignature;

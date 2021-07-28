@@ -18,7 +18,7 @@ const applicationMailer = require("../mailer/reviewMailer");
 
 const FactoryUtils = require("../services/factory.utils");
 
-const validateSingature = require("../apis/middleware/auth.sign");
+const validateSignature = require("../apis/middleware/auth.sign");
 
 router.post("/collectiondetails", auth, async (req, res) => {
   let erc721Address = req.body.erc721Address;
@@ -26,11 +26,11 @@ router.post("/collectiondetails", auth, async (req, res) => {
 
   let owner = extractAddress(req, res);
   let signature = req.body.signature;
-  let isValidSingature = await validateSingature(owner, signature);
-  if (!isValidSingature)
+  let isValidsignature = await validateSignature(owner, signature);
+  if (!isValidsignature)
     return res.status(400).json({
       status: "failed",
-      data: "Invalid Singature from user",
+      data: "Invalid signature from user",
     });
   // validate to see whether the contract is either 721 or 1155, otherwise, reject
 

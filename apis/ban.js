@@ -12,7 +12,7 @@ const Moderator = mongoose.model("Moderator");
 
 const auth = require("./middleware/auth");
 const toLowerCase = require("../utils/utils");
-const validateSingature = require("../apis/middleware/auth.sign");
+const validateSignature = require("../apis/middleware/auth.sign");
 
 const adminAddress = process.env.ADMINADDRESS;
 
@@ -74,8 +74,8 @@ router.post("/banItem", auth, async (req, res) => {
         data: "Only Admin or Mods can ban NFT!",
       });
     let signature = req.body.signature;
-    let isValidSingature = validateSingature(adminAddress, signature);
-    if (!isValidSingature)
+    let isValidsignature = validateSignature(adminAddress, signature);
+    if (!isValidsignature)
       return res.json({
         status: "failed",
         data: "Invalid Signature",
@@ -122,8 +122,8 @@ router.post("/banItems", auth, async (req, res) => {
         data: "Only Admin or Mods can ban NFT!",
       });
     let signature = req.body.signature;
-    let isValidSingature = validateSingature(adminAddress, signature);
-    if (!isValidSingature)
+    let isValidsignature = validateSignature(adminAddress, signature);
+    if (!isValidsignature)
       return res.json({
         status: "failed",
         data: "Invalid Signature",
