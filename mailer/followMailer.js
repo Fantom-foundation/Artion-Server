@@ -292,8 +292,11 @@ const notifyBundleUpdate = async (bundleID, bundleName, address, price) => {
     let emails = accounts.map((account) =>
       account.email ? account.email : null
     );
+    console.log("emails are ");
+    console.log(emails);
 
     let owner = await getUserAlias(address);
+    console.log(`owner is ${owner}`);
     let message = {
       to: emails,
       from: foundationEmail,
@@ -301,6 +304,7 @@ const notifyBundleUpdate = async (bundleID, bundleName, address, price) => {
       text: "artion notification",
       html: `Dear Artion User! <br/> Artion user(${owner}) has updated a Bundle(${bundleName})'s price to ${price} FTM.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  `,
     };
+    console.log("message is ", message);
     sgMail.sendMultiple(message).then(
       () => {},
       (error) => {
