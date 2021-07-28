@@ -66,7 +66,10 @@ const notifyBundleCreation = async (address, bundleID, bundleName) => {
         }
       }
     );
-  } catch (error) {}
+  } catch (error) {
+    console.log("bundle creation error");
+    console.log(error);
+  }
 };
 
 const nofifyNFTShowUp = async (address, contractAddress, tokenID) => {
@@ -98,7 +101,10 @@ const nofifyNFTShowUp = async (address, contractAddress, tokenID) => {
         }
       }
     );
-  } catch (error) {}
+  } catch (error) {
+    console.log("new item creation error");
+    console.log(error);
+  }
 };
 
 const notifyAuctionPriceUpdate = async (contractAddress, tokenID, price) => {
@@ -134,10 +140,15 @@ const notifyAuctionPriceUpdate = async (contractAddress, tokenID, price) => {
       () => {},
       (error) => {
         if (error.response) {
+          console.log("auction price update send mail error");
+          console.log(error);
         }
       }
     );
-  } catch (error) {}
+  } catch (error) {
+    console.log("auction price udpate error");
+    console.log(error);
+  }
 };
 
 const notifySingleItemListed = async (
@@ -219,11 +230,19 @@ const notifyNewAuction = async (contractAddress, tokenID) => {
         () => {},
         (error) => {
           if (error.response) {
+            console.log("nft auction error");
+            console.log(error);
           }
         }
       );
-    } catch (error) {}
-  } catch (error) {}
+    } catch (error) {
+      console.log("nft auction error");
+      console.log(error);
+    }
+  } catch (error) {
+    console.log("nft auction error");
+    console.log(error);
+  }
 };
 
 const notifyBundleListing = async (bundleID, bundleName, address, price) => {
@@ -249,10 +268,15 @@ const notifyBundleListing = async (bundleID, bundleName, address, price) => {
       () => {},
       (error) => {
         if (error.response) {
+          console.log("bundle send mail listed error");
+          console.log(error);
         }
       }
     );
-  } catch (error) {}
+  } catch (error) {
+    console.log("bundle listed error");
+    console.log(error);
+  }
 };
 
 const notifyBundleUpdate = async (bundleID, bundleName, address, price) => {
@@ -281,10 +305,15 @@ const notifyBundleUpdate = async (bundleID, bundleName, address, price) => {
       () => {},
       (error) => {
         if (error.response) {
+          console.log("notify bundle update send mail error");
+          console.log(error);
         }
       }
     );
-  } catch (error) {}
+  } catch (error) {
+    console.log("notify bundle update");
+    console.log(error);
+  }
 };
 
 const nofityNFTUpdated = async (address, contractAddress, tokenID, price) => {
@@ -319,7 +348,10 @@ const nofityNFTUpdated = async (address, contractAddress, tokenID, price) => {
         }
       }
     );
-  } catch (error) {}
+  } catch (error) {
+    console.log("item update error");
+    console.log(error);
+  }
 };
 
 const extractEmailSubscribedAddresses = async (addresses, option) => {
