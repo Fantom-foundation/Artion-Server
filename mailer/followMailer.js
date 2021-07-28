@@ -492,6 +492,8 @@ const extractEmailSubscribedAddresses = async (addresses, option) => {
     if (notificationSettings.includes(address))
       subscribedAddresses.push(address);
   });
+  console.log("subscriber addresses are");
+  console.log(subscribedAddresses);
   return subscribedAddresses;
 };
 
