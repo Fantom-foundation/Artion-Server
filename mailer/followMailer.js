@@ -182,7 +182,10 @@ const notifySingleItemListed = async (
         }
       }
     );
-  } catch (error) {}
+  } catch (error) {
+    console.log("notify single item listed error");
+    console.log(error);
+  }
 };
 
 const notifyNewAuction = async (contractAddress, tokenID) => {
