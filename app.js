@@ -44,6 +44,7 @@ require("./models/like");
 require("./models/bundlelike");
 require("./models/factorycollection");
 require("./models/notificationsetting");
+require("./models/moderator");
 
 app.use(bodyParser.json());
 app.use(express.json());

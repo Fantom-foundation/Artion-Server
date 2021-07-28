@@ -18,4 +18,5 @@ router.use("/bundlemarketplace", require("./bundleMarketplace"));
 router.use("/follow", require("./follow"));
 router.use("/like", require("./like"));
 router.use("/factorycollection", require("./factorycollection"));
+router.use("/mod", require("./moderator"));
 module.exports = router;

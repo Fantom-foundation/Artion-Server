@@ -48,7 +48,7 @@ const notifyBundleCreation = async (address, bundleID, bundleName) => {
     let emails = accounts.map((account) =>
       account.email ? account.email : null
     );
-
+    emails = emails.filter((email) => email);
     let owner = await getUserAlias(address);
     let message = {
       to: emails,
@@ -66,7 +66,10 @@ const notifyBundleCreation = async (address, bundleID, bundleName) => {
         }
       }
     );
-  } catch (error) {}
+  } catch (error) {
+    console.log("bundle creation error");
+    console.log(error);
+  }
 };
 
 const nofifyNFTShowUp = async (address, contractAddress, tokenID) => {
@@ -81,6 +84,7 @@ const nofifyNFTShowUp = async (address, contractAddress, tokenID) => {
     let emails = accounts.map((account) =>
       account.email ? account.email : null
     );
+    emails = emails.filter((email) => email);
 
     let owner = await getUserAlias(address);
     let nftName = await getNFTItemName(contractAddress, tokenID);
@@ -98,7 +102,10 @@ const nofifyNFTShowUp = async (address, contractAddress, tokenID) => {
         }
       }
     );
-  } catch (error) {}
+  } catch (error) {
+    console.log("new item creation error");
+    console.log(error);
+  }
 };
 
 const notifyAuctionPriceUpdate = async (contractAddress, tokenID, price) => {
@@ -123,6 +130,7 @@ const notifyAuctionPriceUpdate = async (contractAddress, tokenID, price) => {
     let emails = accounts.map((account) =>
       account.email ? account.email : null
     );
+    emails = emails.filter((email) => email);
     let message = {
       to: emails,
       from: foundationEmail,
@@ -134,10 +142,15 @@ const notifyAuctionPriceUpdate = async (contractAddress, tokenID, price) => {
       () => {},
       (error) => {
         if (error.response) {
+          console.log("auction price update send mail error");
+          console.log(error);
         }
       }
     );
-  } catch (error) {}
+  } catch (error) {
+    console.log("auction price udpate error");
+    console.log(error);
+  }
 };
 
 const notifySingleItemListed = async (
@@ -164,6 +177,7 @@ const notifySingleItemListed = async (
     let emails = accounts.map((account) =>
       account.email ? account.email : null
     );
+    emails = emails.filter((email) => email);
     console.log("emails are ");
     console.log(emails);
     let message = {
@@ -182,7 +196,10 @@ const notifySingleItemListed = async (
         }
       }
     );
-  } catch (error) {}
+  } catch (error) {
+    console.log("notify single item listed error");
+    console.log(error);
+  }
 };
 
 const notifyNewAuction = async (contractAddress, tokenID) => {
@@ -204,6 +221,7 @@ const notifyNewAuction = async (contractAddress, tokenID) => {
       let emails = accounts.map((account) =>
         account.email ? account.email : null
       );
+      emails = emails.filter((email) => email);
       let nftName = nftItem.name;
       let message = {
         to: emails,
@@ -216,11 +234,19 @@ const notifyNewAuction = async (contractAddress, tokenID) => {
         () => {},
         (error) => {
           if (error.response) {
+            console.log("nft auction error");
+            console.log(error);
           }
         }
       );
-    } catch (error) {}
-  } catch (error) {}
+    } catch (error) {
+      console.log("nft auction error");
+      console.log(error);
+    }
+  } catch (error) {
+    console.log("nft auction error");
+    console.log(error);
+  }
 };
 
 const notifyBundleListing = async (bundleID, bundleName, address, price) => {
@@ -233,6 +259,7 @@ const notifyBundleListing = async (bundleID, bundleName, address, price) => {
     let emails = accounts.map((account) =>
       account.email ? account.email : null
     );
+    emails = emails.filter((email) => email);
 
     let owner = await getUserAlias(address);
     let message = {
@@ -246,10 +273,15 @@ const notifyBundleListing = async (bundleID, bundleName, address, price) => {
       () => {},
       (error) => {
         if (error.response) {
+          console.log("bundle send mail listed error");
+          console.log(error);
         }
       }
     );
-  } catch (error) {}
+  } catch (error) {
+    console.log("bundle listed error");
+    console.log(error);
+  }
 };
 
 const notifyBundleUpdate = async (bundleID, bundleName, address, price) => {
@@ -265,8 +297,12 @@ const notifyBundleUpdate = async (bundleID, bundleName, address, price) => {
     let emails = accounts.map((account) =>
       account.email ? account.email : null
     );
+    emails = emails.filter((email) => email);
+    console.log("emails are ");
+    console.log(emails);
 
     let owner = await getUserAlias(address);
+    console.log(`owner is ${owner}`);
     let message = {
       to: emails,
       from: foundationEmail,
@@ -274,14 +310,20 @@ const notifyBundleUpdate = async (bundleID, bundleName, address, price) => {
       text: "artion notification",
       html: `Dear Artion User! <br/> Artion user(${owner}) has updated a Bundle(${bundleName})'s price to ${price} FTM.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  `,
     };
+    console.log("message is ", message);
     sgMail.sendMultiple(message).then(
       () => {},
       (error) => {
         if (error.response) {
+          console.log("notify bundle update send mail error");
+          console.log(error);
         }
       }
     );
-  } catch (error) {}
+  } catch (error) {
+    console.log("notify bundle update");
+    console.log(error);
+  }
 };
 
 const nofityNFTUpdated = async (address, contractAddress, tokenID, price) => {
@@ -302,6 +344,7 @@ const nofityNFTUpdated = async (address, contractAddress, tokenID, price) => {
     let emails = accounts.map((account) =>
       account.email ? account.email : null
     );
+    emails = emails.filter((email) => email);
     let message = {
       to: emails,
       from: foundationEmail,
@@ -316,7 +359,10 @@ const nofityNFTUpdated = async (address, contractAddress, tokenID, price) => {
         }
       }
     );
-  } catch (error) {}
+  } catch (error) {
+    console.log("item update error");
+    console.log(error);
+  }
 };
 
 const extractEmailSubscribedAddresses = async (addresses, option) => {
@@ -487,9 +533,14 @@ const extractEmailSubscribedAddresses = async (addresses, option) => {
       notificationSettings = [];
     }
   }
+  let notificationAddresses = [];
+  notificationSettings.map((nss) => {
+    if (!notificationAddresses.includes(nss.address))
+      notificationAddresses.push(nss.address);
+  });
   let subscribedAddresses = [];
   addresses.map((address) => {
-    if (notificationSettings.includes(address))
+    if (notificationAddresses.includes(address))
       subscribedAddresses.push(address);
   });
   return subscribedAddresses;

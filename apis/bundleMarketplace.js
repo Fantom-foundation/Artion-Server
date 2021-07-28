@@ -69,7 +69,6 @@ router.post("/itemListed", service_auth, async (req, res) => {
     notifications.notifyBundleListing(bundleID, bundleName, owner, price);
     return res.json({});
   } catch (error) {
-    console.log(error)
     return res.json({ status: "failed" });
   }
 });
@@ -201,12 +200,15 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
       });
       await Promise.all(promise);
 
+      console.log(`new price, old price ${newPrice}, ${oldPrice}`);
       // notify
       if (oldPrice != newPrice)
         notifications.notifyBundleUpdate(bundleID, bundleName, owner, newPrice);
     }
     return res.json({});
   } catch (error) {
+    console.log("bundle item udpate");
+    console.log(error);
     return res.json({ status: "failed" });
   }
 });
