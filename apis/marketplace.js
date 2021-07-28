@@ -77,7 +77,10 @@ router.post("/itemListed", service_auth, async (req, res) => {
         minter: nft,
         tokenID: tokenID,
       });
-    } catch (error) {}
+    } catch (error) {
+      console.log("listing deletion error");
+      console.log(error);
+    }
 
     try {
       let newList = new Listing();
@@ -88,7 +91,10 @@ router.post("/itemListed", service_auth, async (req, res) => {
       newList.price = pricePerItem;
       newList.startTime = startingTime;
       await newList.save();
-    } catch (error) {}
+    } catch (error) {
+      console.log("new listing addition error");
+      console.log(error);
+    }
     // now notify followers
     notifications.notifySingleItemListed(
       owner,
@@ -99,6 +105,8 @@ router.post("/itemListed", service_auth, async (req, res) => {
     );
     return res.json({});
   } catch (error) {
+    console.log("new item listed error");
+    console.log(error);
     return res.json({ status: "failed" });
   }
 });
