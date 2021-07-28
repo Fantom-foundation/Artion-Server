@@ -290,8 +290,9 @@ const notifyBundleUpdate = async (bundleID, bundleName, address, price) => {
     );
     let accounts = await Account.find({ address: { $in: addresses } });
     let emails = accounts.map((account) =>
-      account.email ? account.email : ""
+      account.email ? account.email : null
     );
+    emails = emails.filter((email) => email);
     console.log("emails are ");
     console.log(emails);
 
