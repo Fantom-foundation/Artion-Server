@@ -74,7 +74,7 @@ router.post("/banItem", auth, async (req, res) => {
         data: "Only Admin or Mods can ban NFT!",
       });
     let signature = req.body.signature;
-    let isValidSingature = validateSingature();
+    let isValidSingature = validateSingature(adminAddress, signature);
     if (!isValidSingature)
       return res.json({
         status: "failed",
