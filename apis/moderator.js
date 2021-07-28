@@ -7,7 +7,7 @@ const router = require("express").Router();
 const auth = require("./middleware/auth");
 const toLowerCase = require("../utils/utils");
 const extractAddress = require("../services/address.utils");
-const validateSingature = require("../apis/middleware/auth.sign");
+const validateSignature = require("../apis/middleware/auth.sign");
 
 const ADMINADDRESS = process.env.ADMINADDRESS;
 
@@ -25,11 +25,11 @@ router.post("/add", auth, async (req, res) => {
       });
     let modAddress = toLowerCase(req.body.address);
     let modName = req.body.name;
-    let signature = req.body.singature;
-    let isValidSingature = validateSingature(adminAddress, signature);
-    if (!isValidSingature)
+    let signature = req.body.signature;
+    let isValidsignature = validateSignature(adminAddress, signature);
+    if (!isValidsignature)
       return res.status(400).json({
-        status: "invalid singature",
+        status: "invalid signature",
       });
     let mod = await Moderator.findOne({ address: modAddress });
     if (mod) {
@@ -63,11 +63,11 @@ router.post("/remove", auth, async (req, res) => {
         data: "Only Admin can add Mods",
       });
     let modAddress = toLowerCase(req.body.address);
-    let signature = req.body.singature;
-    let isValidSingature = validateSingature(adminAddress, signature);
-    if (!isValidSingature)
+    let signature = req.body.signature;
+    let isValidsignature = validateSignature(adminAddress, signature);
+    if (!isValidsignature)
       return res.status(400).json({
-        status: "invalid singature",
+        status: "invalid signature",
       });
     await Moderator.deleteMany({ address: modAddress });
     return res.json({
