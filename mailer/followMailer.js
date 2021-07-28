@@ -320,6 +320,10 @@ const nofityNFTUpdated = async (address, contractAddress, tokenID, price) => {
 };
 
 const extractEmailSubscribedAddresses = async (addresses, option) => {
+  console.log("following addresses are");
+  console.log(addresses);
+  console.log("follower option is ");
+  console.log(option);
   let notificationSettings;
   switch (option) {
     case "fBundleCreation":
@@ -487,6 +491,8 @@ const extractEmailSubscribedAddresses = async (addresses, option) => {
       notificationSettings = [];
     }
   }
+  console.log("notification setting is ");
+  console.log(notificationSettings);
   let subscribedAddresses = [];
   addresses.map((address) => {
     if (notificationSettings.includes(address))
