@@ -133,12 +133,14 @@ router.post("/banItems", auth, async (req, res) => {
     let _tokenIDs = req.body.tokenIDs;
     _tokenIDs = _tokenIDs.split(" ,");
     let tokenIDs = _tokenIDs.map((tkID) => parseInt(tkID));
+    console.log("token IDs are ");
+    console.log(tokenIDs);
     await NFTITEM.deleteMany({
       contractAddress: contractAddress,
       tokenID: { $in: tokenIDs },
     });
     await ERC1155HOLDING.deleteMany({
-      contractAddress: address,
+      contractAddress: contractAddress,
       tokenID: { $in: tokenIDs },
     });
     try {
