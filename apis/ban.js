@@ -136,8 +136,6 @@ router.post("/banItems", auth, async (req, res) => {
     _tokenIDs.map((tkID) => {
       tokenIDs.push(parseInt(tkID));
     });
-    console.log("token IDs are ");
-    console.log(tokenIDs);
     await NFTITEM.deleteMany({
       contractAddress: contractAddress,
       tokenID: { $in: tokenIDs },
@@ -154,7 +152,6 @@ router.post("/banItems", auth, async (req, res) => {
           tokenID: tkID,
         });
       });
-      console.log(data);
       let promise = data.map(async (_entry) => {
         let entry = new BannedNFT();
         entry.contractAddress = _entry.contractAddress;
@@ -164,10 +161,7 @@ router.post("/banItems", auth, async (req, res) => {
         } catch (error) {}
       });
       await Promise.all(promise);
-    } catch (error) {
-      console.log("error in insert many banning multiple NFTs");
-      console.log(error);
-    }
+    } catch (error) {}
     return res.json({
       status: "success",
       data: "banned",
