@@ -132,7 +132,10 @@ router.post("/banItems", auth, async (req, res) => {
     let contractAddress = toLowerCase(req.body.address);
     let _tokenIDs = req.body.tokenIDs;
     _tokenIDs = _tokenIDs.split(" ,");
-    let tokenIDs = _tokenIDs.map((tkID) => parseInt(tkID));
+    let tokenIDs = [];
+    _tokenIDs.map((tkID) => {
+      tokenIDs.push(parseInt(tkID));
+    });
     console.log("token IDs are ");
     console.log(tokenIDs);
     await NFTITEM.deleteMany({
