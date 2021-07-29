@@ -159,6 +159,7 @@ router.post("/banItems", auth, async (req, res) => {
       data: "banned",
     });
   } catch (error) {
+    console.log(error);
     return res.json({
       status: "Failed to ban NFT Items!",
     });
