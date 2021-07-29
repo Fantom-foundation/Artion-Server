@@ -131,7 +131,7 @@ router.post("/banItems", auth, async (req, res) => {
 
     let contractAddress = toLowerCase(req.body.address);
     let _tokenIDs = req.body.tokenIDs;
-    _tokenIDs = _tokenIDs.split(" ,");
+    _tokenIDs = _tokenIDs.split(",");
     let tokenIDs = [];
     _tokenIDs.map((tkID) => {
       tokenIDs.push(parseInt(tkID));
@@ -154,7 +154,15 @@ router.post("/banItems", auth, async (req, res) => {
           tokenID: tkID,
         });
       });
-      BannedNFT.insertMany(data);
+      let promise = data.push(async (_entry) => {
+        let entry = new BannedNFT();
+        entry.contractAddress = _entry.contractAddress;
+        entry.tokenID = _entry.tokenID;
+        try {
+          await entry.save();
+        } catch (error) {}
+      });
+      await Promise.all(promise);
     } catch (error) {
       console.log("error in insert many banning multiple NFTs");
       console.log(error);
