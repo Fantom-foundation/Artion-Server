@@ -131,14 +131,17 @@ router.post("/banItems", auth, async (req, res) => {
 
     let contractAddress = toLowerCase(req.body.address);
     let _tokenIDs = req.body.tokenIDs;
-    _tokenIDs = _tokenIDs.split(" ,");
-    let tokenIDs = _tokenIDs.map((tkID) => parseInt(tkID));
+    _tokenIDs = _tokenIDs.split(",");
+    let tokenIDs = [];
+    _tokenIDs.map((tkID) => {
+      tokenIDs.push(parseInt(tkID));
+    });
     await NFTITEM.deleteMany({
       contractAddress: contractAddress,
       tokenID: { $in: tokenIDs },
     });
     await ERC1155HOLDING.deleteMany({
-      contractAddress: address,
+      contractAddress: contractAddress,
       tokenID: { $in: tokenIDs },
     });
     try {
@@ -149,16 +152,22 @@ router.post("/banItems", auth, async (req, res) => {
           tokenID: tkID,
         });
       });
-      BannedNFT.insertMany(data);
-    } catch (error) {
-      console.log("error in insert many banning multiple NFTs");
-      console.log(error);
-    }
+      let promise = data.map(async (_entry) => {
+        let entry = new BannedNFT();
+        entry.contractAddress = _entry.contractAddress;
+        entry.tokenID = _entry.tokenID;
+        try {
+          await entry.save();
+        } catch (error) {}
+      });
+      await Promise.all(promise);
+    } catch (error) {}
     return res.json({
       status: "success",
       data: "banned",
     });
   } catch (error) {
+    console.log(error);
     return res.json({
       status: "Failed to ban NFT Items!",
     });
