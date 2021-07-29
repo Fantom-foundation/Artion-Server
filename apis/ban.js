@@ -154,7 +154,8 @@ router.post("/banItems", auth, async (req, res) => {
           tokenID: tkID,
         });
       });
-      let promise = data.push(async (_entry) => {
+      console.log(data);
+      let promise = data.map(async (_entry) => {
         let entry = new BannedNFT();
         entry.contractAddress = _entry.contractAddress;
         entry.tokenID = _entry.tokenID;
