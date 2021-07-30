@@ -143,6 +143,7 @@ router.post("/createBundle", auth, async (req, res) => {
       data: bundleID,
     });
   } catch (error) {
+    console.log(error);
     return res.status(400).json({
       status: "failed",
     });
@@ -191,7 +192,7 @@ router.post("/getBundleByID", async (req, res) => {
         thumbnailPath: token.thumbnailPath,
         name: token.name,
         supply: holding.supply,
-        contentType : token.contentType
+        contentType: token.contentType,
       });
     });
     await Promise.all(promise);

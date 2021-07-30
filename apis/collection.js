@@ -109,6 +109,7 @@ router.post("/collectiondetails", auth, async (req, res) => {
       let category = new Category();
       category.minterAddress = erc721Address;
       category.type = 721;
+      await category.save();
     }
 
     let isInternal = await FactoryUtils.isInternalCollection(erc721Address);

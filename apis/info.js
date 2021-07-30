@@ -14,6 +14,7 @@ const Offer = mongoose.model("Offer");
 const Listing = mongoose.model("Listing");
 const Auction = mongoose.model("Auction");
 const Bundle = mongoose.model("Bundle");
+const Like = mongoose.model("Like");
 
 const toLowerCase = require("../utils/utils");
 
@@ -133,7 +134,6 @@ router.post("/searchNames", async (req, res) => {
     return res.json([]);
   }
 });
-
 
 router.get("/getOwnership/:address/:tokenID", async (req, res) => {
   try {
@@ -368,6 +368,30 @@ router.get("/getActivityFromOthers/:address", async (req, res) => {
     });
   } catch (error) {
     return res.status(400).json({
+      status: "failed",
+    });
+  }
+});
+
+router.get("/getFigures/:address", async (req, res) => {
+  try {
+    let address = toLowerCase(req.params.address);
+    let singleItems = await NFTITEM.find({ owner: address });
+    let single = singleItems.length;
+    let bundles = await Bundle.find({ owner: address });
+    let bundle = bundles.length;
+    let favorited = await Like.find({ follower: address });
+    let fav = favorited.length;
+    return res.json({
+      status: "success",
+      data: {
+        single,
+        bundle,
+        fav,
+      },
+    });
+  } catch (error) {
+    return res.json({
       status: "failed",
     });
   }
