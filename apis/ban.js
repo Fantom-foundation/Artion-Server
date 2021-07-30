@@ -4,11 +4,10 @@ const router = require("express").Router();
 const mongoose = require("mongoose");
 
 const BannedUser = mongoose.model("BannedUser");
-const BannedNFT = mongoose.model("BannedNFT");
 const ERC721CONTRACT = mongoose.model("ERC721CONTRACT");
 const NFTITEM = mongoose.model("NFTITEM");
-const ERC1155HOLDING = mongoose.model("ERC1155HOLDING");
 const Moderator = mongoose.model("Moderator");
+const TurkWork = mongoose.model("TurkWork");
 
 const auth = require("./middleware/auth");
 const toLowerCase = require("../utils/utils");
@@ -83,22 +82,33 @@ router.post("/banItem", auth, async (req, res) => {
     let address = toLowerCase(req.body.address);
     let tokenID = parseInt(req.body.tokenID);
     try {
-      let bannedNFT = new BannedNFT();
-      bannedNFT.contractAddress = address;
-      bannedNFT.tokenID = tokenID;
-      await bannedNFT.save();
-      await NFTITEM.deleteOne({
+      let nft = NFTITEM.findOne({
         contractAddress: address,
         tokenID: tokenID,
       });
-      await ERC1155HOLDING.deleteMany({
-        contractAddress: address,
-        tokenID: tokenID,
-      });
-      return res.json({
-        status: "success",
-        data: "banned",
-      });
+      if (!nft)
+        return res.json({
+          status: "failed",
+          data: "This Item doesn't exist",
+        });
+      if (nft.isAppropriate) {
+        nft.isAppropriate = false;
+        await nft.save();
+        let turkWork = new TurkWork();
+        turkWork.contractAddress = contractAddress;
+        turkWork.tokenID = tokenID;
+        turkWork.banDate = new Date();
+        await turkWork.save();
+        return res.json({
+          status: "success",
+          data: "banned",
+        });
+      } else {
+        return res.json({
+          status: "failed",
+          data: "This Item is already banned",
+        });
+      }
     } catch (error) {
       return res.json({
         status: "failed",
@@ -136,32 +146,22 @@ router.post("/banItems", auth, async (req, res) => {
     _tokenIDs.map((tkID) => {
       tokenIDs.push(parseInt(tkID));
     });
-    await NFTITEM.deleteMany({
-      contractAddress: contractAddress,
-      tokenID: { $in: tokenIDs },
-    });
-    await ERC1155HOLDING.deleteMany({
-      contractAddress: contractAddress,
-      tokenID: { $in: tokenIDs },
-    });
-    try {
-      let data = [];
-      tokenIDs.map((tkID) => {
-        data.push({
-          contractAddress: contractAddress,
-          tokenID: tkID,
-        });
+    await NFTITEM.updateMany(
+      {
+        contractAddress: contractAddress,
+        tokenID: { $in: tokenIDs },
+      },
+      { $set: { isAppropriate: false } }
+    );
+    let worksData = [];
+    tokenIDs.map((tkID) => {
+      worksData.push({
+        contractAddress: contractAddress,
+        tokenID: tkID,
+        banDate: new Date(),
       });
-      let promise = data.map(async (_entry) => {
-        let entry = new BannedNFT();
-        entry.contractAddress = _entry.contractAddress;
-        entry.tokenID = _entry.tokenID;
-        try {
-          await entry.save();
-        } catch (error) {}
-      });
-      await Promise.all(promise);
-    } catch (error) {}
+    });
+    await TurkWork.insertMany(worksData);
     return res.json({
       status: "success",
       data: "banned",
