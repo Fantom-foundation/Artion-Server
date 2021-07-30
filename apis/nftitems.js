@@ -51,7 +51,6 @@ router.post("/increaseViews", async (req, res) => {
   }
 });
 
-
 const sortItems = (_allTokens, sortby) => {
   let tmp = [];
   switch (sortby) {
@@ -190,6 +189,7 @@ const selectTokens = async (req, res) => {
             ? { contractAddress: { $in: [...collections2filter] } }
             : {}),
           thumbnailPath: { $ne: nonImage },
+          isAppropriate: true,
         };
         let allTokens = await NFTITEM.find(collectionFilters)
           .select(selectOption)
@@ -279,6 +279,7 @@ const selectTokens = async (req, res) => {
           let token = await NFTITEM.findOne({
             contractAddress: tk[0],
             tokenID: tk[1],
+            isAppropriate: true,
           }).select(selectOption);
           if (token) {
             allFilteredTokens.push(token);
@@ -315,12 +316,14 @@ const selectTokens = async (req, res) => {
             : {}),
           ...(wallet != null ? { owner: wallet } : {}),
           thumbnailPath: { $ne: nonImage },
+          isAppropriate: true,
         };
         let collectionFilters1155 = {
           ...(collections2filter != null
             ? { contractAddress: { $in: [...collections2filter] } }
             : {}),
           thumbnailPath: { $ne: nonImage },
+          isAppropriate: true,
         };
         let tokens_721 = await NFTITEM.find(collectionFilters721)
           .select(selectOption)
@@ -437,12 +440,14 @@ const selectTokens = async (req, res) => {
               contractAddress: tk[0],
               tokenID: tk[1],
               owner: wallet,
+              isAppropriate: true,
             }).select(selectOption);
             if (token) allFilteredTokens721.push(token);
           } else if (parseInt(tokenCategory[1]) == 1155) {
             let token = await NFTITEM.findOne({
               contractAddress: tk[0],
               tokenID: tk[1],
+              isAppropriate: true,
             }).select(selectOption);
             if (token) {
               if (
@@ -470,11 +475,14 @@ const getBundleItemDetails = async (bundleItem) => {
     let nftItem = await NFTITEM.findOne({
       contractAddress: bundleItem.contractAddress,
       tokenID: bundleItem.tokenID,
+      isAppropriate: true,
     });
-    return {
-      imageURL: nftItem.imageURL,
-      thumbnailPath: nftItem.thumbnailPath,
-    };
+    if (nftItem)
+      return {
+        imageURL: nftItem.imageURL,
+        thumbnailPath: nftItem.thumbnailPath,
+      };
+    else return {};
   } catch (error) {
     return {};
   }
@@ -782,27 +790,34 @@ router.post("/transfer1155History", async (req, res) => {
   }
 });
 
-
-router.post("/getSingleItemDetails", async(req,res) => {
+router.post("/getSingleItemDetails", async (req, res) => {
   try {
     let contractAddress = toLowerCase(req.body.contractAddress);
     let tokenID = parseInt(req.body.tokenID);
     let category = await Category.findOne({ minterAddress: contractAddress });
     // token type
-    let tokenType = category ?  category.type : 721
+    let tokenType = category ? category.type : 721;
     let nft = await NFTITEM.findOne({
       contractAddress: contractAddress,
       tokenID: tokenID,
+      isAppropriate: true,
     });
+    if (!nft)
+      return res.json({
+        status: "failed",
+      });
     // content type
-    let contentType = nft.contentType
+    let contentType = nft.contentType;
     // likes count
-    let likes = nft ? nft.liked : 0
+    let likes = nft ? nft.liked : 0;
     // token uri
-    let uri = nft ? nft.tokenURI : ""
+    let uri = nft ? nft.tokenURI : "";
     // get listings
     let listings = [];
-    let _listings = await Listing.find({ minter: contractAddress, tokenID: tokenID });
+    let _listings = await Listing.find({
+      minter: contractAddress,
+      tokenID: tokenID,
+    });
     let listingPromise = _listings.map(async (list) => {
       let account = await getAccountInfo(list.owner);
       listings.push({
@@ -856,7 +871,7 @@ router.post("/getSingleItemDetails", async(req,res) => {
       ])
       .sort({ createdAt: "desc" });
     let history = [];
-  
+
     let historyPromise = _history.map(async (hist) => {
       let sender = await getAccountInfo(hist.from);
       let receiver = await getAccountInfo(hist.to);
@@ -878,7 +893,7 @@ router.post("/getSingleItemDetails", async(req,res) => {
     // more from this collection
     let nfts = await NFTITEM.find({
       contractAddress: contractAddress,
-      tokenID : {$ne : tokenID}
+      tokenID: { $ne: tokenID },
     })
       .sort({ viewed: "desc" })
       .limit(10)
@@ -895,25 +910,25 @@ router.post("/getSingleItemDetails", async(req,res) => {
         "contractAddress",
       ]);
     return res.json({
-      status : "success",
-      data : {
+      status: "success",
+      data: {
         tokenType,
-        likes ,
-        uri ,
+        likes,
+        uri,
         listings,
         offers,
         history,
         nfts,
-        contentType
-      }
-    })
+        contentType,
+      },
+    });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     return res.json({
-      status : "failed"
-    })
+      status: "failed",
+    });
   }
-})
+});
 
 const getBlockTime = async (blockNumber) => {
   let block = await provider.getBlock(blockNumber);

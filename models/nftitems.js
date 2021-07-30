@@ -23,6 +23,7 @@ const NFTITEM = mongoose.Schema(
     tokenType: { type: Number, default: 721 },
     liked: { type: Number, default: 0, index: true },
     contentType: { type: String, default: "image" },
+    isAppropriate: { type: Boolean, default: true },
   },
   {
     timestamps: true,
