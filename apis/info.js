@@ -15,6 +15,7 @@ const Listing = mongoose.model("Listing");
 const Auction = mongoose.model("Auction");
 const Bundle = mongoose.model("Bundle");
 const Like = mongoose.model("Like");
+const BundleLike = mongoose.model("BundleLike");
 
 const toLowerCase = require("../utils/utils");
 
@@ -376,12 +377,24 @@ router.get("/getActivityFromOthers/:address", async (req, res) => {
 router.get("/getFigures/:address", async (req, res) => {
   try {
     let address = toLowerCase(req.params.address);
-    let singleItems = await NFTITEM.find({ owner: address });
-    let single = singleItems.length;
+    let singleItems721 = await NFTITEM.find({
+      owner: address,
+      isAppropriate: true,
+      tokenType: 721,
+      thumbnailPath: { $nin: [".", "non-image"] },
+    });
+    let single721 = singleItems721.length;
+    let singleItems1155 = await ERC1155HOLDING.find({
+      holderAddress: address,
+      supplyPerHolder: { $gt: 0 },
+    });
+    let single1155 = singleItems1155.length;
+    let single = single721 + single1155;
     let bundles = await Bundle.find({ owner: address });
     let bundle = bundles.length;
-    let favorited = await Like.find({ follower: address });
-    let fav = favorited.length;
+    let favNFT = await Like.find({ follower: address });
+    let favBundle = await BundleLike.find({ follower: address });
+    let fav = favNFT.length + favBundle.length;
     return res.json({
       status: "success",
       data: {
