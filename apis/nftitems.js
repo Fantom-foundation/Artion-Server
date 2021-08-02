@@ -139,6 +139,7 @@ const selectTokens = async (req, res) => {
       "supply",
       "price",
       "liked",
+      "isAppropriate",
       sortby,
     ];
     let wallet = req.body.address; // account address from meta mask
@@ -189,7 +190,6 @@ const selectTokens = async (req, res) => {
             ? { contractAddress: { $in: [...collections2filter] } }
             : {}),
           thumbnailPath: { $ne: nonImage },
-          isAppropriate: true,
         };
         let allTokens = await NFTITEM.find(collectionFilters)
           .select(selectOption)
@@ -279,7 +279,6 @@ const selectTokens = async (req, res) => {
           let token = await NFTITEM.findOne({
             contractAddress: tk[0],
             tokenID: tk[1],
-            isAppropriate: true,
           }).select(selectOption);
           if (token) {
             allFilteredTokens.push(token);
@@ -316,14 +315,12 @@ const selectTokens = async (req, res) => {
             : {}),
           ...(wallet != null ? { owner: wallet } : {}),
           thumbnailPath: { $ne: nonImage },
-          isAppropriate: true,
         };
         let collectionFilters1155 = {
           ...(collections2filter != null
             ? { contractAddress: { $in: [...collections2filter] } }
             : {}),
           thumbnailPath: { $ne: nonImage },
-          isAppropriate: true,
         };
         let tokens_721 = await NFTITEM.find(collectionFilters721)
           .select(selectOption)
@@ -440,14 +437,12 @@ const selectTokens = async (req, res) => {
               contractAddress: tk[0],
               tokenID: tk[1],
               owner: wallet,
-              isAppropriate: true,
             }).select(selectOption);
             if (token) allFilteredTokens721.push(token);
           } else if (parseInt(tokenCategory[1]) == 1155) {
             let token = await NFTITEM.findOne({
               contractAddress: tk[0],
               tokenID: tk[1],
-              isAppropriate: true,
             }).select(selectOption);
             if (token) {
               if (
@@ -475,7 +470,6 @@ const getBundleItemDetails = async (bundleItem) => {
     let nftItem = await NFTITEM.findOne({
       contractAddress: bundleItem.contractAddress,
       tokenID: bundleItem.tokenID,
-      isAppropriate: true,
     });
     if (nftItem)
       return {
@@ -741,6 +735,7 @@ router.post("/fetchTokens", async (req, res) => {
     ...(sr.liked ? { liked: sr.liked } : {}),
     ...(sr.items ? { _id: sr._id } : {}),
     ...(sr.holderSupply ? { holderSupply: sr.holderSupply } : {}),
+    ...(sr.isAppropriate ? { isAppropriate: true } : { isAppropriate: false }),
   }));
 
   return res.json({
@@ -800,7 +795,6 @@ router.post("/getSingleItemDetails", async (req, res) => {
     let nft = await NFTITEM.findOne({
       contractAddress: contractAddress,
       tokenID: tokenID,
-      isAppropriate: true,
     });
     if (!nft)
       return res.json({
@@ -908,6 +902,7 @@ router.post("/getSingleItemDetails", async (req, res) => {
         "imageURL",
         "liked",
         "contractAddress",
+        "isAppropriate",
       ]);
     return res.json({
       status: "success",
