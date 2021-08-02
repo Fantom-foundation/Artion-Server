@@ -128,20 +128,56 @@ const selectTokens = async (req, res) => {
     let filters = req.body.filterby; //status -> array or null
     let sortby = req.body.sortby; //sort -> string param
     // create a sort by option
-    let selectOption = [
-      "contractAddress",
-      "tokenID",
-      "tokenURI",
-      "tokenType",
-      "thumbnailPath",
-      "name",
-      "imageURL",
-      "supply",
-      "price",
-      "liked",
-      "isAppropriate",
-      sortby,
-    ];
+    let selectOption;
+    if (sortby == "lastSalePrice")
+      selectOption = [
+        "contractAddress",
+        "tokenID",
+        "tokenURI",
+        "tokenType",
+        "thumbnailPath",
+        "name",
+        "imageURL",
+        "supply",
+        "price",
+        "liked",
+        "isAppropriate",
+        "saleEndsAt",
+        sortby,
+      ];
+    else if (sortby == "saleEndsAt")
+      selectOption = [
+        "contractAddress",
+        "tokenID",
+        "tokenURI",
+        "tokenType",
+        "thumbnailPath",
+        "name",
+        "imageURL",
+        "supply",
+        "price",
+        "liked",
+        "isAppropriate",
+        "lastSalePrice",
+        sortby,
+      ];
+    else
+      selectOption = [
+        "contractAddress",
+        "tokenID",
+        "tokenURI",
+        "tokenType",
+        "thumbnailPath",
+        "name",
+        "imageURL",
+        "supply",
+        "price",
+        "liked",
+        "isAppropriate",
+        "lastSalePrice",
+        "saleEndsAt",
+        sortby,
+      ];
     let wallet = req.body.address; // account address from meta mask
     if (wallet) wallet = toLowerCase(wallet);
 
@@ -350,6 +386,9 @@ const selectTokens = async (req, res) => {
               symbol: token_1155.symbol,
               liked: token_1155.liked,
               createdAt: token_1155.createdAt,
+              lastSalePrice: token_1155.lastSalePrice,
+              saleEndsAt: token_1155.saleEndsAt,
+              isAppropriate: token_1155.isAppropriate,
               holderSupply: holdingSupplies.get(
                 token_1155.contractAddress + token_1155.tokenID
               ),
@@ -735,6 +774,8 @@ router.post("/fetchTokens", async (req, res) => {
     ...(sr.liked ? { liked: sr.liked } : {}),
     ...(sr.items ? { _id: sr._id } : {}),
     ...(sr.holderSupply ? { holderSupply: sr.holderSupply } : {}),
+    ...(sr.saleEndsAt ? { saleEndsAt: sr.saleEndsAt } : {}),
+    ...(sr.lastSalePrice ? { lastSalePrice: sr.lastSalePrice } : {}),
     ...(sr.isAppropriate ? { isAppropriate: true } : { isAppropriate: false }),
   }));
 
@@ -903,6 +944,8 @@ router.post("/getSingleItemDetails", async (req, res) => {
         "liked",
         "contractAddress",
         "isAppropriate",
+        "lastSalePrice",
+        "saleEndsAt",
       ]);
     return res.json({
       status: "success",
