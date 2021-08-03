@@ -25,7 +25,14 @@ const pinata = pinataSDK(
 );
 
 // pin image file for NFT creation
-const pinFileToIPFS = async (fileName, address, name, symbol, royalty) => {
+const pinFileToIPFS = async (
+  fileName,
+  address,
+  name,
+  symbol,
+  royalty,
+  xtraUrl
+) => {
   const options = {
     pinataMetadata: {
       name: name,
@@ -206,7 +213,7 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
         let royalty = fields.royalty;
 
         let xtraUrl = fields.xtra;
-        if (!validUrl.isUri(xtraUrl)) {
+        if (xtraUrl && !validUrl.isUri(xtraUrl)) {
           return res.status(400).json({
             status: "failed",
           });
