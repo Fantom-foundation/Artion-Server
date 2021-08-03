@@ -20,7 +20,7 @@ const TradeHistory = mongoose.model("TradeHistory");
 const orderBy = require("lodash.orderby");
 const toLowerCase = require("../utils/utils");
 
-const FETCH_COUNT_PER_TIME = 12;
+const FETCH_COUNT_PER_TIME = 18;
 
 const provider = new ethers.providers.JsonRpcProvider(
   process.env.NETWORK_RPC,
@@ -761,22 +761,44 @@ router.post("/fetchTokens", async (req, res) => {
   );
 
   let searchResults = _searchResults.map((sr) => ({
-    ...(sr.contractAddress ? { contractAddress: sr.contractAddress } : {}),
-    ...(sr.imageURL ? { imageURL: sr.imageURL } : {}),
-    ...(sr.name ? { name: sr.name } : {}),
-    ...(sr.price ? { price: sr.price } : {}),
-    ...(sr.supply ? { supply: sr.supply } : {}),
-    ...(sr.thumbnailPath ? { thumbnailPath: sr.thumbnailPath } : {}),
-    ...(sr.tokenID ? { tokenID: sr.tokenID } : {}),
-    ...(sr.tokenType ? { tokenType: sr.tokenType } : {}),
-    ...(sr.tokenURI ? { tokenURI: sr.tokenURI } : {}),
-    ...(sr.items ? { items: sr.items } : {}),
-    ...(sr.liked ? { liked: sr.liked } : {}),
-    ...(sr.items ? { _id: sr._id } : {}),
-    ...(sr.holderSupply ? { holderSupply: sr.holderSupply } : {}),
-    ...(sr.saleEndsAt ? { saleEndsAt: sr.saleEndsAt } : {}),
-    ...(sr.lastSalePrice ? { lastSalePrice: sr.lastSalePrice } : {}),
-    ...(sr.isAppropriate ? { isAppropriate: true } : { isAppropriate: false }),
+    ...(sr.contractAddress != null && sr.contractAddress != undefined
+      ? { contractAddress: sr.contractAddress }
+      : {}),
+    ...(sr.imageURL != null && sr.imageURL != undefined
+      ? { imageURL: sr.imageURL }
+      : {}),
+    ...(sr.name != null && sr.name != undefined ? { name: sr.name } : {}),
+    ...(sr.price != null && sr.price != undefined ? { price: sr.price } : {}),
+    ...(sr.supply != null && sr.supply != undefined
+      ? { supply: sr.supply }
+      : {}),
+    ...(sr.thumbnailPath != null && sr.thumbnailPath != undefined
+      ? { thumbnailPath: sr.thumbnailPath }
+      : {}),
+    ...(sr.tokenID != null && sr.tokenID != undefined
+      ? { tokenID: sr.tokenID }
+      : {}),
+    ...(sr.tokenType != null && sr.tokenType != undefined
+      ? { tokenType: sr.tokenType }
+      : {}),
+    ...(sr.tokenURI != null && sr.tokenURI != undefined
+      ? { tokenURI: sr.tokenURI }
+      : {}),
+    ...(sr.items != null && sr.items != undefined ? { items: sr.items } : {}),
+    ...(sr.liked != null && sr.liked != undefined ? { liked: sr.liked } : {}),
+    ...(sr._id != null && sr._id != undefined ? { _id: sr._id } : {}),
+    ...(sr.holderSupply != null && sr.holderSupply != undefined
+      ? { holderSupply: sr.holderSupply }
+      : {}),
+    ...(sr.saleEndsAt != null && sr.saleEndsAt != undefined
+      ? { saleEndsAt: sr.saleEndsAt }
+      : {}),
+    ...(sr.lastSalePrice != null && sr.lastSalePrice != undefined
+      ? { lastSalePrice: sr.lastSalePrice }
+      : {}),
+    ...(sr.isAppropriate != null && sr.isAppropriate != undefined
+      ? { isAppropriate: sr.isAppropriate }
+      : { isAppropriate: false }),
   }));
 
   return res.json({
