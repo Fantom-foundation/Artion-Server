@@ -12,7 +12,7 @@ app.use(
   })
 );
 
-require("./models//abi");
+require("./models/abi");
 require("./models/account");
 require("./models/bid");
 require("./models/category");
