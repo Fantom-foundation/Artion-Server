@@ -129,7 +129,7 @@ router.post("/banCollection", auth, async (req, res) => {
     if (!isModOrAdmin)
       return res.json({
         status: "failed",
-        data: "Only Admin or Mods can ban NFT!",
+        data: "Only Admin or Mods can ban Collections!",
       });
     let signature = req.body.signature;
     let isValidsignature = validateSignature(adminAddress, signature);
@@ -172,11 +172,10 @@ router.post("/banCollection", auth, async (req, res) => {
 router.post("/unbanCollection", auth, async (req, res) => {
   try {
     let adminAddress = extractAddress(req, res);
-    let isModOrAdmin = await canBanNFT(adminAddress);
-    if (!isModOrAdmin)
+    if (!isAdmin(adminAddress))
       return res.json({
         status: "failed",
-        data: "Only Admin or Mods can ban NFT!",
+        data: "Only Admin can unban collection!",
       });
     let signature = req.body.signature;
     let isValidsignature = validateSignature(adminAddress, signature);
@@ -189,29 +188,16 @@ router.post("/unbanCollection", auth, async (req, res) => {
     let contractAddress = toLowerCase(req.body.address);
     await NFTITEM.updateMany(
       { contractAddress: contractAddress },
-      { $set: { isAppropriate: false } }
+      { $set: { isAppropriate: true } }
     );
-
-    let collectionItems = await NFTITEM.find({
-      contractAddress: contractAddress,
-    });
-    let worksData = [];
-    collectionItems.map((item) => {
-      worksData.push({
-        contractAddress: contractAddress,
-        tokenID: item.tokenID,
-        banDate: new Date(),
-      });
-    });
-    await TurkWork.insertMany(worksData);
     return res.json({
       status: "success",
-      data: "banned",
+      data: "unbanned",
     });
   } catch (error) {
     console.log(error);
     return res.json({
-      status: "Failed to ban NFT Items!",
+      status: "Failed to unban NFT Items!",
     });
   }
 });
