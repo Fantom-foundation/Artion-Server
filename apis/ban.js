@@ -122,6 +122,100 @@ router.post("/banItem", auth, async (req, res) => {
   }
 });
 
+router.post("/banCollection", auth, async (req, res) => {
+  try {
+    let adminAddress = extractAddress(req, res);
+    let isModOrAdmin = await canBanNFT(adminAddress);
+    if (!isModOrAdmin)
+      return res.json({
+        status: "failed",
+        data: "Only Admin or Mods can ban NFT!",
+      });
+    let signature = req.body.signature;
+    let isValidsignature = validateSignature(adminAddress, signature);
+    if (!isValidsignature)
+      return res.json({
+        status: "failed",
+        data: "Invalid Signature",
+      });
+
+    let contractAddress = toLowerCase(req.body.address);
+    await NFTITEM.updateMany(
+      { contractAddress: contractAddress },
+      { $set: { isAppropriate: false } }
+    );
+
+    let collectionItems = await NFTITEM.find({
+      contractAddress: contractAddress,
+    });
+    let worksData = [];
+    collectionItems.map((item) => {
+      worksData.push({
+        contractAddress: contractAddress,
+        tokenID: item.tokenID,
+        banDate: new Date(),
+      });
+    });
+    await TurkWork.insertMany(worksData);
+    return res.json({
+      status: "success",
+      data: "banned",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.json({
+      status: "Failed to ban NFT Items!",
+    });
+  }
+});
+
+router.post("/unbanCollection", auth, async (req, res) => {
+  try {
+    let adminAddress = extractAddress(req, res);
+    let isModOrAdmin = await canBanNFT(adminAddress);
+    if (!isModOrAdmin)
+      return res.json({
+        status: "failed",
+        data: "Only Admin or Mods can ban NFT!",
+      });
+    let signature = req.body.signature;
+    let isValidsignature = validateSignature(adminAddress, signature);
+    if (!isValidsignature)
+      return res.json({
+        status: "failed",
+        data: "Invalid Signature",
+      });
+
+    let contractAddress = toLowerCase(req.body.address);
+    await NFTITEM.updateMany(
+      { contractAddress: contractAddress },
+      { $set: { isAppropriate: false } }
+    );
+
+    let collectionItems = await NFTITEM.find({
+      contractAddress: contractAddress,
+    });
+    let worksData = [];
+    collectionItems.map((item) => {
+      worksData.push({
+        contractAddress: contractAddress,
+        tokenID: item.tokenID,
+        banDate: new Date(),
+      });
+    });
+    await TurkWork.insertMany(worksData);
+    return res.json({
+      status: "success",
+      data: "banned",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.json({
+      status: "Failed to ban NFT Items!",
+    });
+  }
+});
+
 router.post("/banItems", auth, async (req, res) => {
   try {
     let adminAddress = extractAddress(req, res);
