@@ -2,6 +2,8 @@ require("dotenv").config();
 const fs = require("fs");
 const formidable = require("formidable");
 const router = require("express").Router();
+const validUrl = require("valid-url");
+
 const mongoose = require("mongoose");
 const Bundle = mongoose.model("Bundle");
 const Account = mongoose.model("Account");
@@ -30,6 +32,7 @@ const pinFileToIPFS = async (fileName, address, name, symbol, royalty) => {
       keyvalues: {
         symbol: symbol,
         ...(royalty ? { royalty: royalty } : null),
+        ...(xtraUrl ? { IP_Rights: xtraUrl } : null),
         recipient: address,
       },
     },
@@ -201,6 +204,14 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
         let description = fields.description;
         let symbol = fields.symbol;
         let royalty = fields.royalty;
+
+        let xtraUrl = fields.xtra;
+        if (!validUrl.isUri(xtraUrl)) {
+          return res.status(400).json({
+            status: "failed",
+          });
+        }
+
         let extension = imgData.substring(
           "data:image/".length,
           imgData.indexOf(";base64")
@@ -221,7 +232,8 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
           address,
           name,
           symbol,
-          royalty
+          royalty,
+          xtraUrl
         );
 
         // remove file once pinned
