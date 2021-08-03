@@ -43,14 +43,17 @@ router.get("/getNewestAuctions", async (_, res) => {
 });
 
 router.get("/getCollections", async (_, res) => {
-  let collections_721 = await ERC721CONTRACT.find();
-  let collections_1155 = await ERC1155CONTRACT.find();
+  let collections_721 = await ERC721CONTRACT.find({ isAppropriate: true });
+  let collections_1155 = await ERC1155CONTRACT.find({ isAppropriate: true });
 
   let all = new Array();
   all.push(...collections_721);
   all.push(...collections_1155);
   all = sortBy(all, "name", "desc");
-  let allCollections = await Collection.find({ status: true });
+  let allCollections = await Collection.find({
+    status: true,
+    isAppropriate: true,
+  });
 
   let savedAddresses = [];
   let allContracts = new Array();
