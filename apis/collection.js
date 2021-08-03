@@ -161,11 +161,13 @@ router.post("/getMintableCollections", auth, async (req, res) => {
     let internalCollections = await Collection.find({
       isInternal: true,
       isOwnerble: false,
+      isAppropriate: true,
     });
     let myCollections = await Collection.find({
       owner: address,
       isInternal: true,
       isOwnerble: true,
+      isAppropriate: true,
     });
     let collections = [...internalCollections, ...myCollections];
     let data = collections.map((collection) => ({
@@ -251,7 +253,10 @@ router.post("/reviewApplication", admin_auth, async (req, res) => {
 router.post("/searchCollection", auth, async (req, res) => {
   let erc721Address = req.body.erc721Address;
   erc721Address = toLowerCase(erc721Address);
-  let collection = await Collection.findOne({ erc721Address: erc721Address });
+  let collection = await Collection.findOne({
+    erc721Address: erc721Address,
+    isAppropriate: true,
+  });
   if (collection)
     return res.send({
       status: "success",
@@ -264,7 +269,9 @@ router.post("/searchCollection", auth, async (req, res) => {
 });
 
 router.get("/fetchAllCollections", auth, async (req, res) => {
-  let all = await Collection.find().sort({ collectionName: 1 });
+  let all = await Collection.find({ isAppropriate: true }).sort({
+    collectionName: 1,
+  });
   return res.json({
     status: "success",
     data: all,
@@ -325,7 +332,9 @@ router.post("/isValidated", auth, async (req, res) => {
 const minifyCollection = (collection) => {
   return {
     ...(collection.address ? { address: collection.address } : {}),
-    ...(collection.isVerified ? { isVerified: collection.isVerified } : {}),
+    ...(collection.isVerified
+      ? { isVerified: collection.isVerified }
+      : { isVerified: false }),
     ...(collection.name ? { name: collection.name } : {}),
     ...(collection.symbol ? { symbol: collection.symbol } : {}),
 
@@ -357,6 +366,9 @@ const minifyCollection = (collection) => {
     ...(collection.instagramHandle
       ? { instagramHandle: collection.instagramHandle }
       : {}),
+    isInternal: collection.isInternal,
+    isOwnerble: collection.isOwnerble,
+    isAppropriate: collection.isAppropriate,
   };
 };
 

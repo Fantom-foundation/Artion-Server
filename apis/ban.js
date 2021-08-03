@@ -5,6 +5,8 @@ const mongoose = require("mongoose");
 
 const BannedUser = mongoose.model("BannedUser");
 const ERC721CONTRACT = mongoose.model("ERC721CONTRACT");
+const ERC1155CONTRACT = mongoose.model("ERC1155CONTRACT");
+const Collection = mongoose.model("Collection");
 const NFTITEM = mongoose.model("NFTITEM");
 const Moderator = mongoose.model("Moderator");
 const TurkWork = mongoose.model("TurkWork");
@@ -140,10 +142,30 @@ router.post("/banCollection", auth, async (req, res) => {
       });
 
     let contractAddress = toLowerCase(req.body.address);
+    // update nft items
     await NFTITEM.updateMany(
       { contractAddress: contractAddress },
       { $set: { isAppropriate: false } }
     );
+    // now update contracts
+    try {
+      await ERC721CONTRACT.updateOne(
+        { address: contractAddress },
+        { $set: { isAppropriate: false } }
+      );
+    } catch (error) {}
+    try {
+      await ERC1155CONTRACT.updateOne(
+        { address: contractAddress },
+        { $set: { isAppropriate: false } }
+      );
+    } catch (error) {}
+    try {
+      await Collection.updateOne(
+        { erc721Address: contractAddress },
+        { $set: { isAppropriate: false } }
+      );
+    } catch (error) {}
 
     let collectionItems = await NFTITEM.find({
       contractAddress: contractAddress,
@@ -164,7 +186,7 @@ router.post("/banCollection", auth, async (req, res) => {
   } catch (error) {
     console.log(error);
     return res.json({
-      status: "Failed to ban NFT Items!",
+      status: "Failed to ban a collection!",
     });
   }
 });
@@ -190,6 +212,25 @@ router.post("/unbanCollection", auth, async (req, res) => {
       { contractAddress: contractAddress },
       { $set: { isAppropriate: true } }
     );
+    // now update contracts
+    try {
+      await ERC721CONTRACT.updateOne(
+        { address: contractAddress },
+        { $set: { isAppropriate: true } }
+      );
+    } catch (error) {}
+    try {
+      await ERC1155CONTRACT.updateOne(
+        { address: contractAddress },
+        { $set: { isAppropriate: true } }
+      );
+    } catch (error) {}
+    try {
+      await Collection.updateOne(
+        { erc721Address: contractAddress },
+        { $set: { isAppropriate: true } }
+      );
+    } catch (error) {}
     return res.json({
       status: "success",
       data: "unbanned",
@@ -197,7 +238,7 @@ router.post("/unbanCollection", auth, async (req, res) => {
   } catch (error) {
     console.log(error);
     return res.json({
-      status: "Failed to unban NFT Items!",
+      status: "Failed to unban a collection!",
     });
   }
 });
