@@ -242,7 +242,6 @@ router.get("/getAccountActivity/:address", async (req, res) => {
           tokenURI: token.tokenURI,
           thumbnailPath: token.thumbnailPath,
           imageURL: token.imageURL,
-          contentType: token.contentType,
           owner: token.owner,
           price: bfa.bid,
           quantity: bfa.quantity,
@@ -269,10 +268,10 @@ router.get("/getAccountActivity/:address", async (req, res) => {
           tokenURI: token.tokenURI,
           thumbnailPath: token.thumbnailPath,
           imageURL: token.imageURL,
-          contentType: token.contentType,
           owner: token.owner,
           quantity: ofa.quantity,
           price: ofa.pricePerItem,
+          paymentToken: offer.paymentToken,
           createdAt: ofa._id.getTimestamp(),
           alias: account ? account[0] : null,
           image: account ? account[1] : null,
@@ -296,7 +295,6 @@ router.get("/getAccountActivity/:address", async (req, res) => {
           tokenURI: token.tokenURI,
           thumbnailPath: token.thumbnailPath,
           imageURL: token.imageURL,
-          contentType: token.contentType,
           owner: token.owner,
           quantity: lfa.quantity,
           price: lfa.price,
@@ -316,6 +314,66 @@ router.get("/getAccountActivity/:address", async (req, res) => {
       listings,
     },
   });
+});
+
+router.get("/getOffersFromAccount/:address", async (req, res) => {
+  try {
+    let address = toLowerCase(req.params.address);
+    let myOffers = await Offer.find({ creator: address });
+    if (!myOffers)
+      return res.json({
+        status: "success",
+        data: [],
+      });
+    let offers = [];
+    let promise = myOffers.map(async (offer) => {
+      let token = await NFTITEM.findOne({
+        contractAddress: offer.minter,
+        tokenID: offer.tokenID,
+      });
+      let tokenType = token.tokenType;
+      if (tokenType == 721) {
+        let account = await getAccountInfo(token.owner);
+        offers.push({
+          contractAddress: offer.minter,
+          tokenID: offer.tokenID,
+          name: token.name,
+          thumbnailPath: token.thumbnailPath,
+          imageURL: token.imageURL,
+          quantity: offer.quantity,
+          pricePerItem: offer.pricePerItem,
+          paymentToken: offer.paymentToken,
+          deadline: offer.deadline,
+          createdAt: offer._id.getTimestamp(),
+          alias: account ? account[0] : null,
+          image: account ? account[1] : null,
+        });
+      } else {
+        offers.push({
+          contractAddress: offer.minter,
+          tokenID: offer.tokenID,
+          name: token.name,
+          thumbnailPath: token.thumbnailPath,
+          imageURL: token.imageURL,
+          quantity: offer.quantity,
+          pricePerItem: offer.pricePerItem,
+          paymentToken: offer.paymentToken,
+          deadline: offer.deadline,
+          createdAt: offer._id.getTimestamp(),
+        });
+      }
+    });
+    await Promise.all(promise);
+    return res.json({
+      status: "success",
+      data: offers,
+    });
+  } catch (error) {
+    return res.json({
+      status: "failed",
+      data: [],
+    });
+  }
 });
 
 router.get("/getActivityFromOthers/:address", async (req, res) => {
@@ -363,9 +421,9 @@ router.get("/getActivityFromOthers/:address", async (req, res) => {
             name: token.name,
             thumbnailPath: token.thumbnailPath,
             imageURL: token.imageURL,
-            contentType: token.contentType,
             quantity: offer.quantity,
             pricePerItem: offer.pricePerItem,
+            paymentToken: offer.paymentToken,
             deadline: offer.deadline,
             createdAt: offer._id.getTimestamp(),
             alias: account ? account[0] : null,
