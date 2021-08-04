@@ -1,3 +1,6 @@
+require("dotenv").config();
+const jwt = require("jsonwebtoken");
+const jwt_secret = process.env.JWT_SECRET;
 const router = require("express").Router();
 const ethers = require("ethers");
 
@@ -16,7 +19,10 @@ const Bundle = mongoose.model("Bundle");
 const BundleListing = mongoose.model("BundleListing");
 const BundleOffer = mongoose.model("BundleOffer");
 const TradeHistory = mongoose.model("TradeHistory");
+const Like = mongoose.model("Like");
+const BundleLike = mongoose.model("BundleLike");
 
+const auth = require("./middleware/auth");
 const orderBy = require("lodash.orderby");
 const toLowerCase = require("../utils/utils");
 
@@ -776,12 +782,16 @@ router.post("/fetchTokens", async (req, res) => {
   let items = [];
   if (type == "all") {
     let nfts = await selectTokens(req, res);
+    nfts = await addIsLiked(nfts, req, "single");
     let bundles = await selectBundles(req, res);
+    bundles = await addIsLiked(bundles, req, "");
     items = [...nfts, ...bundles];
   } else if (type == "single") {
     items = await selectTokens(req, res);
+    items = await addIsLiked(items, req, "single");
   } else if (type == "bundle") {
     items = await selectBundles(req, res);
+    items = await addIsLiked(items, req, "");
   }
 
   let data = sortItems(items, sortby);
@@ -816,6 +826,9 @@ router.post("/fetchTokens", async (req, res) => {
       : {}),
     ...(sr.items != null && sr.items != undefined ? { items: sr.items } : {}),
     ...(sr.liked != null && sr.liked != undefined ? { liked: sr.liked } : {}),
+    ...(sr.isLiked != null && sr.isLiked != undefined
+      ? { isLiked: sr.isLiked }
+      : { isLiked: false }),
     ...(sr._id != null && sr._id != undefined ? { _id: sr._id } : {}),
     ...(sr.holderSupply != null && sr.holderSupply != undefined
       ? { holderSupply: sr.holderSupply }
@@ -840,7 +853,7 @@ router.post("/fetchTokens", async (req, res) => {
   });
 });
 
-const extractAddress = (data) => {
+const parseAddress = (data) => {
   let length = data.length;
   return data.substring(0, 2) + data.substring(length - 40);
 };
@@ -1055,8 +1068,8 @@ const fetchTransferHistory721 = async (address, tokenID) => {
 
   let history = [];
   let promise = evts.map(async (evt) => {
-    let from = extractAddress(evt.topics[1]);
-    let to = extractAddress(evt.topics[2]);
+    let from = parseAddress(evt.topics[1]);
+    let to = parseAddress(evt.topics[2]);
     let blockNumber = evt.blockNumber;
     let blockTime = await getBlockTime(blockNumber);
     let sender = await getAccountInfo(from);
@@ -1123,8 +1136,8 @@ const fetchTransferHistory1155 = async (address, id) => {
       let blockNumber = evt.blockNumber;
       let blockTime = await getBlockTime(blockNumber);
       let tokenTransferValue = data[1];
-      let from = toLowerCase(extractAddress(topics[2]));
-      let to = toLowerCase(extractAddress(topics[3]));
+      let from = toLowerCase(parseAddress(topics[2]));
+      let to = toLowerCase(parseAddress(topics[3]));
       let sender = await getAccountInfo(from);
       let receiver = await getAccountInfo(to);
       history.push({
@@ -1147,8 +1160,8 @@ const fetchTransferHistory1155 = async (address, id) => {
     let topics = evt.topics;
     let tokenIDs = parseBatchTransferData(data);
     if (tokenIDs.includes(id)) {
-      let from = toLowerCase(extractAddress(topics[2]));
-      let to = toLowerCase(extractAddress(topics[3]));
+      let from = toLowerCase(parseAddress(topics[2]));
+      let to = toLowerCase(parseAddress(topics[3]));
       let sender = await getAccountInfo(from);
       let receiver = await getAccountInfo(to);
       let blockNumber = evt.blockNumber;
@@ -1185,6 +1198,64 @@ const getAccountInfo = async (address) => {
     } else {
       return null;
     }
+  } catch (error) {
+    return null;
+  }
+};
+
+const addIsLiked = async (items, req, type) => {
+  let address = hasAddressInAuth(req);
+  if (!address) {
+    let _items = [];
+    items.map((item) => {
+      _items.push({
+        ...item,
+        isLiked: false,
+      });
+    });
+    return _items;
+  }
+  if (type == "single") {
+    let _items = [];
+    let promise = items.map(async (item) => {
+      let like = await Like.findOne({
+        contractAddress: item.contractAddress,
+        tokenID: item.tokenID,
+        follower: address,
+      });
+      let isLiked = like ? true : false;
+      _items.push({
+        ...item,
+        isLiked: isLiked,
+      });
+    });
+    await Promise.all(promise);
+    return _items;
+  } else {
+    let _items = [];
+    let promise = items.map(async (item) => {
+      let like = await BundleLike.findOne({
+        bundleID: item._id,
+        follower: address,
+      });
+      let isLiked = like ? true : false;
+      _items.push({
+        ...item,
+        isLiked: isLiked,
+      });
+    });
+    await Promise.all(promise);
+    return _items;
+  }
+};
+
+const hasAddressInAuth = (req) => {
+  try {
+    let authorization = req.headers.authorization.split(" ")[1];
+    let decoded = jwt.verify(authorization, jwt_secret);
+    let address = decoded.data;
+    address = toLowerCase(address);
+    return address;
   } catch (error) {
     return null;
   }
