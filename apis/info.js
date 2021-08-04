@@ -271,7 +271,7 @@ router.get("/getAccountActivity/:address", async (req, res) => {
           owner: token.owner,
           quantity: ofa.quantity,
           price: ofa.pricePerItem,
-          paymentToken: offer.paymentToken,
+          paymentToken: ofa.paymentToken,
           createdAt: ofa._id.getTimestamp(),
           alias: account ? account[0] : null,
           image: account ? account[1] : null,
