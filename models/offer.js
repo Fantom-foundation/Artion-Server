@@ -3,10 +3,11 @@ const mongoose = require("mongoose");
 const Offer = mongoose.Schema({
   creator: { type: String },
   minter: { type: String },
-  tokenID: { type: Number },
-  payToken: { type: String },
-  quantity: { type: String },
-  pricePerItem: { type: Number },
+  tokenID: { type: Number }, //nft item token id
+  quantity: { type: String }, // number of items tranferred
+  paymentToken: { type: String, default: "ftm" }, // payment erc20 token address
+  pricePerItem: { type: Number }, // price in payment token
+  priceInUSD: { type: Number, default: 0 },
   deadline: { type: Number },
 });
 // Offer.index({ minter: 1, tokenID: -1 }, { unique: true });
