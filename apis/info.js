@@ -208,14 +208,6 @@ router.get("/get1155info/:address/:tokenID", async (req, res) => {
   }
 });
 
-const getTokenType = (contractAddress, tokenTypes) => {
-  let tokenCategory = tokenTypes.filter(
-    (tokenType) => tokenType[0] == contractAddress
-  );
-  tokenCategory = tokenCategory[0];
-  return parseInt(tokenCategory[1]);
-};
-
 router.get("/getAccountActivity/:address", async (req, res) => {
   let tokenTypes = await Category.find();
   tokenTypes = tokenTypes.map((tt) => [tt.minterAddress, tt.type]);
@@ -248,6 +240,8 @@ router.get("/getAccountActivity/:address", async (req, res) => {
           tokenID: token.tokenID,
           name: token.name,
           tokenURI: token.tokenURI,
+          thumbnailPath: token.thumbnailPath,
+          imageURL: token.imageURL,
           owner: token.owner,
           price: bfa.bid,
           quantity: bfa.quantity,
@@ -272,6 +266,8 @@ router.get("/getAccountActivity/:address", async (req, res) => {
           tokenID: token.tokenID,
           name: token.name,
           tokenURI: token.tokenURI,
+          thumbnailPath: token.thumbnailPath,
+          imageURL: token.imageURL,
           owner: token.owner,
           quantity: ofa.quantity,
           price: ofa.pricePerItem,
@@ -296,6 +292,8 @@ router.get("/getAccountActivity/:address", async (req, res) => {
           tokenID: token.tokenID,
           name: token.name,
           tokenURI: token.tokenURI,
+          thumbnailPath: token.thumbnailPath,
+          imageURL: token.imageURL,
           owner: token.owner,
           quantity: lfa.quantity,
           price: lfa.price,
@@ -351,10 +349,17 @@ router.get("/getActivityFromOthers/:address", async (req, res) => {
       if (offer) {
         if (offer.creator != address) {
           let account = await getAccountInfo(offer.creator);
+          let token = await NFTITEM.findOne({
+            contractAddress: offer.minter,
+            tokenID: offer.tokenID,
+          });
           offers.push({
             creator: offer.creator,
             contractAddress: offer.minter,
             tokenID: offer.tokenID,
+            name: token.name,
+            thumbnailPath: token.thumbnailPath,
+            imageURL: token.imageURL,
             quantity: offer.quantity,
             pricePerItem: offer.pricePerItem,
             deadline: offer.deadline,
