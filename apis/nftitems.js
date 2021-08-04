@@ -782,16 +782,12 @@ router.post("/fetchTokens", async (req, res) => {
   let items = [];
   if (type == "all") {
     let nfts = await selectTokens(req, res);
-    nfts = await addIsLiked(nfts, req, "single");
     let bundles = await selectBundles(req, res);
-    bundles = await addIsLiked(bundles, req, "");
     items = [...nfts, ...bundles];
   } else if (type == "single") {
     items = await selectTokens(req, res);
-    items = await addIsLiked(items, req, "single");
   } else if (type == "bundle") {
     items = await selectBundles(req, res);
-    items = await addIsLiked(items, req, "");
   }
 
   let data = sortItems(items, sortby);
@@ -826,9 +822,6 @@ router.post("/fetchTokens", async (req, res) => {
       : {}),
     ...(sr.items != null && sr.items != undefined ? { items: sr.items } : {}),
     ...(sr.liked != null && sr.liked != undefined ? { liked: sr.liked } : {}),
-    ...(sr.isLiked != null && sr.isLiked != undefined
-      ? { isLiked: sr.isLiked }
-      : { isLiked: false }),
     ...(sr._id != null && sr._id != undefined ? { _id: sr._id } : {}),
     ...(sr.holderSupply != null && sr.holderSupply != undefined
       ? { holderSupply: sr.holderSupply }
@@ -1198,64 +1191,6 @@ const getAccountInfo = async (address) => {
     } else {
       return null;
     }
-  } catch (error) {
-    return null;
-  }
-};
-
-const addIsLiked = async (items, req, type) => {
-  let address = hasAddressInAuth(req);
-  if (!address) {
-    let _items = [];
-    items.map((item) => {
-      _items.push({
-        ...item,
-        isLiked: false,
-      });
-    });
-    return _items;
-  }
-  if (type == "single") {
-    let _items = [];
-    let promise = items.map(async (item) => {
-      let like = await Like.findOne({
-        contractAddress: item.contractAddress,
-        tokenID: item.tokenID,
-        follower: address,
-      });
-      let isLiked = like ? true : false;
-      _items.push({
-        ...item,
-        isLiked: isLiked,
-      });
-    });
-    await Promise.all(promise);
-    return _items;
-  } else {
-    let _items = [];
-    let promise = items.map(async (item) => {
-      let like = await BundleLike.findOne({
-        bundleID: item._id,
-        follower: address,
-      });
-      let isLiked = like ? true : false;
-      _items.push({
-        ...item,
-        isLiked: isLiked,
-      });
-    });
-    await Promise.all(promise);
-    return _items;
-  }
-};
-
-const hasAddressInAuth = (req) => {
-  try {
-    let authorization = req.headers.authorization.split(" ")[1];
-    let decoded = jwt.verify(authorization, jwt_secret);
-    let address = decoded.data;
-    address = toLowerCase(address);
-    return address;
   } catch (error) {
     return null;
   }

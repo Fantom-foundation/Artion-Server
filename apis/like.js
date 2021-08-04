@@ -44,6 +44,56 @@ const entailBundleInfoItems = async (bundleInfoItems) => {
   return details;
 };
 
+router.post("/getPageLiked", async (req, res) => {
+  try {
+    let address = extractAddress(req, res);
+    if (!address)
+      return res.json({
+        status: "failed",
+        data: [],
+      });
+    let items = req.body.items;
+    items = JSON.parse(items);
+    let data = [];
+    let promise = items.map(async (item) => {
+      let contractAddress = item.contractAddress;
+      if (contractAddress) {
+        let tokenID = parseInt(item.tokenID);
+        let like = await Like.findOne({
+          contractAddress: contractAddress,
+          tokenID: tokenID,
+          follower: follower,
+        });
+        data.push({
+          contractAddress,
+          tokenID,
+          isLiked: like ? true : false,
+        });
+      } else {
+        let bundleID = item.bundleID;
+        let like = await BundleLike.findOne({
+          bundleID: bundleID,
+          follower: follower,
+        });
+        data.push({
+          bundleID,
+          isLiked: like ? true : false,
+        });
+      }
+    });
+    await Promise.all(promise);
+    return res.json({
+      status: "success",
+      data: data,
+    });
+  } catch (error) {
+    return res.json({
+      status: "failed",
+      data: [],
+    });
+  }
+});
+
 router.post("/isLiked", async (req, res) => {
   try {
     let type = req.body.type;
