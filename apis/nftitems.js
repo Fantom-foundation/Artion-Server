@@ -62,6 +62,14 @@ const sortItems = (_allTokens, sortby) => {
       );
       break;
     }
+    case "oldest": {
+      tmp = orderBy(
+        _allTokens,
+        ({ createdAt }) => createdAt || new Date(1970, 1, 1),
+        ["asc"]
+      );
+      break;
+    }
     case "price": {
       tmp = orderBy(_allTokens, ({ price }) => price || 0, ["desc"]);
       break;
@@ -129,6 +137,8 @@ const selectTokens = async (req, res) => {
     let sortby = req.body.sortby; //sort -> string param
     // create a sort by option
     let selectOption;
+    let _sortBy = sortby;
+    if (sortby == "oldest") sortby = "createdAt";
     if (sortby == "lastSalePrice")
       selectOption = [
         "contractAddress",
@@ -143,7 +153,8 @@ const selectTokens = async (req, res) => {
         "liked",
         "isAppropriate",
         "saleEndsAt",
-        sortby,
+        "createdAt",
+        _sortBy,
       ];
     else if (sortby == "saleEndsAt")
       selectOption = [
@@ -159,7 +170,25 @@ const selectTokens = async (req, res) => {
         "liked",
         "isAppropriate",
         "lastSalePrice",
-        sortby,
+        "createdAt",
+        _sortBy,
+      ];
+    else if (sortby == "createdAt")
+      selectOption = [
+        "contractAddress",
+        "tokenID",
+        "tokenURI",
+        "tokenType",
+        "thumbnailPath",
+        "name",
+        "imageURL",
+        "supply",
+        "price",
+        "liked",
+        "isAppropriate",
+        "lastSalePrice",
+        "saleEndsAt",
+        "createdAt",
       ];
     else
       selectOption = [
@@ -176,6 +205,7 @@ const selectTokens = async (req, res) => {
         "isAppropriate",
         "lastSalePrice",
         "saleEndsAt",
+        "createdAt",
         sortby,
       ];
     let wallet = req.body.address; // account address from meta mask

@@ -3,9 +3,11 @@ const mongoose = require("mongoose");
 const Listing = mongoose.Schema({
   owner: { type: String, required: true },
   minter: { type: String, required: true },
-  tokenID: { type: Number, required: true },
-  quantity: { type: Number, default: 1 },
-  price: { type: Number, required: true },
+  tokenID: { type: Number, required: true }, //nft item id
+  quantity: { type: Number, default: 1 }, // number of nft items transferred
+  paymentToken: { type: String, default: "ftm" }, // payment erc20 token address
+  price: { type: Number, required: true }, // price in payment token
+  priceInUSD: { type: Number, default: 0 },
   startTime: { type: Date },
   isPrivate: { type: Boolean, default: false },
   allowedAddress: { type: String },
