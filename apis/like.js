@@ -62,7 +62,7 @@ router.post("/getPageLiked", async (req, res) => {
         let like = await Like.findOne({
           contractAddress: contractAddress,
           tokenID: tokenID,
-          follower: follower,
+          follower: address,
         });
         data.push({
           contractAddress,
@@ -73,7 +73,7 @@ router.post("/getPageLiked", async (req, res) => {
         let bundleID = item.bundleID;
         let like = await BundleLike.findOne({
           bundleID: bundleID,
-          follower: follower,
+          follower: address,
         });
         data.push({
           bundleID,
