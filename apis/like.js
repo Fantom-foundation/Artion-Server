@@ -14,7 +14,7 @@ const toLowerCase = require("../utils/utils");
 const extractAddress = require("../services/address.utils");
 const orderBy = require("lodash.orderby");
 
-const FETCH_COUNT_PER_TIME = 12;
+const FETCH_COUNT_PER_TIME = 18;
 
 const getBundleItemDetails = async (bundleItem) => {
   try {

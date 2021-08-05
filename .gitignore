@@ -3,3 +3,4 @@
 .env
 /config/fantomsea_tommy_service.json
 cipher.js
+test.js

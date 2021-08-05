@@ -778,7 +778,8 @@ const selectBundles = async (req, res) => {
 router.post("/fetchTokens", async (req, res) => {
   let type = req.body.type; // type - item type
   let sortby = req.body.sortby; //sort -> string param
-  let step = parseInt(req.body.step); // step where to fetch
+  let from = parseInt(req.body.from);
+  let count = parseInt(req.body.count);
   let items = [];
   if (type == "all") {
     let nfts = await selectTokens(req, res);
@@ -791,10 +792,8 @@ router.post("/fetchTokens", async (req, res) => {
   }
 
   let data = sortItems(items, sortby);
-  let _searchResults = data.slice(
-    step * FETCH_COUNT_PER_TIME,
-    (step + 1) * FETCH_COUNT_PER_TIME
-  );
+
+  let _searchResults = data.slice(from, from + count);
 
   let searchResults = _searchResults.map((sr) => ({
     ...(sr.contractAddress != null && sr.contractAddress != undefined
