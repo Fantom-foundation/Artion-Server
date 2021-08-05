@@ -54,7 +54,6 @@ router.post("/getPageLiked", async (req, res) => {
       });
     let items = req.body.items;
     items = JSON.parse(items);
-    let data = [];
     let promise = items.map(async (item) => {
       let contractAddress = item.contractAddress;
       if (contractAddress) {
@@ -64,24 +63,24 @@ router.post("/getPageLiked", async (req, res) => {
           tokenID: tokenID,
           follower: address,
         });
-        data.push({
+        return {
           contractAddress,
           tokenID,
           isLiked: like ? true : false,
-        });
+        };
       } else {
         let bundleID = item.bundleID;
         let like = await BundleLike.findOne({
           bundleID: bundleID,
           follower: address,
         });
-        data.push({
+        return {
           bundleID,
           isLiked: like ? true : false,
-        });
+        };
       }
     });
-    await Promise.all(promise);
+    let data = await Promise.all(promise);
     return res.json({
       status: "success",
       data: data,
