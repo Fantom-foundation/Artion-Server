@@ -262,6 +262,7 @@ const selectTokens = async (req, res) => {
             ? { contractAddress: { $in: [...collections2filter] } }
             : {}),
           thumbnailPath: { $ne: nonImage },
+          isAppropriate: true,
         };
         let allTokens = await NFTITEM.find(collectionFilters)
           .select(selectOption)
@@ -387,12 +388,14 @@ const selectTokens = async (req, res) => {
             : {}),
           ...(wallet != null ? { owner: wallet } : {}),
           thumbnailPath: { $ne: nonImage },
+          isAppropriate: true,
         };
         let collectionFilters1155 = {
           ...(collections2filter != null
             ? { contractAddress: { $in: [...collections2filter] } }
             : {}),
           thumbnailPath: { $ne: nonImage },
+          isAppropriate: true,
         };
         let tokens_721 = await NFTITEM.find(collectionFilters721)
           .select(selectOption)
@@ -619,6 +622,7 @@ const selectBundles = async (req, res) => {
           ? { contractAddress: { $in: [...collections2filter] } }
           : {}),
         thumbnailPath: { $ne: nonImage },
+        isAppropriate: true,
       };
 
       let bundleInfos = await BundleInfo.find(collectionFilters);
