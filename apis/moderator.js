@@ -26,7 +26,12 @@ router.post("/add", auth, async (req, res) => {
     let modAddress = toLowerCase(req.body.address);
     let modName = req.body.name;
     let signature = req.body.signature;
-    let isValidsignature = validateSignature(adminAddress, signature);
+    let retrievedAddr = req.body.signatureAddress;
+    let isValidsignature = validateSignature(
+      adminAddress,
+      signature,
+      retrievedAddr
+    );
     if (!isValidsignature)
       return res.status(400).json({
         status: "invalid signature",
@@ -64,7 +69,12 @@ router.post("/remove", auth, async (req, res) => {
       });
     let modAddress = toLowerCase(req.body.address);
     let signature = req.body.signature;
-    let isValidsignature = validateSignature(adminAddress, signature);
+    let retrievedAddr = req.body.signatureAddress;
+    let isValidsignature = validateSignature(
+      adminAddress,
+      signature,
+      retrievedAddr
+    );
     if (!isValidsignature)
       return res.status(400).json({
         status: "invalid signature",

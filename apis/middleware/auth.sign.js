@@ -7,9 +7,10 @@ const Account = mongoose.model("Account");
 
 const toLowerCase = require("../../utils/utils");
 
-const validateSignature = async (publicKey, signature) => {
+const validateSignature = async (publicKey, signature, retrievedAddr) => {
   try {
     publicKey = toLowerCase(publicKey);
+    retrievedAddr = toLowerCase(retrievedAddr);
     let account = await Account.findOne({ address: publicKey });
     let nonce = account.nonce;
     let msg = `Approve Signature on Artion.io with nonce ${nonce}`;
@@ -19,6 +20,10 @@ const validateSignature = async (publicKey, signature) => {
       sig: signature,
     });
     if (toLowerCase(address) == publicKey) {
+      account.nonce = Math.floor(Math.random() * 9999999);
+      await account.save();
+      return true;
+    } else if (toLowerCase(address) == retrievedAddr) {
       account.nonce = Math.floor(Math.random() * 9999999);
       await account.save();
       return true;

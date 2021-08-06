@@ -75,7 +75,12 @@ router.post("/banItem", auth, async (req, res) => {
         data: "Only Admin or Mods can ban NFT!",
       });
     let signature = req.body.signature;
-    let isValidsignature = validateSignature(adminAddress, signature);
+    let retrievedAddr = req.body.signatureAddress;
+    let isValidsignature = validateSignature(
+      adminAddress,
+      signature,
+      retrievedAddr
+    );
     if (!isValidsignature)
       return res.json({
         status: "failed",
@@ -134,7 +139,12 @@ router.post("/banCollection", auth, async (req, res) => {
         data: "Only Admin or Mods can ban Collections!",
       });
     let signature = req.body.signature;
-    let isValidsignature = validateSignature(adminAddress, signature);
+    let retrievedAddr = req.body.signatureAddress;
+    let isValidsignature = validateSignature(
+      adminAddress,
+      signature,
+      retrievedAddr
+    );
     if (!isValidsignature)
       return res.json({
         status: "failed",
@@ -200,7 +210,12 @@ router.post("/unbanCollection", auth, async (req, res) => {
         data: "Only Admin can unban collection!",
       });
     let signature = req.body.signature;
-    let isValidsignature = validateSignature(adminAddress, signature);
+    let retrievedAddr = req.body.signatureAddress;
+    let isValidsignature = validateSignature(
+      adminAddress,
+      signature,
+      retrievedAddr
+    );
     if (!isValidsignature)
       return res.json({
         status: "failed",
@@ -253,7 +268,12 @@ router.post("/banItems", auth, async (req, res) => {
         data: "Only Admin or Mods can ban NFT!",
       });
     let signature = req.body.signature;
-    let isValidsignature = validateSignature(adminAddress, signature);
+    let retrievedAddr = req.body.signatureAddress;
+    let isValidsignature = validateSignature(
+      adminAddress,
+      signature,
+      retrievedAddr
+    );
     if (!isValidsignature)
       return res.json({
         status: "failed",
