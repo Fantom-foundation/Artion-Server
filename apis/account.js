@@ -92,7 +92,12 @@ router.post("/accountdetails", auth, async (req, res) => {
     let bio = fields.bio;
     let imgData = fields.imgData;
     let signature = fields.signature;
-    let isValidsignature = await validateSignature(address, signature);
+    let retrievedAddr = fields.signatureAddress;
+    let isValidsignature = await validateSignature(
+      address,
+      signature,
+      retrievedAddr
+    );
     if (!isValidsignature)
       return res.status(400).json({
         status: "invalid signature",
@@ -253,7 +258,12 @@ router.post("/notificationsettings", auth, async (req, res) => {
   try {
     let address = extractAddress(req, res);
     let signature = req.body.signature;
-    let isValidsignature = await validateSignature(address, signature);
+    let retrievedAddr = req.body.signatureAddress;
+    let isValidsignature = await validateSignature(
+      address,
+      signature,
+      retrievedAddr
+    );
     if (!isValidsignature)
       return res.status(400).json({
         status: "invalid signature",

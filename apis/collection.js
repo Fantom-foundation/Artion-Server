@@ -26,7 +26,12 @@ router.post("/collectiondetails", auth, async (req, res) => {
 
   let owner = extractAddress(req, res);
   let signature = req.body.signature;
-  let isValidsignature = await validateSignature(owner, signature);
+  let retrievedAddr = req.body.signatureAddress;
+  let isValidsignature = await validateSignature(
+    owner,
+    signature,
+    retrievedAddr
+  );
   if (!isValidsignature)
     return res.status(400).json({
       status: "failed",
