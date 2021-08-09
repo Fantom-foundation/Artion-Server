@@ -1,6 +1,9 @@
 require("dotenv").config();
 const { default: axios } = require("axios");
 const router = require("express").Router();
+
+const ethers = require("ethers");
+
 const mongoose = require("mongoose");
 const Collection = mongoose.model("Collection");
 const Category = mongoose.model("Category");
@@ -15,10 +18,17 @@ const isValidERC1155 = require("../utils/1155_validator");
 const isvalidERC721 = require("../utils/721_validator");
 const extractAddress = require("../services/address.utils");
 const applicationMailer = require("../mailer/reviewMailer");
-
 const FactoryUtils = require("../services/factory.utils");
-
 const validateSignature = require("../apis/middleware/auth.sign");
+
+// to sign txs
+const provider = new ethers.providers.JsonRpcProvider(
+  process.env.NETWORK_RPC,
+  parseInt(process.env.NETWORK_CHAINID)
+);
+const ownerWallet = new ethers.Wallet(
+  toLowerCase(process.env.ROAYLTY_PK, provider)
+);
 
 router.post("/collectiondetails", auth, async (req, res) => {
   let erc721Address = req.body.erc721Address;
@@ -69,6 +79,11 @@ router.post("/collectiondetails", auth, async (req, res) => {
   let instagram = req.body.instagram;
   let email = req.body.email;
 
+  let feeRecipient = req.body.feeRecipient
+    ? toLowerCase(req.body.feeRecipient)
+    : "";
+  let royalty = req.body.royalty ? parseFloat(req.body.royalty) : 0;
+
   let collection = await Collection.findOne({ erc721Address: erc721Address });
   if (collection) {
     collection.erc721Address = erc721Address;
@@ -83,6 +98,8 @@ router.post("/collectiondetails", auth, async (req, res) => {
     collection.telegram = telegram;
     collection.instagramHandle = instagram;
     collection.email = email;
+    collection.feeRecipient = feeRecipient;
+    collection.royalty = royalty;
 
     let _collection = await collection.save();
     if (_collection)
@@ -139,6 +156,8 @@ router.post("/collectiondetails", auth, async (req, res) => {
       _collection.status = true;
     } else _collection.status = false;
     _collection.email = email;
+    _collection.feeRecipient = feeRecipient;
+    _collection.royalty = royalty;
     let newCollection = await _collection.save();
     if (newCollection) {
       // notify admin about a new app
@@ -204,6 +223,8 @@ router.post("/getReviewApplications", admin_auth, async (req, res) => {
     });
   }
 });
+
+// need to update the smart contract with royalty
 
 router.post("/reviewApplication", admin_auth, async (req, res) => {
   try {
