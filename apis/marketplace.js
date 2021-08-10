@@ -124,7 +124,7 @@ router.post("/itemSold", service_auth, async (req, res) => {
     let quantity = parseInt(req.body.quantity);
     let price = parseFloat(req.body.price);
     let paymentToken = toLowerCase(req.body.paymentToken);
-    let priceInUSD = price * parseFloat(req.body.unitPrice);
+    let priceInUSD = price * getPrice(paymentToken);
     // update last sale price
     // first update the token price
     let category = await Category.findOne({ minterAddress: nft });
@@ -282,6 +282,7 @@ router.post("/itemCanceled", service_auth, async (req, res) => {
       if (token) {
         token.price = token.lastSalePrice;
         token.paymentToken = token.lastSalePricePaymentToken;
+        token.priceInUSD = token.lastSalePriceInUSD;
         token.listedAt = new Date(1970, 1, 1); //remove listed date
         await token.save();
       }

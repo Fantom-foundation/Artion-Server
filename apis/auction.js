@@ -143,10 +143,9 @@ router.post("updateAuctionEndTime", service_auth, async (req, res) => {
 router.post("/updateAuctionReservePrice", service_auth, async (req, res) => {
   try {
     let nftAddress = req.body.nftAddress;
-    let tokenID = req.body.tokenID;
-    let reservePrice = req.body.reservePrice;
-    reservePrice = parseFloat(reservePrice);
-    tokenID = parseInt(tokenID);
+    let tokenID = parseInt(req.body.tokenID);
+    let paymentToken = toLowerCase(paymentToken);
+    let reservePrice = reservePrice(req.body.reservePrice);
     let bid = await Bid.findOne({
       minter: nftAddress,
       tokenID: tokenID,
@@ -173,6 +172,7 @@ router.post("/updateAuctionReservePrice", service_auth, async (req, res) => {
           tokenID: tokenID,
           nftAddress: nftAddress,
           newPrice: reservePrice,
+          paymentToken: paymentToken,
         };
         sendEmail(data);
       }
@@ -330,6 +330,8 @@ router.post("/auctionResulted", service_auth, async (req, res) => {
             tokenID: tokenID,
             nftAddress: nftAddress,
             winningBid: winningBid,
+            paymentToken: paymentToken,
+            priceInUSD: priceInUSD,
           };
           sendEmail(data);
         }
@@ -341,7 +343,11 @@ router.post("/auctionResulted", service_auth, async (req, res) => {
       });
       if (token) {
         token.price = winningBid;
+        token.paymentToken = paymentToken;
+        token.priceInUSD = priceInUSD;
         token.lastSalePrice = winningBid;
+        token.lastSalePricePaymentToken = paymentToken;
+        token.lastSalePriceInUSD = lastSalePriceInUSD;
         token.soldAt = new Date();
         // update sale ends at as well
         token.saleEndsAt = null;

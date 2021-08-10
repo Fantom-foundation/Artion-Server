@@ -246,6 +246,8 @@ router.post("/itemCanceled", service_auth, async (req, res) => {
     // update bundle's list related values
     let bundle = await Bundle.findById(bundleID);
     bundle.price = bundle.lastSalePrice;
+    bundle.paymentToken = bundle.lastSalePricePaymentToken;
+    bundle.priceInUSD = bundle.lastSalePriceInUSD;
     bundle.listedAt = new Date(1970, 1, 1);
     bundle.saleEndsAt = new Date(1970, 1, 1);
     await bundle.save();
