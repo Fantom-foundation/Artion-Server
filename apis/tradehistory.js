@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { getPrice } = require("../services/price.feed");
 const toLowerCase = require("../utils/utils");
 const router = require("express").Router();
 
@@ -25,7 +26,6 @@ const parseToFTM = (inWei) => {
   return parseFloat(inWei.toString()) / 10 ** 18;
 };
 
-
 router.post("/addBundleHistory", service_auth, async (req, res) => {
   try {
     let newHistory = new BundleTradeHistory();
@@ -35,6 +35,9 @@ router.post("/addBundleHistory", service_auth, async (req, res) => {
     newHistory.from = toLowerCase(req.body.from);
     newHistory.to = toLowerCase(req.body.to);
     newHistory.price = parseToFTM(req.body.price);
+    newHistory.paymentToken = parseToFTM(req.body.paymentToken);
+    let unitTkPrice = getPrice(req.body.paymentToken);
+    newHistory.priceInUSD = parseToFTM(req.body.price) * unitTkPrice;
     newHistory.createdAt = new Date();
     await newHistory.save();
     return res.json({
@@ -52,7 +55,7 @@ router.post("/getBundleTradeHistory", async (req, res) => {
     let bundleID = req.body.bundleID;
     let _history = await BundleTradeHistory.find({
       bundleID: { $regex: new RegExp(bundleID, "i") },
-      activity : "Sale"
+      activity: "Sale",
     })
       .select([
         "bundleID",
@@ -60,6 +63,8 @@ router.post("/getBundleTradeHistory", async (req, res) => {
         "from",
         "to",
         "price",
+        "paymentToken",
+        "priceInUSD",
         "activity",
         "createdAt",
       ])
@@ -75,6 +80,8 @@ router.post("/getBundleTradeHistory", async (req, res) => {
         from: hist.from,
         to: hist.to,
         price: hist.price,
+        paymentToken: hist.paymentToken,
+        priceInUSD: hist.priceInUSD,
         createdAt: hist.createdAt,
         activity: hist.activity,
         creatorAlias: creator ? creator[0] : null,

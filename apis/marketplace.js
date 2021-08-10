@@ -15,9 +15,9 @@ const service_auth = require("./middleware/auth.tracker");
 const sendEmail = require("../mailer/marketplaceMailer");
 const notifications = require("../mailer/followMailer");
 const getCollectionName = require("../mailer/utils");
-
 const contractutils = require("../services/contract.utils");
 const toLowerCase = require("../utils/utils");
+const { getPrice } = require("../services/price.feed");
 
 const getNFTItemName = async (nft, tokenID) => {
   try {
@@ -55,6 +55,8 @@ router.post("/itemListed", service_auth, async (req, res) => {
     let tokenID = parseInt(req.body.tokenID);
     let quantity = parseInt(req.body.quantity);
     let pricePerItem = parseFloat(req.body.pricePerItem);
+    let paymentToken = toLowerCase(req.body.paymentToken);
+    let priceInUSD = getPrice(paymentToken) * pricePerItem;
     let startingTime = parseFloat(req.body.startingTime);
 
     // first update the token price
@@ -89,6 +91,8 @@ router.post("/itemListed", service_auth, async (req, res) => {
       newList.tokenID = tokenID;
       newList.quantity = quantity;
       newList.price = pricePerItem;
+      newList.paymentToken = paymentToken;
+      newList.priceInUSD = priceInUSD;
       newList.startTime = startingTime;
       await newList.save();
     } catch (error) {

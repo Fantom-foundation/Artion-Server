@@ -1,6 +1,6 @@
 module.exports = {
   async up(db, client) {
-    // update offer collection
+    // update nft item trade history
     await db
       .collection("tradehistories")
       .updateMany({}, { $set: { paymentToken: "ftm", priceInUSD: 0 } });

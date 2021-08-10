@@ -7,6 +7,8 @@ const BundleTradeHistory = mongoose.Schema(
     from: { type: String },
     to: { type: String },
     price: { type: Number },
+    paymentToken: { type: String },
+    priceInUSD: { type: Number, default: 0 },
     activity: { type: String, required: true },
     createdAt: { type: Date },
   },
