@@ -12,6 +12,8 @@ const NotificationSetting = mongoose.model("NotificationSetting");
 const sendEmail = require("../mailer/auctionMailer");
 const getCollectionName = require("../mailer/utils");
 const notifications = require("../mailer/followMailer");
+const toLowerCase = require("../utils/utils");
+const { getPrice } = require("../services/price.feed");
 
 const get721ItemName = async (nft, tokenID) => {
   try {
@@ -301,11 +303,11 @@ router.post("/bidWithdrawn", service_auth, async (req, res) => {
 router.post("/auctionResulted", service_auth, async (req, res) => {
   try {
     let nftAddress = req.body.nftAddress;
-    let tokenID = req.body.tokenID;
+    let tokenID = parseInt(req.body.tokenID);
     let winner = req.body.winner;
-    let winningBid = req.body.winningBid;
-    winningBid = parseFloat(winningBid);
-    tokenID = parseInt(tokenID);
+    let winningBid = parseFloat(req.body.winningBid);
+    let paymentToken = toLowerCase(req.body.paymentToken);
+    let priceInUSD = winningBid * getPrice(paymentToken);
     try {
       // send mail
       try {
@@ -352,6 +354,8 @@ router.post("/auctionResulted", service_auth, async (req, res) => {
           history.from = from;
           history.to = winner;
           history.price = winningBid;
+          history.paymentToken = paymentToken;
+          history.priceInUSD = priceInUSD;
           history.isAuction = true;
           await history.save();
         } catch (error) {}

@@ -56,7 +56,6 @@ router.post("/itemListed", service_auth, async (req, res) => {
     let quantity = parseInt(req.body.quantity);
     let pricePerItem = parseFloat(req.body.pricePerItem);
     let paymentToken = toLowerCase(req.body.paymentToken);
-    let priceInUSD = getPrice(paymentToken) * pricePerItem;
     let startingTime = parseFloat(req.body.startingTime);
 
     // first update the token price
@@ -68,6 +67,7 @@ router.post("/itemListed", service_auth, async (req, res) => {
       });
       if (token) {
         token.price = pricePerItem;
+        token.paymentToken = paymentToken;
         token.listedAt = new Date(); // set listed date
         await token.save();
       }
@@ -92,7 +92,6 @@ router.post("/itemListed", service_auth, async (req, res) => {
       newList.quantity = quantity;
       newList.price = pricePerItem;
       newList.paymentToken = paymentToken;
-      newList.priceInUSD = priceInUSD;
       newList.startTime = startingTime;
       await newList.save();
     } catch (error) {
@@ -105,7 +104,8 @@ router.post("/itemListed", service_auth, async (req, res) => {
       nft,
       tokenID,
       quantity,
-      pricePerItem
+      pricePerItem,
+      paymentToken
     );
     return res.json({});
   } catch (error) {
@@ -123,6 +123,8 @@ router.post("/itemSold", service_auth, async (req, res) => {
     let tokenID = parseInt(req.body.tokenID);
     let quantity = parseInt(req.body.quantity);
     let price = parseFloat(req.body.price);
+    let paymentToken = toLowerCase(req.body.paymentToken);
+    let priceInUSD = price * parseFloat(req.body.unitPrice);
     // update last sale price
     // first update the token price
     let category = await Category.findOne({ minterAddress: nft });
@@ -134,7 +136,11 @@ router.post("/itemSold", service_auth, async (req, res) => {
       });
       if (token) {
         token.price = price;
+        token.paymentToken = paymentToken;
+        token.priceInUSD = priceInUSD;
         token.lastSalePrice = price;
+        token.lastSalePricePaymentToken = paymentToken;
+        token.lastSalePriceInUSD = priceInUSD;
         token.soldAt = new Date(); //set recently sold date
         token.listedAt = new Date(1970, 1, 1); //remove listed date
         await token.save();
@@ -160,6 +166,8 @@ router.post("/itemSold", service_auth, async (req, res) => {
           tokenID: tokenID,
           nftAddress: nft,
           price: price,
+          paymentToken: paymentToken,
+          priceInUSD: priceInUSD,
         };
         sendEmail(data);
       }
@@ -183,6 +191,8 @@ router.post("/itemSold", service_auth, async (req, res) => {
           tokenID: tokenID,
           nftAddress: nft,
           price: price,
+          paymentToken: paymentToken,
+          priceInUSD: priceInUSD,
         };
         sendEmail(data);
       }
@@ -196,6 +206,8 @@ router.post("/itemSold", service_auth, async (req, res) => {
       history.to = buyer;
       history.tokenID = tokenID;
       history.price = price;
+      history.paymentToken = paymentToken;
+      history.priceInUSD = priceInUSD;
       history.value = quantity;
       await history.save();
     } catch (error) {}
@@ -218,10 +230,9 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
   try {
     let owner = req.body.owner;
     let nft = req.body.nft;
-    let tokenID = req.body.tokenID;
-    let price = req.body.price;
-    price = parseFloat(price);
-    tokenID = parseInt(tokenID);
+    let tokenID = parseInt(req.body.tokenID);
+    let price = parseFloat(req.body.price);
+    let paymentToken = toLowerCase(req.body.paymentToken);
     // update the price of the nft here
     // first update the token price
     let category = await Category.findOne({ minterAddress: nft });
@@ -232,6 +243,7 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
       });
       if (token) {
         token.price = price;
+        token.paymentToken = paymentToken;
         await token.save();
       }
     }
@@ -243,11 +255,12 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
     });
     if (list) {
       list.price = price;
+      list.paymentToken = paymentToken;
       await list.save();
     }
 
     // send notification
-    notifications.nofityNFTUpdated(owner, nft, tokenID, price);
+    notifications.nofityNFTUpdated(owner, nft, tokenID, price, paymentToken);
     return res.json({});
   } catch (error) {
     return res.json({ status: "failed" });
@@ -267,6 +280,8 @@ router.post("/itemCanceled", service_auth, async (req, res) => {
         tokenID: tokenID,
       });
       if (token) {
+        token.price = token.lastSalePrice;
+        token.paymentToken = token.lastSalePricePaymentToken;
         token.listedAt = new Date(1970, 1, 1); //remove listed date
         await token.save();
       }
@@ -289,13 +304,12 @@ router.post("/offerCreated", service_auth, async (req, res) => {
   try {
     let creator = req.body.creator;
     let nft = req.body.nft;
-    let tokenID = req.body.tokenID;
-    let quantity = req.body.quantity;
-    let pricePerItem = req.body.pricePerItem;
+    let tokenID = parseInt(req.body.tokenID);
+    let quantity = parseInt(req.body.quantity);
+    let pricePerItem = parseFloat(req.body.pricePerItem);
+    let paymentToken = toLowerCase(req.body.paymentToken);
+    let priceInUSD = pricePerItem * getPrice(paymentToken);
     let deadline = parseFloat(req.body.deadline);
-    pricePerItem = parseFloat(pricePerItem);
-    tokenID = parseInt(tokenID);
-    quantity = parseInt(quantity);
 
     try {
       await Offer.deleteMany({
@@ -309,6 +323,8 @@ router.post("/offerCreated", service_auth, async (req, res) => {
       offer.tokenID = tokenID;
       offer.quantity = quantity;
       offer.pricePerItem = pricePerItem;
+      offer.paymentToken = paymentToken;
+      offer.priceInUSD = priceInUSD;
       offer.deadline = deadline;
       await offer.save();
     } catch (error) {}
@@ -347,6 +363,8 @@ router.post("/offerCreated", service_auth, async (req, res) => {
               tokenID: tokenID,
               nftAddress: nft,
               price: pricePerItem,
+              paymentToken: paymentToken,
+              priceInUSD: priceInUSD,
             };
             sendEmail(data);
           }

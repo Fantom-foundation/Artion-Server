@@ -81,9 +81,9 @@ router.post("/createBundle", auth, async (req, res) => {
     let items = req.body.items;
 
     // add payment token option
-    let payToken = toLowerCase(req.body.payToken);
-    let payTokenPrice = getPrice(payToken);
-    if (payTokenPrice == 0)
+    let paymentToken = toLowerCase(req.body.paymentToken);
+    let priceInUSD = price * getPrice(paymentToken);
+    if (priceInUSD == 0)
       return res.status(400).json({
         status: "failed",
         data: "Payment token not acceptable",
@@ -104,8 +104,8 @@ router.post("/createBundle", auth, async (req, res) => {
     let bundle = new Bundle();
     bundle.name = name;
     bundle.price = price;
-    bundle.paymentToken = payToken;
-    bundle.priceInUSD = price * payTokenPrice;
+    bundle.paymentToken = paymentToken;
+    bundle.priceInUSD = priceInUSD;
     bundle.owner = owner;
     bundle.creator = owner;
     bundle.createdAt = Date.now();
