@@ -448,4 +448,17 @@ router.post("/auctionCancelled", service_auth, async (req, res) => {
   }
 });
 
+router.post("/bidRefunded", service_auth, async (req, res) => {
+  try {
+    let nft = toLowerCase(req.body.nft);
+    let tokenID = parseInt(req.body.tokenID);
+    let bidder = toLowerCase(req.body.bidder);
+    let bid = parseFloat(req.body.bid);
+    // notify user that his bid is refunded
+    return res.json({});
+  } catch (error) {
+    return res.json({ status: "failed" });
+  }
+});
+
 module.exports = router;
