@@ -19,6 +19,8 @@ const BundleLike = mongoose.model("BundleLike");
 
 const toLowerCase = require("../utils/utils");
 
+const { getPrice } = require("../services/price.feed");
+
 // list the newly minted 10 tokens
 router.get("/getNewestTokens", async (_, res) => {
   let tokens = await NFTITEM.find().sort({ createdAt: 1 }).limit(20);
@@ -472,6 +474,20 @@ router.get("/getFigures/:address", async (req, res) => {
         bundle,
         fav,
       },
+    });
+  } catch (error) {
+    return res.json({
+      status: "failed",
+    });
+  }
+});
+
+router.get("/price/:token", (req, res) => {
+  try {
+    let token = req.params.token;
+    return res.json({
+      status: "success",
+      data: getPrice(token),
     });
   } catch (error) {
     return res.json({

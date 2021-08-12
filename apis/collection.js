@@ -20,8 +20,10 @@ const applicationMailer = require("../mailer/reviewMailer");
 const FactoryUtils = require("../services/factory.utils");
 const validateSignature = require("../apis/middleware/auth.sign");
 
-const AuctionContractInfo = require("../constants/auctionabi");
-const MarketplaceContractInfo = require("../constants/marketplaceabi");
+const AuctionContractABI = require("../constants/auctionabi");
+const AuctionContractAddress = process.env.AUCTION_ADDRESS;
+const MarketplaceContractABI = require("../constants/marketplaceabi");
+const MarketplaceContractAddress = process.env.MARKETPLACE_ADDRESS;
 
 const ftmScanApiKey = process.env.FTM_SCAN_API_KEY;
 // to sign txs
@@ -34,14 +36,14 @@ const ownerWallet = new ethers.Wallet(
 );
 
 const marketplaceSC = new ethers.Contract(
-  MarketplaceContractInfo.Address,
-  MarketplaceContractInfo.ABI,
+  MarketplaceContractAddress,
+  MarketplaceContractABI,
   provider
 );
 
 const auctionSC = new ethers.Contract(
-  AuctionContractInfo.Address,
-  AuctionContractInfo.ABI,
+  AuctionContractAddress,
+  AuctionContractABI,
   provider
 );
 
