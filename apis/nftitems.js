@@ -1045,6 +1045,7 @@ router.post("/getSingleItemDetails", async (req, res) => {
     let nfts = await NFTITEM.find({
       contractAddress: contractAddress,
       tokenID: { $ne: tokenID },
+      isAppropriate: true,
     })
       .sort({ viewed: "desc" })
       .limit(10)
