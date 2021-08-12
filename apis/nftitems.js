@@ -943,6 +943,7 @@ router.post("/getSingleItemDetails", async (req, res) => {
     let nft = await NFTITEM.findOne({
       contractAddress: contractAddress,
       tokenID: tokenID,
+      isAppropriate: true,
     });
     if (!nft)
       return res.json({
