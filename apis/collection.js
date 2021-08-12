@@ -13,7 +13,6 @@ const ERC721CONTRACT = mongoose.model("ERC721CONTRACT");
 const auth = require("./middleware/auth");
 const admin_auth = require("./middleware/auth.admin");
 const toLowerCase = require("../utils/utils");
-const ftmScanApiKey = process.env.FTM_SCAN_API_KEY;
 const isValidERC1155 = require("../utils/1155_validator");
 const isvalidERC721 = require("../utils/721_validator");
 const extractAddress = require("../services/address.utils");
@@ -21,6 +20,10 @@ const applicationMailer = require("../mailer/reviewMailer");
 const FactoryUtils = require("../services/factory.utils");
 const validateSignature = require("../apis/middleware/auth.sign");
 
+const AuctionContractInfo = require("../constants/auctionabi");
+const MarketplaceContractInfo = require("../constants/marketplaceabi");
+
+const ftmScanApiKey = process.env.FTM_SCAN_API_KEY;
 // to sign txs
 const provider = new ethers.providers.JsonRpcProvider(
   process.env.NETWORK_RPC,
@@ -28,6 +31,18 @@ const provider = new ethers.providers.JsonRpcProvider(
 );
 const ownerWallet = new ethers.Wallet(
   toLowerCase(process.env.ROAYLTY_PK, provider)
+);
+
+const marketplaceSC = new ethers.Contract(
+  MarketplaceContractInfo.Address,
+  MarketplaceContractInfo.ABI,
+  ownerWallet
+);
+
+const auctionSC = new ethers.Contract(
+  AuctionContractInfo.Address,
+  AuctionContractInfo.ABI,
+  ownerWallet
 );
 
 router.post("/collectiondetails", auth, async (req, res) => {
@@ -85,6 +100,7 @@ router.post("/collectiondetails", auth, async (req, res) => {
   let royalty = req.body.royalty ? parseFloat(req.body.royalty) : 0;
 
   let collection = await Collection.findOne({ erc721Address: erc721Address });
+  // this is for editing a collection
   if (collection) {
     collection.erc721Address = erc721Address;
     collection.collectionName = collectionName;
@@ -112,6 +128,7 @@ router.post("/collectiondetails", auth, async (req, res) => {
         status: "failed",
       });
   } else {
+    /* this is for new collection review */
     // verify if 1155 smart contracts
     let is1155 = await isValidERC1155(erc721Address);
     if (is1155) {
@@ -253,6 +270,10 @@ router.post("/reviewApplication", admin_auth, async (req, res) => {
         status: "success",
       });
     } else if (status == 1) {
+      // update smart contract for royalty
+      let feeRecipient = toLowerCase(collection.feeRecipient);
+      let royalty = parseFloat(collection.royalty);
+
       // approve -- udpate collection and send email
       collection.status = true;
       await collection.save();
@@ -396,6 +417,14 @@ const minifyCollection = (collection) => {
     isOwnerble: collection.isOwnerble,
     isAppropriate: collection.isAppropriate,
   };
+};
+
+const updateMarketplaceRoyalty = async (collection, receipient, fee) => {
+  fee = fee * 100;
+};
+
+const updateAuctionRoyalty = async (collection, receipient, fee) => {
+  fee = fee * 100;
 };
 
 module.exports = router;

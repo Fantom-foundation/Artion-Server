@@ -31,6 +31,8 @@ const provider = new ethers.providers.JsonRpcProvider(
 );
 const fMintSC = new ethers.Contract(fMintAddress, fMintABI, provider);
 
+let network = process.env.RUNTIME;
+
 const runPriceFeed = async () => {
   try {
     paymentTokens.map(async (token) => {
@@ -59,7 +61,10 @@ const getPrice = (address) => {
   )
     address = wFTMAddress;
   let price = priceStore.get(price);
-  if (price == null) price = 0;
+  if (price == null) {
+    if (network) price = 1;
+    price = 0;
+  }
   return price;
 };
 
