@@ -36,13 +36,13 @@ const ownerWallet = new ethers.Wallet(
 const marketplaceSC = new ethers.Contract(
   MarketplaceContractInfo.Address,
   MarketplaceContractInfo.ABI,
-  ownerWallet
+  provider
 );
 
 const auctionSC = new ethers.Contract(
   AuctionContractInfo.Address,
   AuctionContractInfo.ABI,
-  ownerWallet
+  provider
 );
 
 router.post("/collectiondetails", auth, async (req, res) => {
