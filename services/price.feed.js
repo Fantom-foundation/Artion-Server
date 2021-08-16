@@ -55,7 +55,7 @@ const getPrice = (address) => {
     address == validatorAddress
   )
     address = wFTMAddress;
-  let price = priceStore.get(price);
+  let price = priceStore.get(address);
   if (price == null) {
     if (network) price = 1;
     price = 0;
