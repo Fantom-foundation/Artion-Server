@@ -498,7 +498,7 @@ router.get("/price/:token", (req, res) => {
   }
 });
 
-router.get("/getDecimals/:address", service_auth, async (req, res) => {
+router.get("/getDecimals/:address", async (req, res) => {
   try {
     let address = req.params.address;
     let decimal = await getDecimals(address);
