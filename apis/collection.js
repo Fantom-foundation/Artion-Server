@@ -304,7 +304,8 @@ router.post("/reviewApplication", admin_auth, async (req, res) => {
           contractAddress,
           creator,
           royalty,
-          feeRecipient
+          feeRecipient,
+          { gasLimit: 3000000 }
         );
       } catch (error) {
         console.log("error in setting collection royalty");
