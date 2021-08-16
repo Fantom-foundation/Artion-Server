@@ -19,6 +19,8 @@ const BundleLike = mongoose.model("BundleLike");
 
 const toLowerCase = require("../utils/utils");
 
+const service_auth = require("./middleware/auth.tracker");
+
 const { getPrice, getDecimals } = require("../services/price.feed");
 
 // list the newly minted 10 tokens
@@ -496,7 +498,7 @@ router.get("/price/:token", (req, res) => {
   }
 });
 
-router.get("/getDecimals/:address", async (req, res) => {
+router.get("/getDecimals/:address", service_auth, async (req, res) => {
   try {
     let address = req.params.address;
     let decimal = await getDecimals(address);
