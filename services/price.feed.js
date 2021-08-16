@@ -57,8 +57,8 @@ const getPrice = (address) => {
     address = wFTMAddress;
   let price = priceStore.get(address);
   if (price == null) {
-    if (network) price = 1;
-    price = 0;
+    if (network) price = 0;
+    price = 1;
   }
   console.log(address, price);
   return price;
