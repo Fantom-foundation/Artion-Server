@@ -20,8 +20,6 @@ const applicationMailer = require("../mailer/reviewMailer");
 const FactoryUtils = require("../services/factory.utils");
 const validateSignature = require("../apis/middleware/auth.sign");
 
-const AuctionContractABI = require("../constants/auctionabi");
-const AuctionContractAddress = process.env.AUCTION_ADDRESS;
 const MarketplaceContractABI = require("../constants/marketplaceabi");
 const MarketplaceContractAddress = process.env.MARKETPLACE_ADDRESS;
 
@@ -38,13 +36,7 @@ const ownerWallet = new ethers.Wallet(
 const marketplaceSC = new ethers.Contract(
   MarketplaceContractAddress,
   MarketplaceContractABI,
-  provider
-);
-
-const auctionSC = new ethers.Contract(
-  AuctionContractAddress,
-  AuctionContractABI,
-  provider
+  ownerWallet
 );
 
 router.post("/collectiondetails", auth, async (req, res) => {
@@ -274,8 +266,56 @@ router.post("/reviewApplication", admin_auth, async (req, res) => {
     } else if (status == 1) {
       // update smart contract for royalty
       let feeRecipient = toLowerCase(collection.feeRecipient);
-      let royalty = parseFloat(collection.royalty);
+      let royalty = parseInt(collection.royalty * 100);
+      let creator = collection.owner;
 
+      // validate fee receipient to be a valid erc20 address
+      if (!ethers.utils.isAddress(feeRecipient)) {
+        // deny -- remove from collection and send email
+        let reason = "Fee recipient Address Invalid.";
+        await collection.remove();
+        // send deny email
+        applicationMailer.sendApplicationDenyEmail({
+          to: email,
+          subject: "Collection Registration Failed!",
+          reason: `${reason}`,
+        });
+        return res.json({
+          status: "success",
+        });
+      }
+      // validate royalty to range in o to 100
+      if (royalty > 100 || royalty < 0) {
+        // deny -- remove from collection and send email
+        let reason = "Royalty should be in range of 0 to 100";
+        await collection.remove();
+        // send deny email
+        applicationMailer.sendApplicationDenyEmail({
+          to: email,
+          subject: "Collection Registration Failed!",
+          reason: `${reason}`,
+        });
+        return res.json({
+          status: "success",
+        });
+      }
+
+      try {
+        // now update the collection fee
+        await marketplaceSC.registerCollectionRoyalty(
+          contractAddress,
+          creator,
+          royalty,
+          feeRecipient,
+          { gasLimit: 3000000 }
+        );
+      } catch (error) {
+        console.log("error in setting collection royalty");
+        console.log(error);
+        return res.json({
+          status: "failed",
+        });
+      }
       // approve -- udpate collection and send email
       collection.status = true;
       await collection.save();
