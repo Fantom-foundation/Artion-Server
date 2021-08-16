@@ -441,7 +441,7 @@ const MarketplaceContractABI = [
     inputs: [
       { internalType: "address", name: "_nftAddress", type: "address" },
       { internalType: "address", name: "_creator", type: "address" },
-      { internalType: "uint8", name: "_royalty", type: "uint8" },
+      { internalType: "uint16", name: "_royalty", type: "uint16" },
       { internalType: "address", name: "_feeRecipient", type: "address" },
     ],
     name: "registerCollectionRoyalty",
