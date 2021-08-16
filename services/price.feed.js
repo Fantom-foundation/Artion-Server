@@ -1,14 +1,14 @@
 require("dotenv").config();
 const ethers = require("ethers");
 
-// priceStore
+// price store
 const priceStore = new Map();
+// decimal store
+const decimalStore = new Map();
 
 const toLowerCase = require("../utils/utils");
-const fMintABI = [
-  "function getPrice(address _token) public view returns (uint256)",
-  "function getExtendedPrice(address _token) public view returns (uint256 _price, uint256 _digits)",
-];
+const MinimalERC20ABI = require("../constants/erc20_mini_abi");
+const fMintABI = require("../constants/fmint_abi");
 const wFTMAddress = toLowerCase("0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83");
 const fMintAddress = toLowerCase("0xBB634cafEf389cDD03bB276c82738726079FcF2E");
 
@@ -20,10 +20,6 @@ const paymentTokens = [
   toLowerCase("0x04068DA6C83AFCFA0e13ba15A6696662335D5B75"), //usdc
   toLowerCase("0x049d68029688eabf473097a2fc38ef61633a3c7a"), //usdt
 ];
-
-const isValidERC20SC = (address) => {
-  return ethers.utils.isAddress(address);
-};
 
 const provider = new ethers.providers.JsonRpcProvider(
   "https://rpc.ftm.tools",
@@ -68,9 +64,28 @@ const getPrice = (address) => {
   return price;
 };
 
+const getDecimals = async (address) => {
+  address = toLowerCase(address);
+  if (
+    address == "ftm" ||
+    address == "wftm" ||
+    address == "fantom" ||
+    address == validatorAddress
+  )
+    address = wFTMAddress;
+  let decimal = decimalStore.get(address);
+  if (decimal) return decimal;
+  let tokenContract = new ethers.Contract(address, MinimalERC20ABI, provider);
+  decimal = await tokenContract.decimals();
+  decimal = parseInt(decimal.toString());
+  decimalStore.set(address, decimal);
+  return decimal;
+};
+
 const priceFeed = {
   runPriceFeed,
   getPrice,
+  getDecimals,
 };
 
 module.exports = priceFeed;

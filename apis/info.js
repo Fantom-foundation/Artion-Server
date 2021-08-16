@@ -19,7 +19,7 @@ const BundleLike = mongoose.model("BundleLike");
 
 const toLowerCase = require("../utils/utils");
 
-const { getPrice } = require("../services/price.feed");
+const { getPrice, getDecimals } = require("../services/price.feed");
 
 // list the newly minted 10 tokens
 router.get("/getNewestTokens", async (_, res) => {
@@ -492,6 +492,20 @@ router.get("/price/:token", (req, res) => {
   } catch (error) {
     return res.json({
       status: "failed",
+    });
+  }
+});
+
+router.get("/getDecimals/:address", async (req, res) => {
+  try {
+    let address = req.params.address;
+    let decimal = await getDecimals(address);
+    return res.json({
+      data: decimal,
+    });
+  } catch (error) {
+    return res.json({
+      data: 0,
     });
   }
 });
