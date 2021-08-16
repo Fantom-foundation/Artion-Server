@@ -313,6 +313,14 @@ router.post("/reviewApplication", admin_auth, async (req, res) => {
           status: "failed",
         });
       }
+      // approve -- udpate collection and send email
+      collection.status = true;
+      await collection.save();
+      // send email
+      applicationMailer.sendApplicationReviewedEmail({
+        to: email,
+        subject: "Collection Registerd Successfully!",
+      });
       return res.json({
         status: "success",
       });
