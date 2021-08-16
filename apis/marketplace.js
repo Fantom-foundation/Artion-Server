@@ -127,6 +127,9 @@ router.post("/itemSold", service_auth, async (req, res) => {
     let priceInUSD = price * getPrice(paymentToken);
     // update last sale price
     // first update the token price
+
+    console.log("item sold");
+    console.log(seller, buyer, nft, tokenID, quantity, price, paymentToken);
     let category = await Category.findOne({ minterAddress: nft });
 
     if (category) {
@@ -210,7 +213,10 @@ router.post("/itemSold", service_auth, async (req, res) => {
       history.priceInUSD = priceInUSD;
       history.value = quantity;
       await history.save();
-    } catch (error) {}
+    } catch (error) {
+      console.log("error in saving trade history");
+      console.log(error);
+    }
     try {
       // remove from listing
       await Listing.deleteMany({
@@ -218,9 +224,14 @@ router.post("/itemSold", service_auth, async (req, res) => {
         minter: nft,
         tokenID: tokenID,
       });
-    } catch (error) {}
+    } catch (error) {
+      console.log("error in removing listing");
+      console.log(error);
+    }
     return res.json({});
   } catch (error) {
+    console.log("error in api call");
+    console.log(error);
     return res.json({ status: "failed" });
   }
 });
