@@ -36,7 +36,6 @@ const runPriceFeed = async () => {
         let price = await fMintSC.getPrice(token);
         price = ethers.utils.formatEther(price);
         priceStore.set(token, price);
-        console.log(token, price);
       } catch (error) {}
     });
   } catch (error) {
