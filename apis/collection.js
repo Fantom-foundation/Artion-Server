@@ -283,7 +283,7 @@ router.post("/reviewApplication", admin_auth, async (req, res) => {
         });
       }
       // validate royalty to range in o to 100
-      if (royalty > 100 || royalty < 0) {
+      if (royalty > 10000 || royalty < 0) {
         // deny -- remove from collection and send email
         let reason = "Royalty should be in range of 0 to 100";
         await collection.remove();
