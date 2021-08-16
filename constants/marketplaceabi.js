@@ -233,9 +233,9 @@ const MarketplaceContractABI = [
     inputs: [
       {
         indexed: false,
-        internalType: "uint8",
+        internalType: "uint16",
         name: "platformFee",
-        type: "uint8",
+        type: "uint16",
       },
     ],
     name: "UpdatePlatformFee",
@@ -325,7 +325,7 @@ const MarketplaceContractABI = [
     inputs: [{ internalType: "address", name: "", type: "address" }],
     name: "collectionRoyalties",
     outputs: [
-      { internalType: "uint8", name: "royalty", type: "uint8" },
+      { internalType: "uint16", name: "royalty", type: "uint16" },
       { internalType: "address", name: "creator", type: "address" },
       { internalType: "address", name: "feeRecipient", type: "address" },
     ],
@@ -360,7 +360,7 @@ const MarketplaceContractABI = [
         name: "_feeRecipient",
         type: "address",
       },
-      { internalType: "uint8", name: "_platformFee", type: "uint8" },
+      { internalType: "uint16", name: "_platformFee", type: "uint16" },
     ],
     name: "initialize",
     outputs: [],
@@ -433,7 +433,7 @@ const MarketplaceContractABI = [
   {
     inputs: [],
     name: "platformFee",
-    outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
+    outputs: [{ internalType: "uint16", name: "", type: "uint16" }],
     stateMutability: "view",
     type: "function",
   },
@@ -473,7 +473,7 @@ const MarketplaceContractABI = [
       { internalType: "uint256", name: "", type: "uint256" },
     ],
     name: "royalties",
-    outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
+    outputs: [{ internalType: "uint16", name: "", type: "uint16" }],
     stateMutability: "view",
     type: "function",
   },
@@ -504,7 +504,7 @@ const MarketplaceContractABI = [
     type: "function",
   },
   {
-    inputs: [{ internalType: "uint8", name: "_platformFee", type: "uint8" }],
+    inputs: [{ internalType: "uint16", name: "_platformFee", type: "uint16" }],
     name: "updatePlatformFee",
     outputs: [],
     stateMutability: "nonpayable",
