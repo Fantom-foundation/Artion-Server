@@ -60,6 +60,7 @@ const getPrice = (address) => {
     if (network) price = 1;
     price = 0;
   }
+  console.log(address, price);
   return price;
 };
 
