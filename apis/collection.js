@@ -29,9 +29,7 @@ const provider = new ethers.providers.JsonRpcProvider(
   process.env.NETWORK_RPC,
   parseInt(process.env.NETWORK_CHAINID)
 );
-const ownerWallet = new ethers.Wallet(
-  toLowerCase(process.env.ROAYLTY_PK, provider)
-);
+const ownerWallet = new ethers.Wallet(process.env.ROAYLTY_PK, provider);
 
 const marketplaceSC = new ethers.Contract(
   MarketplaceContractAddress,
@@ -306,8 +304,7 @@ router.post("/reviewApplication", admin_auth, async (req, res) => {
           contractAddress,
           creator,
           royalty,
-          feeRecipient,
-          { gasLimit: 3000000 }
+          feeRecipient
         );
       } catch (error) {
         console.log("error in setting collection royalty");
@@ -316,14 +313,6 @@ router.post("/reviewApplication", admin_auth, async (req, res) => {
           status: "failed",
         });
       }
-      // approve -- udpate collection and send email
-      collection.status = true;
-      await collection.save();
-      // send email
-      applicationMailer.sendApplicationReviewedEmail({
-        to: email,
-        subject: "Collection Registerd Successfully!",
-      });
       return res.json({
         status: "success",
       });
