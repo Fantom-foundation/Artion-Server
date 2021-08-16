@@ -453,7 +453,7 @@ const MarketplaceContractABI = [
     inputs: [
       { internalType: "address", name: "_nftAddress", type: "address" },
       { internalType: "uint256", name: "_tokenId", type: "uint256" },
-      { internalType: "uint8", name: "_royalty", type: "uint8" },
+      { internalType: "uint16", name: "_royalty", type: "uint16" },
     ],
     name: "registerRoyalty",
     outputs: [],
