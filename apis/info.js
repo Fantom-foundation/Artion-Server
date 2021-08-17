@@ -19,6 +19,10 @@ const BundleLike = mongoose.model("BundleLike");
 
 const toLowerCase = require("../utils/utils");
 
+const service_auth = require("./middleware/auth.tracker");
+
+const { getPrice, getDecimals } = require("../services/price.feed");
+
 // list the newly minted 10 tokens
 router.get("/getNewestTokens", async (_, res) => {
   let tokens = await NFTITEM.find().sort({ createdAt: 1 }).limit(20);
@@ -476,6 +480,34 @@ router.get("/getFigures/:address", async (req, res) => {
   } catch (error) {
     return res.json({
       status: "failed",
+    });
+  }
+});
+
+router.get("/price/:token", (req, res) => {
+  try {
+    let token = req.params.token;
+    return res.json({
+      status: "success",
+      data: getPrice(token),
+    });
+  } catch (error) {
+    return res.json({
+      status: "failed",
+    });
+  }
+});
+
+router.get("/getDecimals/:address", async (req, res) => {
+  try {
+    let address = req.params.address;
+    let decimal = await getDecimals(address);
+    return res.json({
+      data: decimal,
+    });
+  } catch (error) {
+    return res.json({
+      data: 0,
     });
   }
 });

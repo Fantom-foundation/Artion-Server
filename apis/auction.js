@@ -12,6 +12,8 @@ const NotificationSetting = mongoose.model("NotificationSetting");
 const sendEmail = require("../mailer/auctionMailer");
 const getCollectionName = require("../mailer/utils");
 const notifications = require("../mailer/followMailer");
+const toLowerCase = require("../utils/utils");
+const { getPrice } = require("../services/price.feed");
 
 const get721ItemName = async (nft, tokenID) => {
   try {
@@ -141,10 +143,9 @@ router.post("updateAuctionEndTime", service_auth, async (req, res) => {
 router.post("/updateAuctionReservePrice", service_auth, async (req, res) => {
   try {
     let nftAddress = req.body.nftAddress;
-    let tokenID = req.body.tokenID;
-    let reservePrice = req.body.reservePrice;
-    reservePrice = parseFloat(reservePrice);
-    tokenID = parseInt(tokenID);
+    let tokenID = parseInt(req.body.tokenID);
+    let paymentToken = toLowerCase(paymentToken);
+    let reservePrice = reservePrice(req.body.reservePrice);
     let bid = await Bid.findOne({
       minter: nftAddress,
       tokenID: tokenID,
@@ -171,6 +172,7 @@ router.post("/updateAuctionReservePrice", service_auth, async (req, res) => {
           tokenID: tokenID,
           nftAddress: nftAddress,
           newPrice: reservePrice,
+          paymentToken: paymentToken,
         };
         sendEmail(data);
       }
@@ -301,11 +303,11 @@ router.post("/bidWithdrawn", service_auth, async (req, res) => {
 router.post("/auctionResulted", service_auth, async (req, res) => {
   try {
     let nftAddress = req.body.nftAddress;
-    let tokenID = req.body.tokenID;
+    let tokenID = parseInt(req.body.tokenID);
     let winner = req.body.winner;
-    let winningBid = req.body.winningBid;
-    winningBid = parseFloat(winningBid);
-    tokenID = parseInt(tokenID);
+    let winningBid = parseFloat(req.body.winningBid);
+    let paymentToken = toLowerCase(req.body.paymentToken);
+    let priceInUSD = winningBid * getPrice(paymentToken);
     try {
       // send mail
       try {
@@ -328,6 +330,8 @@ router.post("/auctionResulted", service_auth, async (req, res) => {
             tokenID: tokenID,
             nftAddress: nftAddress,
             winningBid: winningBid,
+            paymentToken: paymentToken,
+            priceInUSD: priceInUSD,
           };
           sendEmail(data);
         }
@@ -339,7 +343,11 @@ router.post("/auctionResulted", service_auth, async (req, res) => {
       });
       if (token) {
         token.price = winningBid;
+        token.paymentToken = paymentToken;
+        token.priceInUSD = priceInUSD;
         token.lastSalePrice = winningBid;
+        token.lastSalePricePaymentToken = paymentToken;
+        token.lastSalePriceInUSD = lastSalePriceInUSD;
         token.soldAt = new Date();
         // update sale ends at as well
         token.saleEndsAt = null;
@@ -352,6 +360,8 @@ router.post("/auctionResulted", service_auth, async (req, res) => {
           history.from = from;
           history.to = winner;
           history.price = winningBid;
+          history.paymentToken = paymentToken;
+          history.priceInUSD = priceInUSD;
           history.isAuction = true;
           await history.save();
         } catch (error) {}
@@ -432,6 +442,19 @@ router.post("/auctionCancelled", service_auth, async (req, res) => {
         tokenID: tokenID,
       });
     } catch (error) {}
+    return res.json({});
+  } catch (error) {
+    return res.json({ status: "failed" });
+  }
+});
+
+router.post("/bidRefunded", service_auth, async (req, res) => {
+  try {
+    let nft = toLowerCase(req.body.nft);
+    let tokenID = parseInt(req.body.tokenID);
+    let bidder = toLowerCase(req.body.bidder);
+    let bid = parseFloat(req.body.bid);
+    // notify user that his bid is refunded
     return res.json({});
   } catch (error) {
     return res.json({ status: "failed" });

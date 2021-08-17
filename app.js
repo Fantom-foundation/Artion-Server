@@ -53,6 +53,8 @@ app.options("*", cors()); // include before other routes
 app.use(cors());
 app.use(require("./apis"));
 
+const priceFeed = require("./services/price.feed");
+
 const connect = () => {
   const uri = process.env.DB_URL;
 
@@ -61,6 +63,9 @@ const connect = () => {
   db.on("error", console.error.bind(console, "connection error:"));
   db.once("open", function () {
     console.log("artion server has been connected to the db server");
+    console.log("price feed has been started");
+    priceFeed.runPriceFeed();
+    priceFeed.getDecimals("0x049d68029688eabf473097a2fc38ef61633a3c7a");
     app.listen(port, () => {
       console.log(`artion server is running at port ${port}`);
     });

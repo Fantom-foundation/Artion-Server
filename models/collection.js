@@ -18,6 +18,8 @@ const Collection = mongoose.Schema({
   isInternal: { type: Boolean, default: false },
   isOwnerble: { type: Boolean, default: false },
   isAppropriate: { type: Boolean, default: true },
+  feeRecipient: { type: String },
+  royalty: { type: Number, default: 0 },
 });
 
 Collection.index({ erc721Address: 1 }, { unique: true });
@@ -41,6 +43,8 @@ Collection.methods.toJson = function () {
     isInternal: this.isInternal,
     isOwnerble: this.isOwnerble,
     isAppropriate: this.isAppropriate,
+    feeRecipient: this.feeRecipient,
+    royalty: this.royalty,
   };
 };
 

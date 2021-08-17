@@ -1,6 +1,9 @@
 require("dotenv").config();
 const { default: axios } = require("axios");
 const router = require("express").Router();
+
+const ethers = require("ethers");
+
 const mongoose = require("mongoose");
 const Collection = mongoose.model("Collection");
 const Category = mongoose.model("Category");
@@ -10,15 +13,29 @@ const ERC721CONTRACT = mongoose.model("ERC721CONTRACT");
 const auth = require("./middleware/auth");
 const admin_auth = require("./middleware/auth.admin");
 const toLowerCase = require("../utils/utils");
-const ftmScanApiKey = process.env.FTM_SCAN_API_KEY;
 const isValidERC1155 = require("../utils/1155_validator");
 const isvalidERC721 = require("../utils/721_validator");
 const extractAddress = require("../services/address.utils");
 const applicationMailer = require("../mailer/reviewMailer");
-
 const FactoryUtils = require("../services/factory.utils");
-
 const validateSignature = require("../apis/middleware/auth.sign");
+
+const MarketplaceContractABI = require("../constants/marketplaceabi");
+const MarketplaceContractAddress = process.env.MARKETPLACE_ADDRESS;
+
+const ftmScanApiKey = process.env.FTM_SCAN_API_KEY;
+// to sign txs
+const provider = new ethers.providers.JsonRpcProvider(
+  process.env.NETWORK_RPC,
+  parseInt(process.env.NETWORK_CHAINID)
+);
+const ownerWallet = new ethers.Wallet(process.env.ROAYLTY_PK, provider);
+
+const marketplaceSC = new ethers.Contract(
+  MarketplaceContractAddress,
+  MarketplaceContractABI,
+  ownerWallet
+);
 
 router.post("/collectiondetails", auth, async (req, res) => {
   let erc721Address = req.body.erc721Address;
@@ -69,7 +86,13 @@ router.post("/collectiondetails", auth, async (req, res) => {
   let instagram = req.body.instagram;
   let email = req.body.email;
 
+  let feeRecipient = req.body.feeRecipient
+    ? toLowerCase(req.body.feeRecipient)
+    : "";
+  let royalty = req.body.royalty ? parseFloat(req.body.royalty) : 0;
+
   let collection = await Collection.findOne({ erc721Address: erc721Address });
+  // this is for editing a collection
   if (collection) {
     collection.erc721Address = erc721Address;
     collection.collectionName = collectionName;
@@ -83,6 +106,8 @@ router.post("/collectiondetails", auth, async (req, res) => {
     collection.telegram = telegram;
     collection.instagramHandle = instagram;
     collection.email = email;
+    collection.feeRecipient = feeRecipient;
+    collection.royalty = royalty;
 
     let _collection = await collection.save();
     if (_collection)
@@ -95,6 +120,7 @@ router.post("/collectiondetails", auth, async (req, res) => {
         status: "failed",
       });
   } else {
+    /* this is for new collection review */
     // verify if 1155 smart contracts
     let is1155 = await isValidERC1155(erc721Address);
     if (is1155) {
@@ -139,6 +165,8 @@ router.post("/collectiondetails", auth, async (req, res) => {
       _collection.status = true;
     } else _collection.status = false;
     _collection.email = email;
+    _collection.feeRecipient = feeRecipient;
+    _collection.royalty = royalty;
     let newCollection = await _collection.save();
     if (newCollection) {
       // notify admin about a new app
@@ -205,6 +233,8 @@ router.post("/getReviewApplications", admin_auth, async (req, res) => {
   }
 });
 
+// need to update the smart contract with royalty
+
 router.post("/reviewApplication", admin_auth, async (req, res) => {
   try {
     let contractAddress = toLowerCase(req.body.contractAddress);
@@ -232,6 +262,58 @@ router.post("/reviewApplication", admin_auth, async (req, res) => {
         status: "success",
       });
     } else if (status == 1) {
+      // update smart contract for royalty
+      let feeRecipient = toLowerCase(collection.feeRecipient);
+      let royalty = parseInt(collection.royalty * 100);
+      let creator = collection.owner;
+
+      // validate fee receipient to be a valid erc20 address
+      if (!ethers.utils.isAddress(feeRecipient)) {
+        // deny -- remove from collection and send email
+        let reason = "Fee recipient Address Invalid.";
+        await collection.remove();
+        // send deny email
+        applicationMailer.sendApplicationDenyEmail({
+          to: email,
+          subject: "Collection Registration Failed!",
+          reason: `${reason}`,
+        });
+        return res.json({
+          status: "success",
+        });
+      }
+      // validate royalty to range in o to 100
+      if (royalty > 10000 || royalty < 0) {
+        // deny -- remove from collection and send email
+        let reason = "Royalty should be in range of 0 to 100";
+        await collection.remove();
+        // send deny email
+        applicationMailer.sendApplicationDenyEmail({
+          to: email,
+          subject: "Collection Registration Failed!",
+          reason: `${reason}`,
+        });
+        return res.json({
+          status: "success",
+        });
+      }
+
+      try {
+        // now update the collection fee
+        await marketplaceSC.registerCollectionRoyalty(
+          contractAddress,
+          creator,
+          royalty,
+          feeRecipient,
+          { gasLimit: 3000000 }
+        );
+      } catch (error) {
+        console.log("error in setting collection royalty");
+        console.log(error);
+        return res.json({
+          status: "failed",
+        });
+      }
       // approve -- udpate collection and send email
       collection.status = true;
       await collection.save();
@@ -375,6 +457,14 @@ const minifyCollection = (collection) => {
     isOwnerble: collection.isOwnerble,
     isAppropriate: collection.isAppropriate,
   };
+};
+
+const updateMarketplaceRoyalty = async (collection, receipient, fee) => {
+  fee = fee * 100;
+};
+
+const updateAuctionRoyalty = async (collection, receipient, fee) => {
+  fee = fee * 100;
 };
 
 module.exports = router;

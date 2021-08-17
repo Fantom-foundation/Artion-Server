@@ -14,6 +14,8 @@ const router = require("express").Router();
 const service_auth = require("./middleware/auth.tracker");
 const sendEmail = require("../mailer/bundleMailer");
 const notifications = require("../mailer/followMailer");
+const { getPrice } = require("../services/price.feed");
+const toLowerCase = require("../utils/utils");
 
 // check if nft is erc721 or 1155
 const getTokenType = async (address) => {
@@ -39,12 +41,16 @@ router.post("/itemListed", service_auth, async (req, res) => {
     let bundleID = req.body.bundleID;
     let owner = req.body.owner;
     let price = parseFloat(req.body.price);
+    let paymentToken = toLowerCase(req.body.paymentToken);
+    let priceInUSD = price * getPrice(paymentToken);
     let startingTime = parseFloat(req.body.startingTime);
 
     //   update bundle's list time & price
     let bundle = await Bundle.findById(bundleID);
     let bundleName = bundle.name;
     bundle.price = price;
+    bundle.paymentToken = paymentToken;
+    bundle.priceInUSD = priceInUSD;
     bundle.listedAt = Date.now();
     await bundle.save();
 
@@ -53,6 +59,8 @@ router.post("/itemListed", service_auth, async (req, res) => {
     listing.bundleID = bundleID;
     listing.owner = owner;
     listing.price = price;
+    listing.paymentToken = paymentToken;
+    listing.priceInUSD = priceInUSD;
     listing.startTime = startingTime;
     await listing.save();
 
@@ -62,6 +70,8 @@ router.post("/itemListed", service_auth, async (req, res) => {
     history.creator = owner;
     history.from = owner;
     history.price = price;
+    history.paymentToken = paymentToken;
+    history.priceInUSD = priceInUSD;
     history.activity = "List";
     history.createdAt = Date.now();
     await history.save();
@@ -79,12 +89,18 @@ router.post("/itemSold", service_auth, async (req, res) => {
     let buyer = req.body.buyer;
     let bundleID = req.body.bundleID;
     let price = parseFloat(req.body.price);
+    let paymentToken = toLowerCase(req.body.paymentToken);
+    let priceInUSD = price * getPrice(paymentToken);
 
     // first update the bundle owner
     let bundle = await Bundle.findById(bundleID);
     bundle.owner = buyer;
     bundle.price = price;
+    bundle.paymentToken = paymentToken;
+    bundle.priceInUSD = priceInUSD;
     bundle.lastSalePrice = price;
+    bundle.lastSalePricePaymentToken = paymentToken;
+    bundle.lastSalePriceInUSD = priceInUSD;
     bundle.soldAt = Date.now();
     bundle.listedAt = new Date(1970, 1, 1);
     bundle.saleEndsAt = new Date(1970, 1, 1);
@@ -95,9 +111,15 @@ router.post("/itemSold", service_auth, async (req, res) => {
     history.from = seller;
     history.to = buyer;
     history.price = price;
+    history.paymentToken = paymentToken;
+    history.priceInUSD = priceInUSD;
     history.activity = "Sale";
     history.createdAt = Date.now();
     await history.save();
+    // remove from bundle listing
+    await BundleListing.deleteMany({
+      bundleID: bundleID,
+    });
     // send an email to seller & buyer
     // seller
     try {
@@ -162,6 +184,8 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
     let tokenIDs = req.body.tokenID;
     let quantities = req.body.quantity;
     let newPrice = parseFloat(req.body.newPrice);
+    let paymentToken = toLowerCase(req.body.paymentToken);
+    let priceInUSD = newPrice * getPrice(paymentToken);
     if (nfts.length == 0) {
       await Bundle.deleteOne({ _id: bundleID });
       await BundleInfo.deleteMany({ bundleID: bundleID });
@@ -171,6 +195,8 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
       let bundleName = bundle.name;
       let oldPrice = bundle.price;
       bundle.price = newPrice;
+      bundle.paymentToken = paymentToken;
+      bundle.priceInUSD = priceInUSD;
       await bundle.save();
 
       // first remove all bundle info with the bundle's id
@@ -225,6 +251,8 @@ router.post("/itemCanceled", service_auth, async (req, res) => {
     // update bundle's list related values
     let bundle = await Bundle.findById(bundleID);
     bundle.price = bundle.lastSalePrice;
+    bundle.paymentToken = bundle.lastSalePricePaymentToken;
+    bundle.priceInUSD = bundle.lastSalePriceInUSD;
     bundle.listedAt = new Date(1970, 1, 1);
     bundle.saleEndsAt = new Date(1970, 1, 1);
     await bundle.save();
@@ -239,6 +267,8 @@ router.post("/offerCreated", service_auth, async (req, res) => {
     let creator = req.body.creator;
     let bundleID = req.body.bundleID;
     let price = parseFloat(req.body.price);
+    let paymentToken = toLowerCase(req.body.paymentToken);
+    let priceInUSD = price * getPrice(paymentToken);
     let deadline = parseFloat(req.body.deadline);
 
     // create new bundle offer
@@ -246,6 +276,8 @@ router.post("/offerCreated", service_auth, async (req, res) => {
     offer.bundleID = bundleID;
     offer.creator = creator;
     offer.price = price;
+    offer.paymentToken = paymentToken;
+    offer.priceInUSD = priceInUSD;
     offer.deadline = deadline;
     await offer.save();
     // send mail to owner
