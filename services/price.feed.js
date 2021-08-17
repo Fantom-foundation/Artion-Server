@@ -64,6 +64,11 @@ const getPrice = (address) => {
   return price;
 };
 
+const decimalsProvider = new ethers.providers.JsonRpcProvider(
+  process.env.NETWORK_RPC,
+  parseInt(process.env.NETWORK_CHAINID)
+);
+
 const getDecimals = async (address) => {
   address = toLowerCase(address);
   if (
@@ -72,10 +77,14 @@ const getDecimals = async (address) => {
     address == "fantom" ||
     address == validatorAddress
   )
-    address = wFTMAddress;
+    address = toLowerCase(process.env.WFTM_ADDRESS);
   let decimal = decimalStore.get(address);
   if (decimal) return decimal;
-  let tokenContract = new ethers.Contract(address, MinimalERC20ABI, provider);
+  let tokenContract = new ethers.Contract(
+    address,
+    MinimalERC20ABI,
+    decimalsProvider
+  );
   decimal = await tokenContract.decimals();
   decimal = parseInt(decimal.toString());
   decimalStore.set(address, decimal);
