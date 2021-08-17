@@ -49,6 +49,8 @@ router.post("/itemListed", service_auth, async (req, res) => {
     let bundle = await Bundle.findById(bundleID);
     let bundleName = bundle.name;
     bundle.price = price;
+    bundle.paymentToken = paymentToken;
+    bundle.priceInUSD = priceInUSD;
     bundle.listedAt = Date.now();
     await bundle.save();
 
