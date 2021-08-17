@@ -117,6 +117,10 @@ router.post("/itemSold", service_auth, async (req, res) => {
     history.activity = "Sale";
     history.createdAt = Date.now();
     await history.save();
+    // remove from bundle listing
+    await BundleListing.deleteMany({
+      bundleID: bundleID,
+    });
     // send an email to seller & buyer
     // seller
     try {
