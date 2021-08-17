@@ -642,8 +642,6 @@ const selectBundles = async (req, res) => {
         ...(collections2filter != null
           ? { contractAddress: { $in: [...collections2filter] } }
           : {}),
-        thumbnailPath: { $ne: nonImage },
-        isAppropriate: true,
       };
 
       let bundleInfos = await BundleInfo.find(collectionFilters);
@@ -808,12 +806,14 @@ const selectBundles = async (req, res) => {
       return data;
     }
   } catch (error) {
+    console.log(error);
     return null;
   }
 };
 
 router.post("/fetchTokens", async (req, res) => {
   let type = req.body.type; // type - item type
+  console.log("type");
   let sortby = req.body.sortby; //sort -> string param
   let from = parseInt(req.body.from);
   let count = parseInt(req.body.count);
