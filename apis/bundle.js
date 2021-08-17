@@ -17,6 +17,7 @@ const orderBy = require("lodash.orderby");
 const toLowerCase = require("../utils/utils");
 
 const extractAddress = require("../services/address.utils");
+const { getPrice } = require("../services/price.feed");
 
 router.post("/increaseViews", async (req, res) => {
   try {
@@ -79,6 +80,14 @@ router.post("/createBundle", auth, async (req, res) => {
     let price = parseFloat(req.body.price);
     let items = req.body.items;
 
+    // add payment token option
+    let paymentToken = toLowerCase(req.body.paymentToken);
+    let priceInUSD = price * getPrice(paymentToken);
+    if (priceInUSD == 0)
+      return res.status(400).json({
+        status: "failed",
+        data: "Payment token not acceptable",
+      });
     if (items.length == 0) {
       return res.status(400).json({
         status: "failed",
@@ -95,6 +104,8 @@ router.post("/createBundle", auth, async (req, res) => {
     let bundle = new Bundle();
     bundle.name = name;
     bundle.price = price;
+    bundle.paymentToken = paymentToken;
+    bundle.priceInUSD = priceInUSD;
     bundle.owner = owner;
     bundle.creator = owner;
     bundle.createdAt = Date.now();

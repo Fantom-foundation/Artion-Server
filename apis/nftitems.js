@@ -26,6 +26,8 @@ const auth = require("./middleware/auth");
 const orderBy = require("lodash.orderby");
 const toLowerCase = require("../utils/utils");
 
+const { getPrice } = require("../services/price.feed");
+
 const FETCH_COUNT_PER_TIME = 18;
 
 const provider = new ethers.providers.JsonRpcProvider(
@@ -77,13 +79,15 @@ const sortItems = (_allTokens, sortby) => {
       break;
     }
     case "price": {
-      tmp = orderBy(_allTokens, ({ price }) => price || 0, ["desc"]);
+      tmp = orderBy(_allTokens, ({ priceInUSD }) => priceInUSD || 0, ["desc"]);
       break;
     }
     case "lastSalePrice": {
-      tmp = orderBy(_allTokens, ({ lastSalePrice }) => lastSalePrice || 0, [
-        "desc",
-      ]);
+      tmp = orderBy(
+        _allTokens,
+        ({ lastSalePriceInUSD }) => lastSalePriceInUSD || 0,
+        ["desc"]
+      );
       break;
     }
     case "viewed": {
@@ -156,11 +160,15 @@ const selectTokens = async (req, res) => {
         "imageURL",
         "supply",
         "price",
+        "paymentToken",
+        "priceInUSD",
         "liked",
         "isAppropriate",
         "saleEndsAt",
         "createdAt",
         _sortBy,
+        "lastSalePricePaymentToken",
+        "lastSalePriceInUSD",
       ];
     else if (sortby == "saleEndsAt")
       selectOption = [
@@ -173,9 +181,13 @@ const selectTokens = async (req, res) => {
         "imageURL",
         "supply",
         "price",
+        "paymentToken",
+        "priceInUSD",
         "liked",
         "isAppropriate",
         "lastSalePrice",
+        "lastSalePricePaymentToken",
+        "lastSalePriceInUSD",
         "createdAt",
         _sortBy,
       ];
@@ -190,9 +202,13 @@ const selectTokens = async (req, res) => {
         "imageURL",
         "supply",
         "price",
+        "paymentToken",
+        "priceInUSD",
         "liked",
         "isAppropriate",
         "lastSalePrice",
+        "lastSalePricePaymentToken",
+        "lastSalePriceInUSD",
         "saleEndsAt",
         "createdAt",
       ];
@@ -207,9 +223,13 @@ const selectTokens = async (req, res) => {
         "imageURL",
         "supply",
         "price",
+        "paymentToken",
+        "priceInUSD",
         "liked",
         "isAppropriate",
         "lastSalePrice",
+        "lastSalePricePaymentToken",
+        "lastSalePriceInUSD",
         "saleEndsAt",
         "createdAt",
         sortby,
@@ -413,7 +433,11 @@ const selectTokens = async (req, res) => {
             tokens_1155.push({
               supply: token_1155.supply,
               price: token_1155.price,
+              paymentToken: token_1155.paymentToken,
+              priceInUSD: token_1155.priceInUSD,
               lastSalePrice: token_1155.lastSalePrice,
+              lastSalePricePaymentToken: token_1155.lastSalePricePaymentToken,
+              lastSalePriceInUSD: token_1155.lastSalePriceInUSD,
               viewed: token_1155.viewed,
               contractAddress: token_1155.contractAddress,
               tokenID: token_1155.tokenID,
@@ -425,7 +449,6 @@ const selectTokens = async (req, res) => {
               symbol: token_1155.symbol,
               liked: token_1155.liked,
               createdAt: token_1155.createdAt,
-              lastSalePrice: token_1155.lastSalePrice,
               saleEndsAt: token_1155.saleEndsAt,
               isAppropriate: token_1155.isAppropriate,
               holderSupply: holdingSupplies.get(
@@ -621,8 +644,6 @@ const selectBundles = async (req, res) => {
         ...(collections2filter != null
           ? { contractAddress: { $in: [...collections2filter] } }
           : {}),
-        thumbnailPath: { $ne: nonImage },
-        isAppropriate: true,
       };
 
       let bundleInfos = await BundleInfo.find(collectionFilters);
@@ -652,9 +673,13 @@ const selectBundles = async (req, res) => {
           viewed: bundle._doc.viewed,
           liked: bundle._doc.liked,
           price: bundle._doc.price,
+          paymentToken: bundle._doc.paymentToken,
+          priceInUSD: bundle._doc.priceInUSD,
           _id: bundle._doc._id,
           name: bundle._doc.name,
           lastSalePrice: bundle._doc.lastSalePrice,
+          lastSalePricePaymentToken: bundle._doc.lastSalePricePaymentToken,
+          lastSalePriceInUSD: bundle._doc.lastSalePriceInUSD,
           listedAt: bundle._doc.listedAt,
           soldAt: bundle._doc.soldAt,
           createdAt: bundle._doc.createdAt,
@@ -711,9 +736,13 @@ const selectBundles = async (req, res) => {
           viewed: bundle._doc.viewed,
           liked: bundle._doc.liked,
           price: bundle._doc.price,
+          paymentToken: bundle._doc.paymentToken,
+          priceInUSD: bundle._doc.priceInUSD,
           _id: bundle._doc._id,
           name: bundle._doc.name,
           lastSalePrice: bundle._doc.lastSalePrice,
+          lastSalePricePaymentToken: bundle._doc.lastSalePricePaymentToken,
+          lastSalePriceInUSD: bundle._doc.lastSalePriceInUSD,
           listedAt: bundle._doc.listedAt,
           soldAt: bundle._doc.soldAt,
           createdAt: bundle._doc.createdAt,
@@ -763,9 +792,13 @@ const selectBundles = async (req, res) => {
           viewed: bundle._doc.viewed,
           liked: bundle._doc.liked,
           price: bundle._doc.price,
+          paymentToken: bundle._doc.paymentToken,
+          priceInUSD: bundle._doc.priceInUSD,
           _id: bundle._doc._id,
           name: bundle._doc.name,
           lastSalePrice: bundle._doc.lastSalePrice,
+          lastSalePricePaymentToken: bundle._doc.lastSalePricePaymentToken,
+          lastSalePriceInUSD: bundle._doc.lastSalePriceInUSD,
           listedAt: bundle._doc.listedAt,
           soldAt: bundle._doc.soldAt,
           createdAt: bundle._doc.createdAt,
@@ -808,6 +841,12 @@ router.post("/fetchTokens", async (req, res) => {
       : {}),
     ...(sr.name != null && sr.name != undefined ? { name: sr.name } : {}),
     ...(sr.price != null && sr.price != undefined ? { price: sr.price } : {}),
+    ...(sr.paymentToken != null && sr.paymentToken != undefined
+      ? { paymentToken: sr.paymentToken }
+      : {}),
+    ...(sr.priceInUSD != null && sr.priceInUSD != undefined
+      ? { priceInUSD: sr.priceInUSD }
+      : {}),
     ...(sr.supply != null && sr.supply != undefined
       ? { supply: sr.supply }
       : {}),
@@ -834,6 +873,13 @@ router.post("/fetchTokens", async (req, res) => {
       : {}),
     ...(sr.lastSalePrice != null && sr.lastSalePrice != undefined
       ? { lastSalePrice: sr.lastSalePrice }
+      : {}),
+    ...(sr.lastSalePricePaymentToken != null &&
+    sr.lastSalePricePaymentToken != undefined
+      ? { lastSalePricePaymentToken: sr.lastSalePricePaymentToken }
+      : {}),
+    ...(sr.lastSalePriceInUSD != null && sr.lastSalePriceInUSD != undefined
+      ? { lastSalePriceInUSD: sr.lastSalePriceInUSD }
       : {}),
     ...(sr.isAppropriate != null && sr.isAppropriate != undefined
       ? { isAppropriate: sr.isAppropriate }
@@ -897,6 +943,7 @@ router.post("/getSingleItemDetails", async (req, res) => {
     let nft = await NFTITEM.findOne({
       contractAddress: contractAddress,
       tokenID: tokenID,
+      isAppropriate: true,
     });
     if (!nft)
       return res.json({
@@ -923,6 +970,8 @@ router.post("/getSingleItemDetails", async (req, res) => {
         minter: list.minter,
         tokenID: list.tokenID,
         price: list.price,
+        priceInUSD: list.priceInUSD,
+        paymentToken: list.paymentToken,
         alias: account ? account[0] : null,
         image: account ? account[1] : null,
       });
@@ -945,6 +994,8 @@ router.post("/getSingleItemDetails", async (req, res) => {
         tokenID: offer.tokenID,
         quantity: offer.quantity,
         pricePerItem: offer.pricePerItem,
+        paymentToken: offer.paymentToken,
+        priceInUSD: offer.priceInUSD,
         deadline: offer.deadline,
         alias: account ? account[0] : null,
         image: account ? account[1] : null,
@@ -961,6 +1012,8 @@ router.post("/getSingleItemDetails", async (req, res) => {
         "to",
         "tokenID",
         "price",
+        "paymentToken",
+        "priceInUSD",
         "value",
         "createdAt",
         "isAuction",
@@ -976,6 +1029,8 @@ router.post("/getSingleItemDetails", async (req, res) => {
         to: hist.to,
         tokenID: hist.tokenID,
         price: hist.price,
+        paymentToken: hist.paymentToken,
+        priceInUSD: hist.priceInUSD,
         value: hist.value,
         createdAt: hist.createdAt,
         isAuction: hist.isAuction,
@@ -990,6 +1045,7 @@ router.post("/getSingleItemDetails", async (req, res) => {
     let nfts = await NFTITEM.find({
       contractAddress: contractAddress,
       tokenID: { $ne: tokenID },
+      isAppropriate: true,
     })
       .sort({ viewed: "desc" })
       .limit(10)
@@ -997,6 +1053,8 @@ router.post("/getSingleItemDetails", async (req, res) => {
         "thumbnailPath",
         "supply",
         "price",
+        "paymentToken",
+        "priceInUSD",
         "tokenType",
         "tokenID",
         "tokenURI",
@@ -1006,6 +1064,8 @@ router.post("/getSingleItemDetails", async (req, res) => {
         "contractAddress",
         "isAppropriate",
         "lastSalePrice",
+        "lastSalePricePaymentToken",
+        "lastSalePriceInUSD",
         "saleEndsAt",
       ]);
     return res.json({

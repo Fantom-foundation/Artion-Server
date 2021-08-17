@@ -4,7 +4,6 @@ const mongoose = require("mongoose");
 const BundleOffer = mongoose.model("BundleOffer");
 const Account = mongoose.model("Account");
 
-
 router.post("/getBundleOffer", async (req, res) => {
   try {
     let bundleID = req.body.bundleID;
@@ -18,6 +17,8 @@ router.post("/getBundleOffer", async (req, res) => {
         creator: offer.creator,
         bundleID,
         price: offer.price,
+        paymentToken: offer.paymentToken,
+        priceInUSD: offer.priceInUSD,
         deadline: offer.deadline,
         alias: account ? account[0] : null,
         image: account ? account[1] : null,
