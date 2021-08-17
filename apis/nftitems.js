@@ -79,13 +79,15 @@ const sortItems = (_allTokens, sortby) => {
       break;
     }
     case "price": {
-      tmp = orderBy(_allTokens, ({ price }) => price || 0, ["desc"]);
+      tmp = orderBy(_allTokens, ({ priceInUSD }) => priceInUSD || 0, ["desc"]);
       break;
     }
     case "lastSalePrice": {
-      tmp = orderBy(_allTokens, ({ lastSalePrice }) => lastSalePrice || 0, [
-        "desc",
-      ]);
+      tmp = orderBy(
+        _allTokens,
+        ({ lastSalePriceInUSD }) => lastSalePriceInUSD || 0,
+        ["desc"]
+      );
       break;
     }
     case "viewed": {
