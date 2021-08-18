@@ -5,6 +5,10 @@ const ethers = require("ethers");
 const priceStore = new Map();
 // decimal store
 const decimalStore = new Map();
+// symbol store
+const symbolStore = new Map();
+// name store
+const nameStore = new Map();
 
 const toLowerCase = require("../utils/utils");
 const MinimalERC20ABI = require("../constants/erc20_mini_abi");
@@ -91,10 +95,16 @@ const getDecimals = async (address) => {
   return decimal;
 };
 
+const getSymbol = async (address) => {};
+
+const getName = async (address) => {};
+
 const priceFeed = {
   runPriceFeed,
   getPrice,
   getDecimals,
+  getSymbol,
+  getName,
 };
 
 module.exports = priceFeed;

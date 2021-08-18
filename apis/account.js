@@ -2,6 +2,7 @@ require("dotenv").config();
 const fs = require("fs");
 const formidable = require("formidable");
 const router = require("express").Router();
+const ethers = require("ethers");
 const mongoose = require("mongoose");
 
 const auth = require("./middleware/auth");
@@ -199,6 +200,11 @@ router.get("/getaccountinfo", auth, async (req, res) => {
 
 router.post("/getuseraccountinfo", async (req, res) => {
   let address = req.body.address;
+  if (!ethers.utils.isAddress(address))
+    return res.json({
+      status: "failed",
+      data: "invalid frc20 address",
+    });
   address = toLowerCase(address);
   let account = await Account.findOne({ address: address });
   let followers = await Follow.find({ to: address });
@@ -231,6 +237,11 @@ router.post("/getuseraccountinfo", async (req, res) => {
 router.get("/nonce/:address", auth, async (req, res) => {
   try {
     let address = toLowerCase(req.params.address);
+    if (!ethers.utils.isAddress(address))
+      return res.json({
+        status: "failed",
+        data: "invalid frc20 address",
+      });
     let account = await Account.findOne({ address: address });
     if (account) {
       return res.json({
