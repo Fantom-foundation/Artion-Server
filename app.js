@@ -46,6 +46,7 @@ require("./models/factorycollection");
 require("./models/notificationsetting");
 require("./models/moderator");
 require("./models/turkwork");
+require("./models/sitelock");
 
 app.use(bodyParser.json());
 app.use(express.json());
