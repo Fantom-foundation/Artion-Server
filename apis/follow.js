@@ -129,7 +129,6 @@ router.get("/getFollowings/:address", async (req, res) => {
 router.get("/getFollowers/:address", async (req, res) => {
   try {
     let address = toLowerCase(req.params.address);
-    let address = toLowerCase(req.params.address);
     if (!ethers.utils.isAddress(address))
       return res.json({
         status: "failed",

@@ -33,6 +33,8 @@ const fMintSC = new ethers.Contract(fMintAddress, fMintABI, provider);
 
 let network = process.env.RUNTIME;
 
+// a background service to get price feeds for erc20 tokens
+
 const runPriceFeed = async () => {
   try {
     paymentTokens.map(async (token) => {
@@ -49,6 +51,8 @@ const runPriceFeed = async () => {
     await runPriceFeed();
   }, 1000 * 60 * 5);
 };
+
+// a background service to get names & symbols for erc20 tokens
 
 const getPrice = (address) => {
   address = toLowerCase(address);
@@ -95,9 +99,41 @@ const getDecimals = async (address) => {
   return decimal;
 };
 
-const getSymbol = async (address) => {};
+const getSymbol = async (address) => {
+  address = toLowerCase(address);
+  if (address == "ftm" || address == "fantom" || address == validatorAddress)
+    return "FTM";
+  if (address == "wftm") address = toLowerCase(process.env.WFTM_ADDRESS);
+  let symbol = symbolStore.get(address);
+  if (symbol) return symbol;
+  let tokenContract = new ethers.Contract(
+    address,
+    MinimalERC20ABI,
+    decimalsProvider
+  );
+  symbol = await tokenContract.symbol();
+  symbolStore.set(address, symbol);
+  console.log(symbol);
+  return symbol;
+};
 
-const getName = async (address) => {};
+const getName = async (address) => {
+  address = toLowerCase(address);
+  if (address == "ftm" || address == "fantom" || address == validatorAddress)
+    return "Fantom";
+  if (address == "wftm") address = toLowerCase(process.env.WFTM_ADDRESS);
+  let name = nameStore.get(address);
+  if (name) return name;
+  let tokenContract = new ethers.Contract(
+    address,
+    MinimalERC20ABI,
+    decimalsProvider
+  );
+  name = await tokenContract.name();
+  nameStore.set(address, name);
+  console.log(name);
+  return name;
+};
 
 const priceFeed = {
   runPriceFeed,
