@@ -66,9 +66,9 @@ const connect = () => {
     console.log("artion server has been connected to the db server");
     console.log("price feed has been started");
     priceFeed.runPriceFeed();
-    priceFeed.getDecimals("0x049d68029688eabf473097a2fc38ef61633a3c7a");
-    priceFeed.getName("0x049d68029688eabf473097a2fc38ef61633a3c7a");
-    priceFeed.getSymbol("0x049d68029688eabf473097a2fc38ef61633a3c7a");
+    priceFeed.getDecimals("0xf1277d1ed8ad466beddf92ef448a132661956621");
+    priceFeed.getName("0xf1277d1ed8ad466beddf92ef448a132661956621");
+    priceFeed.getSymbol("0xf1277d1ed8ad466beddf92ef448a132661956621");
     app.listen(port, () => {
       console.log(`artion server is running at port ${port}`);
     });
