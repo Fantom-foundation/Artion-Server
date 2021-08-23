@@ -178,7 +178,12 @@ router.post("/updateAuctionReservePrice", service_auth, async (req, res) => {
       }
     }
     // now send to followers notifications
-    notifications.notifyAuctionPriceUpdate(nftAddress, tokenID, reservePrice);
+    notifications.notifyAuctionPriceUpdate(
+      nftAddress,
+      tokenID,
+      reservePrice,
+      paymentToken
+    );
     return res.json({});
   } catch (error) {
     return res.json({ status: "failed" });

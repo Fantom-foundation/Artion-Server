@@ -76,7 +76,13 @@ router.post("/itemListed", service_auth, async (req, res) => {
     history.createdAt = Date.now();
     await history.save();
     // notify follower
-    notifications.notifyBundleListing(bundleID, bundleName, owner, price);
+    notifications.notifyBundleListing(
+      bundleID,
+      bundleName,
+      owner,
+      price,
+      paymentToken
+    );
     return res.json({});
   } catch (error) {
     console.log(error);
@@ -140,6 +146,7 @@ router.post("/itemSold", service_auth, async (req, res) => {
           price: price,
           bundleID,
           bundleName,
+          paymentToken,
           isBuyer: false,
         };
         sendEmail(data);
@@ -165,6 +172,7 @@ router.post("/itemSold", service_auth, async (req, res) => {
           price: price,
           bundleID,
           bundleName,
+          paymentToken,
           isBuyer: true,
         };
         sendEmail(data);
@@ -230,7 +238,13 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
       console.log(`new price, old price ${newPrice}, ${oldPrice}`);
       // notify
       if (oldPrice != newPrice)
-        notifications.notifyBundleUpdate(bundleID, bundleName, owner, newPrice);
+        notifications.notifyBundleUpdate(
+          bundleID,
+          bundleName,
+          owner,
+          newPrice,
+          paymentToken
+        );
     }
     return res.json({});
   } catch (error) {
@@ -302,6 +316,7 @@ router.post("/offerCreated", service_auth, async (req, res) => {
           from: creatorAlias,
           bundleName,
           price,
+          paymentToken,
         };
         sendEmail(data);
       }

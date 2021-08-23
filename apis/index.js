@@ -20,4 +20,5 @@ router.use("/like", require("./like"));
 router.use("/factorycollection", require("./factorycollection"));
 router.use("/mod", require("./moderator"));
 router.use("/turk", require("./turk"));
+router.use("/lock", require("./lock"));
 module.exports = router;

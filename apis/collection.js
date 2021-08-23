@@ -44,6 +44,16 @@ router.post("/collectiondetails", auth, async (req, res) => {
   let owner = extractAddress(req, res);
   let signature = req.body.signature;
   let retrievedAddr = req.body.signatureAddress;
+  if (!ethers.utils.isAddress(erc721Address))
+    return res.json({
+      status: "failed",
+      data: "NFT Contract Address invalid",
+    });
+  if (!ethers.utils.isAddress(retrievedAddr))
+    return res.json({
+      status: "failed",
+      data: "Signer's Address invalid",
+    });
   let isValidsignature = await validateSignature(
     owner,
     signature,
@@ -238,6 +248,11 @@ router.post("/getReviewApplications", admin_auth, async (req, res) => {
 router.post("/reviewApplication", admin_auth, async (req, res) => {
   try {
     let contractAddress = toLowerCase(req.body.contractAddress);
+    if (!ethers.utils.isAddress(contractAddress))
+      return res.json({
+        status: "failed",
+        data: "NFT Contract Address invalid",
+      });
     let status = parseInt(req.body.status);
     let collection = await Collection.findOne({
       erc721Address: contractAddress,
@@ -339,6 +354,11 @@ router.post("/reviewApplication", admin_auth, async (req, res) => {
 
 router.post("/searchCollection", auth, async (req, res) => {
   let erc721Address = req.body.erc721Address;
+  if (!ethers.utils.isAddress(erc721Address))
+    return res.json({
+      status: "failed",
+      data: "NFT Contract Address Invalid",
+    });
   erc721Address = toLowerCase(erc721Address);
   let collection = await Collection.findOne({
     erc721Address: erc721Address,
@@ -367,6 +387,11 @@ router.get("/fetchAllCollections", auth, async (req, res) => {
 
 router.post("/getCollectionInfo", async (req, res) => {
   let address = toLowerCase(req.body.contractAddress);
+  if (!ethers.utils.isAddress(erc721Address))
+    return res.json({
+      status: "failed",
+      data: "NFT Contract Address Invalid",
+    });
   let collection = await Collection.findOne({ erc721Address: address });
   if (collection)
     return res.json({
@@ -394,6 +419,11 @@ router.post("/getCollectionInfo", async (req, res) => {
 router.post("/isValidated", auth, async (req, res) => {
   try {
     let erc721Address = req.body.erc721Address;
+    if (!ethers.utils.isAddress(erc721Address))
+      return res.json({
+        status: "failed",
+        data: "NFT Contract Address Invalid",
+      });
     erc721Address = toLowerCase(erc721Address);
     let request = `https://api.ftmscan.com/api?module=contract&action=getsourcecode&address=${erc721Address}&apikey=${ftmScanApiKey}`;
     let response = await axios.get(request);
