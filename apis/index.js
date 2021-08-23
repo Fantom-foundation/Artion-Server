@@ -21,4 +21,5 @@ router.use("/factorycollection", require("./factorycollection"));
 router.use("/mod", require("./moderator"));
 router.use("/turk", require("./turk"));
 router.use("/lock", require("./lock"));
+router.use("/payToken", require("./paytoken"));
 module.exports = router;
