@@ -12,9 +12,8 @@ const nameStore = new Map();
 
 const toLowerCase = require("../utils/utils");
 const MinimalERC20ABI = require("../constants/erc20_mini_abi");
-const fMintABI = require("../constants/fmint_abi");
+const ChainLinkFeedABI = require("../constants/chainlink_interface_abi");
 const wFTMAddress = toLowerCase("0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83");
-const fMintAddress = toLowerCase("0xBB634cafEf389cDD03bB276c82738726079FcF2E");
 
 const validatorAddress = toLowerCase(process.env.VALIDATORADDRESS);
 
@@ -25,11 +24,33 @@ const paymentTokens = [
   toLowerCase("0x049d68029688eabf473097a2fc38ef61633a3c7a"), //usdt
 ];
 
+const chainlinkProxies = new Map();
+// FTM
+chainlinkProxies.set(
+  toLowerCase("0x21be370D5312f44cB42ce377BC9b8a0cEF1A4C83"),
+  ["0xf4766552D15AE4d256Ad41B6cf2933482B0680dc", 8]
+);
+// DAI
+chainlinkProxies.set(
+  toLowerCase("0x8D11eC38a3EB5E956B052f67Da8Bdc9bef8Abf3E"),
+  ["0x91d5DEFAFfE2854C7D02F50c80FA1fdc8A721e52", 8]
+);
+// USDC
+chainlinkProxies.set(
+  toLowerCase("0x04068DA6C83AFCFA0e13ba15A6696662335D5B75"),
+  ["0x2553f4eeb82d5A26427b8d1106C51499CBa5D99c", 8]
+);
+chainlinkProxies.set(
+  toLowerCase("0x049d68029688eabf473097a2fc38ef61633a3c7a"),
+  ["0xF64b636c5dFe1d3555A847341cDC449f612307d0", 8]
+);
+
+const chainLinkContracts = new Map();
+
 const provider = new ethers.providers.JsonRpcProvider(
   "https://rpc.ftm.tools",
   250
 );
-const fMintSC = new ethers.Contract(fMintAddress, fMintABI, provider);
 
 let network = process.env.RUNTIME;
 
@@ -39,9 +60,21 @@ const runPriceFeed = async () => {
   try {
     paymentTokens.map(async (token) => {
       try {
-        let price = await fMintSC.getPrice(token);
-        price = ethers.utils.formatEther(price);
-        priceStore.set(token, price);
+        let proxy = chainLinkContracts.get(token);
+        if (proxy) {
+        } else {
+          proxy = new ethers.Contract(
+            chainlinkProxies.get(token)[0],
+            ChainLinkFeedABI,
+            provider
+          );
+          chainLinkContracts.set(token, proxy);
+        }
+        let priceFeed = await proxy.latestRoundData();
+        priceFeed =
+          ethers.utils.formatEther(priceFeed.answer) *
+          10 ** (18 - chainlinkProxies.get(token)[1]);
+        priceStore.set(token, priceFeed);
       } catch (error) {}
     });
   } catch (error) {
@@ -68,7 +101,6 @@ const getPrice = (address) => {
     if (network) price = 0;
     price = 1;
   }
-  console.log(address, price);
   return price;
 };
 
@@ -113,7 +145,6 @@ const getSymbol = async (address) => {
   );
   symbol = await tokenContract.symbol();
   symbolStore.set(address, symbol);
-  console.log(symbol);
   return symbol;
 };
 
@@ -131,7 +162,6 @@ const getName = async (address) => {
   );
   name = await tokenContract.name();
   nameStore.set(address, name);
-  console.log(name);
   return name;
 };
 
