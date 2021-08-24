@@ -1,6 +1,4 @@
 require("dotenv").config();
-const jwt = require("jsonwebtoken");
-const jwt_secret = process.env.JWT_SECRET;
 const router = require("express").Router();
 const ethers = require("ethers");
 
@@ -19,16 +17,11 @@ const Bundle = mongoose.model("Bundle");
 const BundleListing = mongoose.model("BundleListing");
 const BundleOffer = mongoose.model("BundleOffer");
 const TradeHistory = mongoose.model("TradeHistory");
-const Like = mongoose.model("Like");
-const BundleLike = mongoose.model("BundleLike");
 
-const auth = require("./middleware/auth");
 const orderBy = require("lodash.orderby");
 const toLowerCase = require("../utils/utils");
 
 const { getPrice } = require("../services/price.feed");
-
-const FETCH_COUNT_PER_TIME = 18;
 
 const provider = new ethers.providers.JsonRpcProvider(
   process.env.NETWORK_RPC,

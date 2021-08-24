@@ -12,6 +12,16 @@ const Account = mongoose.model("Account");
 router.post("/isFollowing", async (req, res) => {
   let from = toLowerCase(req.body.from);
   let to = toLowerCase(req.body.to);
+  if (!ethers.utils.isAddress(from))
+    return res.json({
+      status: "failed",
+      data: "Follower Address Invalid",
+    });
+  if (!ethers.utils.isAddress(to))
+    return res.json({
+      status: "failed",
+      data: "Following Address Invalid",
+    });
   let follow = await Follow.findOne({
     from: from,
     to: to,
@@ -87,6 +97,11 @@ router.post("/update", auth, async (req, res) => {
 router.get("/getFollowings/:address", async (req, res) => {
   try {
     let address = toLowerCase(req.params.address);
+    if (!ethers.utils.isAddress(address))
+      return res.json({
+        status: "failed",
+        data: "Invalid frc20 address",
+      });
     let followers = await Follow.find({
       from: address,
     });
@@ -114,6 +129,11 @@ router.get("/getFollowings/:address", async (req, res) => {
 router.get("/getFollowers/:address", async (req, res) => {
   try {
     let address = toLowerCase(req.params.address);
+    if (!ethers.utils.isAddress(address))
+      return res.json({
+        status: "failed",
+        data: "Invalid frc20 address",
+      });
     let followings = await Follow.find({
       to: address,
     });
