@@ -48,7 +48,7 @@ const runPriceFeed = async () => {
         priceFeed =
           ethers.utils.formatEther(priceFeed.answer) *
           10 ** (18 - token.decimals);
-        priceStore.set(token, priceFeed);
+        priceStore.set(token.address, priceFeed);
         console.log(token.symbol, priceFeed);
       } catch (error) {}
     });
