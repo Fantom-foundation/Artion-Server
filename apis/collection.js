@@ -387,7 +387,7 @@ router.get("/fetchAllCollections", auth, async (req, res) => {
 
 router.post("/getCollectionInfo", async (req, res) => {
   let address = toLowerCase(req.body.contractAddress);
-  if (!ethers.utils.isAddress(erc721Address))
+  if (!ethers.utils.isAddress(address))
     return res.json({
       status: "failed",
       data: "NFT Contract Address Invalid",
