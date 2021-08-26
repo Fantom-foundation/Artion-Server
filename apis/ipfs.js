@@ -262,8 +262,9 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
             address: address,
             royalty: royalty,
             recipient: address,
+            IP_Rights: xtraUrl,
             createdAt: currentTime,
-            collection: "Fantom Powered Artion Collection",
+            collection: "Fantom Powered NFT Collection",
           },
         };
 
