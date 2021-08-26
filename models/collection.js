@@ -8,7 +8,7 @@ const Collection = mongoose.Schema({
   description: { type: String, required: true },
   categories: [{ type: String }],
   logoImageHash: { type: String, required: true },
-  siteUrl: { type: String, required: true },
+  siteUrl: { type: String },
   discord: { type: String },
   twitterHandle: { type: String },
   instagramHandle: { type: String },

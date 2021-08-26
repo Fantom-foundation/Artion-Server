@@ -40,7 +40,6 @@ const marketplaceSC = new ethers.Contract(
 );
 
 router.post("/collectiondetails", auth, async (req, res) => {
-  console.log("new collection");
   let erc721Address = req.body.erc721Address;
   erc721Address = toLowerCase(erc721Address);
 
@@ -48,7 +47,6 @@ router.post("/collectiondetails", auth, async (req, res) => {
   let signature = req.body.signature;
   let retrievedAddr = req.body.signatureAddress;
 
-  console.log(erc721Address, owner);
   if (!ethers.utils.isAddress(erc721Address))
     return res.json({
       status: "failed",
