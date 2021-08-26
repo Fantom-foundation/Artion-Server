@@ -38,8 +38,8 @@ const pinFileToIPFS = async (
       name: name,
       keyvalues: {
         symbol: symbol,
-        ...(royalty ? { royalty: royalty } : null),
-        ...(xtraUrl ? { IP_Rights: xtraUrl } : null),
+        royalty: royalty,
+        IP_Rights: xtraUrl,
         recipient: address,
       },
     },
