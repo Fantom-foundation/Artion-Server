@@ -54,11 +54,6 @@ router.post("/collectiondetails", auth, async (req, res) => {
       status: "failed",
       data: "NFT Contract Address invalid",
     });
-  if (!ethers.utils.isAddress(retrievedAddr))
-    return res.json({
-      status: "failed",
-      data: "Signer's Address invalid",
-    });
 
   let isValidsignature = await validateSignature(
     owner,
