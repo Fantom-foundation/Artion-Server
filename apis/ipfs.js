@@ -213,7 +213,9 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
         let royalty = fields.royalty;
 
         let xtraUrl = fields.xtra;
+        console.log(xtraUrl);
         if (xtraUrl && !validUrl.isUri(xtraUrl)) {
+          console.log("invalid xtra url");
           return res.status(400).json({
             status: "failed",
           });
