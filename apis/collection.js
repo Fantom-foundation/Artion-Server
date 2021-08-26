@@ -24,6 +24,8 @@ const MarketplaceContractABI = require("../constants/marketplaceabi");
 const MarketplaceContractAddress = process.env.MARKETPLACE_ADDRESS;
 
 const ftmScanApiKey = process.env.FTM_SCAN_API_KEY;
+
+const { getSymbol } = require("../services/price.feed");
 // to sign txs
 const provider = new ethers.providers.JsonRpcProvider(
   process.env.NETWORK_RPC,
@@ -38,22 +40,21 @@ const marketplaceSC = new ethers.Contract(
 );
 
 router.post("/collectiondetails", auth, async (req, res) => {
+  console.log("new collection");
   let erc721Address = req.body.erc721Address;
   erc721Address = toLowerCase(erc721Address);
 
   let owner = extractAddress(req, res);
   let signature = req.body.signature;
   let retrievedAddr = req.body.signatureAddress;
+
+  console.log(erc721Address, owner);
   if (!ethers.utils.isAddress(erc721Address))
     return res.json({
       status: "failed",
       data: "NFT Contract Address invalid",
     });
-  if (!ethers.utils.isAddress(retrievedAddr))
-    return res.json({
-      status: "failed",
-      data: "Signer's Address invalid",
-    });
+
   let isValidsignature = await validateSignature(
     owner,
     signature,
@@ -138,7 +139,10 @@ router.post("/collectiondetails", auth, async (req, res) => {
       let sc_1155 = new ERC1155CONTRACT();
       sc_1155.address = erc721Address;
       sc_1155.name = collectionName;
-      sc_1155.symbol = "Symbol";
+      // sc_1155.symbol = "Symbol";
+      let symbol = await getSymbol(erc721Address);
+      console.log("symbol is", symbol);
+      sc_1155.symbol = symbol || "Symbol";
       sc_1155.isVerified = true;
       await sc_1155.save();
       // save new category
@@ -154,6 +158,9 @@ router.post("/collectiondetails", auth, async (req, res) => {
     }
 
     let isInternal = await FactoryUtils.isInternalCollection(erc721Address);
+    console.log(
+      isInternal[0] ? "collection is internal" : "collection is external"
+    );
     // add a new collection
     let _collection = new Collection();
     _collection.erc721Address = erc721Address;
