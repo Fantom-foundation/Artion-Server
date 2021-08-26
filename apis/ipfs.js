@@ -416,6 +416,8 @@ router.post("/uploadCollectionImage2Server", auth, async (req, res) => {
   let form = new formidable.IncomingForm();
   form.parse(req, async (err, fields, files) => {
     if (err) {
+      console.log("error in parsing the form");
+      console.log(err);
       return res.status(400).json({
         status: "failedParsingForm",
       });
@@ -436,6 +438,8 @@ router.post("/uploadCollectionImage2Server", auth, async (req, res) => {
       imgData = imgData.replace(`data:image\/${extension};base64,`, "");
       fs.writeFile(uploadPath + imageFileName, imgData, "base64", (err) => {
         if (err) {
+          console.log("failed to upload a collection image file");
+          console.log(err);
           return res.status(400).json({
             status: "failed to save an image file",
             err,
