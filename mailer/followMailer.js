@@ -1,9 +1,11 @@
 require("dotenv").config();
-const sgMail = require("@sendgrid/mail");
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+const messageUtils = require("./message.utils");
 
 const app_url = process.env.APP_URL;
-const foundationEmail = "support.artion@fantom.foundation";
+const storage_url = process.env.RUNTIME
+  ? "https://storage.testnet.artion.io/image/"
+  : "https://storage.artion.io/image/";
 
 const mongoose = require("mongoose");
 const toLowerCase = require("../utils/utils");
@@ -34,9 +36,20 @@ const getNFTItemName = async (nft, tokenID) => {
     return tokenID;
   }
 };
+const getNFTThumbnailPath = async (nft, tokenID) => {
+  try {
+    let token = await NFTITEM.findOne({
+      contractAddress: toLowerCase(nft),
+      tokenID: tokenID,
+    });
+    if (token) return token.thumbnailPath;
+    else return null;
+  } catch (error) {
+    return null;
+  }
+};
 
 const notifyBundleCreation = async (address, bundleID, bundleName) => {
-  const artionUri = `${app_url}bundle/${bundleID}`;
   try {
     const followers = await Follow.find({ to: address });
     let addresses = followers.map((follower) => follower.from);
@@ -50,24 +63,21 @@ const notifyBundleCreation = async (address, bundleID, bundleName) => {
     );
     emails = emails.filter((email) => email);
     let owner = await getUserAlias(address);
-    let message = {
-      to: emails,
-      from: foundationEmail,
-      subject: "New Bundle Created",
-      text: "artion notification",
-      html: `Dear Artion User! <br/> Artion user(${owner}) has created a  new Bundle(${bundleName}).  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>`,
-    };
-    sgMail.sendMultiple(message).then(
-      () => {
-        console.log("email has been sent");
-      },
-      (error) => {
-        if (error.response) {
-        }
-      }
-    );
+
+    // create data for dynamic email spread out
+    let to = messageUtils.createEmailList(emails);
+    let title = "New Bundle Created!";
+    let content = `Artion User(${owner}) has created ${bundleName} bundle.`;
+    let link = `${app_url}bundle/${bundleID}`;
+
+    let message = messageUtils.createBundleItemMessage({
+      to,
+      title,
+      content,
+      link,
+    });
+    // call send function here
   } catch (error) {
-    console.log("bundle creation error");
     console.log(error);
   }
 };
@@ -76,7 +86,6 @@ const nofifyNFTShowUp = async (address, contractAddress, tokenID) => {
   address = toLowerCase(address);
   contractAddress = toLowerCase(contractAddress);
   tokenID = parseInt(tokenID);
-  const artionUri = `${app_url}explore/${contractAddress}/${tokenID}`;
   try {
     const followers = await Follow.find({ to: address });
     let addresses = followers.map((follower) => follower.from);
@@ -85,23 +94,26 @@ const nofifyNFTShowUp = async (address, contractAddress, tokenID) => {
       account.email ? account.email : null
     );
     emails = emails.filter((email) => email);
-
     let owner = await getUserAlias(address);
     let nftName = await getNFTItemName(contractAddress, tokenID);
-    let message = {
-      to: emails,
-      from: foundationEmail,
-      subject: "New NFT Item Created",
-      text: "artion notification",
-      html: `Dear Artion User! <br/> New NFT Item(${nftName}) has shown up in ${owner}'s account.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>`,
-    };
-    sgMail.sendMultiple(message).then(
-      () => {},
-      (error) => {
-        if (error.response) {
-        }
-      }
-    );
+
+    // create data for dynamic email spread out
+    let to = messageUtils.createEmailList(emails);
+    let title = "New NFT Item Created!";
+    let content = `Artion User(${owner}) has created ${nftName} nft item.`;
+    let image = await getNFTThumbnailPath(contractAddress, tokenID);
+    image = `${storage_url}${image}`;
+    let name = nftName;
+    let link = `${app_url}explore/${contractAddress}/${tokenID}`;
+    let message = messageUtils.createNFTItemMessage({
+      to,
+      title,
+      content,
+      image,
+      name,
+      link,
+    });
+    // call send function here
   } catch (error) {
     console.log("new item creation error");
     console.log(error);
@@ -110,7 +122,7 @@ const nofifyNFTShowUp = async (address, contractAddress, tokenID) => {
 
 const notifyAuctionPriceUpdate = async (contractAddress, tokenID, price) => {
   try {
-    const artionUri = `${app_url}explore/${contractAddress}/${tokenID}`;
+    contractAddress = toLowerCase(contractAddress);
     let nft = await NFTITEM.findOne({
       contractAddress: contractAddress,
       tokenID: tokenID,
@@ -131,22 +143,24 @@ const notifyAuctionPriceUpdate = async (contractAddress, tokenID, price) => {
       account.email ? account.email : null
     );
     emails = emails.filter((email) => email);
-    let message = {
-      to: emails,
-      from: foundationEmail,
-      subject: "Auction Reserve Price Update",
-      text: "artion notification",
-      html: `Dear Artion User! <br/> Auction price for NFT Item(${nftName}) has updated to ${price} FTM in ${owner}'s account.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>`,
-    };
-    sgMail.sendMultiple(message).then(
-      () => {},
-      (error) => {
-        if (error.response) {
-          console.log("auction price update send mail error");
-          console.log(error);
-        }
-      }
-    );
+
+    // create data for dynamic email spread out
+    let to = messageUtils.createEmailList(emails);
+    let title = "Auction Price Updated!";
+    let content = `Artion User(${owner}) has updated an auction price.`;
+    let image = await getNFTThumbnailPath(contractAddress, tokenID);
+    image = `${storage_url}${image}`;
+    let name = nftName;
+    let link = `${app_url}explore/${contractAddress}/${tokenID}`;
+    let message = messageUtils.createNFTItemMessage({
+      to,
+      title,
+      content,
+      image,
+      name,
+      link,
+    });
+    // call send function here
   } catch (error) {
     console.log("auction price udpate error");
     console.log(error);
@@ -161,7 +175,6 @@ const notifySingleItemListed = async (
   price
 ) => {
   try {
-    const artionUri = `${app_url}explore/${contractAddress}/${tokenID}`;
     let nft = await NFTITEM.findOne({
       contractAddress: contractAddress,
       tokenID: tokenID,
@@ -178,24 +191,24 @@ const notifySingleItemListed = async (
       account.email ? account.email : null
     );
     emails = emails.filter((email) => email);
-    console.log("emails are ");
-    console.log(emails);
-    let message = {
-      to: emails,
-      from: foundationEmail,
-      subject: "New Item Listing",
-      text: "artion notification",
-      html: `Dear Artion User! <br/> ${owner} has listed ${quantity} ${nftName}${
-        quantity > 1 ? "s" : ""
-      } at ${price} FTM  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  `,
-    };
-    sgMail.sendMultiple(message).then(
-      () => {},
-      (error) => {
-        if (error.response) {
-        }
-      }
-    );
+
+    // create data for dynamic email spread out
+    let to = messageUtils.createEmailList(emails);
+    let title = "New Item Listed!";
+    let content = `Artion User(${owner}) has listed a new NFT(${nftName}).`;
+    let image = await getNFTThumbnailPath(contractAddress, tokenID);
+    image = `${storage_url}${image}`;
+    let name = nftName;
+    let link = `${app_url}explore/${contractAddress}/${tokenID}`;
+    let message = messageUtils.createNFTItemMessage({
+      to,
+      title,
+      content,
+      image,
+      name,
+      link,
+    });
+    // call send function here
   } catch (error) {
     console.log("notify single item listed error");
     console.log(error);
@@ -204,45 +217,38 @@ const notifySingleItemListed = async (
 
 const notifyNewAuction = async (contractAddress, tokenID) => {
   try {
-    const artionUri = `${app_url}explore/${contractAddress}/${tokenID}`;
-    try {
-      let nftItem = await NFTITEM.findOne({
-        contractAddress: contractAddress,
-        tokenID: tokenID,
-      });
-      let address = nftItem.owner;
-      const followers = await Follow.find({ to: address });
-      let addresses = followers.map((follower) => follower.from);
-      addresses = await extractEmailSubscribedAddresses(
-        addresses,
-        "fNftAuction"
-      );
-      let accounts = await Account.find({ address: { $in: addresses } });
-      let emails = accounts.map((account) =>
-        account.email ? account.email : null
-      );
-      emails = emails.filter((email) => email);
-      let nftName = nftItem.name;
-      let message = {
-        to: emails,
-        from: foundationEmail,
-        subject: "New Auction",
-        text: "artion notification",
-        html: `Dear Artion User! <br/> NFT Item(${nftName}) is now on Auction.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>`,
-      };
-      sgMail.sendMultiple(message).then(
-        () => {},
-        (error) => {
-          if (error.response) {
-            console.log("nft auction error");
-            console.log(error);
-          }
-        }
-      );
-    } catch (error) {
-      console.log("nft auction error");
-      console.log(error);
-    }
+    let nftItem = await NFTITEM.findOne({
+      contractAddress: contractAddress,
+      tokenID: tokenID,
+    });
+    let address = nftItem.owner;
+    const followers = await Follow.find({ to: address });
+    let addresses = followers.map((follower) => follower.from);
+    addresses = await extractEmailSubscribedAddresses(addresses, "fNftAuction");
+    let accounts = await Account.find({ address: { $in: addresses } });
+    let emails = accounts.map((account) =>
+      account.email ? account.email : null
+    );
+    emails = emails.filter((email) => email);
+    let nftName = nftItem.name;
+
+    // create data for dynamic email spread out
+    let to = messageUtils.createEmailList(emails);
+    let title = "New Auction!";
+    let content = `Artion User(${owner}) has put an NFT in auction.`;
+    let image = await getNFTThumbnailPath(contractAddress, tokenID);
+    image = `${storage_url}${image}`;
+    let name = nftName;
+    let link = `${app_url}explore/${contractAddress}/${tokenID}`;
+    let message = messageUtils.createNFTItemMessage({
+      to,
+      title,
+      content,
+      image,
+      name,
+      link,
+    });
+    // call send function here
   } catch (error) {
     console.log("nft auction error");
     console.log(error);
@@ -250,7 +256,6 @@ const notifyNewAuction = async (contractAddress, tokenID) => {
 };
 
 const notifyBundleListing = async (bundleID, bundleName, address, price) => {
-  const artionUri = `${app_url}bundle/${bundleID}`;
   try {
     const followers = await Follow.find({ to: address });
     let addresses = followers.map((follower) => follower.from);
@@ -260,24 +265,21 @@ const notifyBundleListing = async (bundleID, bundleName, address, price) => {
       account.email ? account.email : null
     );
     emails = emails.filter((email) => email);
-
     let owner = await getUserAlias(address);
-    let message = {
-      to: emails,
-      from: foundationEmail,
-      subject: "Bundle Listed",
-      text: "artion notification",
-      html: `Dear Artion User! <br/> Artion user(${owner}) has listed a  Bundle(${bundleName}) at ${price} FTM.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  `,
-    };
-    sgMail.sendMultiple(message).then(
-      () => {},
-      (error) => {
-        if (error.response) {
-          console.log("bundle send mail listed error");
-          console.log(error);
-        }
-      }
-    );
+
+    // create data for dynamic email spread out
+    let to = messageUtils.createEmailList(emails);
+    let title = "Bundle Listed!";
+    let content = `Artion User(${owner}) has listed ${bundleName} bundle.`;
+    let link = `${app_url}bundle/${bundleID}`;
+
+    let message = messageUtils.createBundleItemMessage({
+      to,
+      title,
+      content,
+      link,
+    });
+    // call send function here
   } catch (error) {
     console.log("bundle listed error");
     console.log(error);
@@ -285,7 +287,6 @@ const notifyBundleListing = async (bundleID, bundleName, address, price) => {
 };
 
 const notifyBundleUpdate = async (bundleID, bundleName, address, price) => {
-  const artionUri = `${app_url}bundle/${bundleID}`;
   try {
     const followers = await Follow.find({ to: address });
     let addresses = followers.map((follower) => follower.from);
@@ -298,28 +299,21 @@ const notifyBundleUpdate = async (bundleID, bundleName, address, price) => {
       account.email ? account.email : null
     );
     emails = emails.filter((email) => email);
-    console.log("emails are ");
-    console.log(emails);
-
     let owner = await getUserAlias(address);
-    console.log(`owner is ${owner}`);
-    let message = {
-      to: emails,
-      from: foundationEmail,
-      subject: "Bundle Updated",
-      text: "artion notification",
-      html: `Dear Artion User! <br/> Artion user(${owner}) has updated a Bundle(${bundleName})'s price to ${price} FTM.  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  `,
-    };
-    console.log("message is ", message);
-    sgMail.sendMultiple(message).then(
-      () => {},
-      (error) => {
-        if (error.response) {
-          console.log("notify bundle update send mail error");
-          console.log(error);
-        }
-      }
-    );
+
+    // create data for dynamic email spread out
+    let to = messageUtils.createEmailList(emails);
+    let title = "Bundle Price Updated!";
+    let content = `Artion User(${owner}) has updated ${bundleName} bundle's price.`;
+    let link = `${app_url}bundle/${bundleID}`;
+
+    let message = messageUtils.createBundleItemMessage({
+      to,
+      title,
+      content,
+      link,
+    });
+    // call send function here
   } catch (error) {
     console.log("notify bundle update");
     console.log(error);
@@ -345,20 +339,24 @@ const nofityNFTUpdated = async (address, contractAddress, tokenID, price) => {
       account.email ? account.email : null
     );
     emails = emails.filter((email) => email);
-    let message = {
-      to: emails,
-      from: foundationEmail,
-      subject: "Item Update",
-      text: "artion notification",
-      html: `Dear Artion User! <br/> ${owner} has updated ${nftName} to ${price} FTM  <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  `,
-    };
-    sgMail.sendMultiple(message).then(
-      () => {},
-      (error) => {
-        if (error.response) {
-        }
-      }
-    );
+
+    // create data for dynamic email spread out
+    let to = messageUtils.createEmailList(emails);
+    let title = "NFT Price Updated!";
+    let content = `Artion User(${owner}) has updated nft(${nftName})'s price.`;
+    let image = await getNFTThumbnailPath(contractAddress, tokenID);
+    image = `${storage_url}${image}`;
+    let name = nftName;
+    let link = `${app_url}explore/${contractAddress}/${tokenID}`;
+    let message = messageUtils.createNFTItemMessage({
+      to,
+      title,
+      content,
+      image,
+      name,
+      link,
+    });
+    // call send function here
   } catch (error) {
     console.log("item update error");
     console.log(error);
