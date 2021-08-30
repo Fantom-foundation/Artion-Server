@@ -5,7 +5,6 @@ const foundationEmail = "support.artion@fantom.foundation";
 const createNFTItemMessage = (data) => {
   let message = {
     from: {
-      email: FantomContacts.email,
       from: foundationEmail,
       templateId: SendGridTemplates.nftitem,
       personalizations: [
@@ -67,7 +66,7 @@ const createEmailList = (emails) => {
   let to = [];
   try {
     emails.map((email) => {
-      to.push({ email: email });
+      to.push(email);
     });
     return to;
   } catch (error) {
