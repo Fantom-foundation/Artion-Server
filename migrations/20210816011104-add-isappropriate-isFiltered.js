@@ -3,7 +3,7 @@ module.exports = {
     await db
       .collection("nftitems")
       .updateMany(
-        { isAppropriate: null, isFiltered: null },
+        { isAppropriate: null},
         { $set: { isAppropriate: true, isFiltered: false } }
       );
   },

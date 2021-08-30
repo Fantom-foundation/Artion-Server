@@ -23,4 +23,5 @@ router.use("/turk", require("./turk"));
 router.use("/lock", require("./lock"));
 router.use("/payToken", require("./paytoken"));
 router.use("/mail", require("./mail"));
+router.use("/unlockable", require("./unlockable"));
 module.exports = router;

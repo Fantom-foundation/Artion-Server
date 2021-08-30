@@ -1,4 +1,6 @@
 require("dotenv").config();
+const sgMail = require("@sendgrid/mail");
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const mongoose = require("mongoose");
 const NFTITEM = mongoose.model("NFTITEM");
 const messageUtils = require("./message.utils");
@@ -27,7 +29,7 @@ const createMessage = async (data) => {
     switch (event) {
       case "UpdateAuctionReservePrice":
         {
-          let to = { email: data.to };
+          let to = [data.to];
           let name = data.tokenName;
           let title = "Auction Price Update!";
           let content = `${name}'s auction price has been updated.`;
@@ -46,7 +48,7 @@ const createMessage = async (data) => {
         break;
       case "BidPlaced":
         {
-          let to = { email: data.to };
+          let to = [data.to];
           let name = data.tokenName;
           let title = "Bid Placed to your NFT!";
           let content = `Your NFT Item, ${name} has got a new bid from ${data.bidderAlias}.`;
@@ -65,7 +67,7 @@ const createMessage = async (data) => {
         break;
       case "BidWithdrawn":
         {
-          let to = { email: data.to };
+          let to = [data.to];
           let name = data.tokenName;
           let title = "Bid canceled!";
           let content = `Bid to your NFT Item, ${name} from ${data.bidderAlias} canceled.`;
@@ -84,7 +86,7 @@ const createMessage = async (data) => {
         break;
       case "AuctionResulted":
         {
-          let to = { email: data.to };
+          let to = [data.to];
           let name = data.tokenName;
           let title = "Auction Resulted!";
           let content = `You purchased an item, ${data.collectionName}'s ${data.tokenName} as it's auction has been resulted.`;
@@ -103,7 +105,7 @@ const createMessage = async (data) => {
         break;
       case "AuctionCancelled":
         {
-          let to = { email: data.to };
+          let to = [data.to];
           let name = data.tokenName;
           let title = "Auction Canceled!";
           let content = `Auction for ${data.collectionName}'s ${data.tokenName} canceled.`;
@@ -130,7 +132,15 @@ const createMessage = async (data) => {
 
 const sendEmailAuction = async (data) => {
   let message = await createMessage(data);
-  console.log(message);
+  sgMail.sendMultiple(message, (error, result) => {
+    if (error) {
+      console.log(error);
+      return res.json({ status: "failed" });
+    } else {
+      console.log("That's was it!");
+      return res.json({ status: "success" });
+    }
+  });
 };
 
 module.exports = sendEmailAuction;

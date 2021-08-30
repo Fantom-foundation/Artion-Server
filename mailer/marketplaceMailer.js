@@ -20,15 +20,14 @@ const getNFTThumbnailPath = async (nft, tokenID) => {
     return null;
   }
 };
-const createMessage = (data) => {
+const createMessage = async (data) => {
   let message = {};
   let event = data.event;
-  const artionUri = `${app_url}${data.nftAddress}/${data.tokenID}`;
   switch (event) {
     case "ItemSold":
       {
         if (data.isBuyer) {
-          let to = { email: data.to };
+          let to = [data.to];
           let name = data.tokenName;
           let title = "NFT Item Purchased!";
           let content = `Congratulations! You have purchased ${name}.`;
@@ -44,7 +43,7 @@ const createMessage = (data) => {
             link,
           });
         } else {
-          let to = { email: data.to };
+          let to = [data.to];
           let name = data.tokenName;
           let title = "NFT Item Sold!";
           let content = `Congratulations! You have sold ${name}.`;
@@ -65,7 +64,7 @@ const createMessage = (data) => {
     case "OfferCreated":
       {
         if (data.type == 721) {
-          let to = { email: data.to };
+          let to = [data.to];
           let name = data.tokenName;
           let title = "Offer Created!";
           let content = `Congratulations! Someone sent you an offer for ${name}.`;
@@ -87,7 +86,7 @@ const createMessage = (data) => {
     case "OfferCanceled":
       {
         if (data.type == 721) {
-          let to = { email: data.to };
+          let to = [data.to];
           let name = data.tokenName;
           let title = "Offer Canceled!";
           let content = `Offer to your nft item, ${name} is now canceled.`;
@@ -111,8 +110,17 @@ const createMessage = (data) => {
   return message;
 };
 
-const sendEmailMarketplace = (data) => {
-  let message = createMessage(data);
+const sendEmailMarketplace = async (data) => {
+  let message = await createMessage(data);
+  sgMail.sendMultiple(message, (error, result) => {
+    if (error) {
+      console.log(error);
+      return res.json({ status: "failed" });
+    } else {
+      console.log("That's was it!");
+      return res.json({ status: "success" });
+    }
+  });
 };
 
 module.exports = sendEmailMarketplace;

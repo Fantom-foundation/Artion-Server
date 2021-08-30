@@ -3,18 +3,16 @@ const sgMail = require("@sendgrid/mail");
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const app_url = process.env.APP_URL;
-const foundationEmail = "support.artion@fantom.foundation";
 
 const createMessage = (data) => {
   let message = {};
   let event = data.event;
-  const artionUri = `${app_url}bundle/${data.bundleID}`;
   switch (event) {
     case "ItemSold":
       {
         if (data.isBuyer) {
           // create data for dynamic email spread out
-          let to = { email: data.to };
+          let to = [data.to];
           let title = "Bundle Purchased!";
           let content = `Congratulations! You have purchased a new bundle ${data.bundleName}.`;
           let link = `${app_url}bundle/${data.bundleID}`;
@@ -27,7 +25,7 @@ const createMessage = (data) => {
           });
         } else {
           // create data for dynamic email spread out
-          let to = { email: data.to };
+          let to = [data.to];
           let title = "Bundle Sold!";
           let content = `Congratulations! You have sold your bundle ${data.bundleName}.`;
           let link = `${app_url}bundle/${data.bundleID}`;
@@ -44,7 +42,7 @@ const createMessage = (data) => {
     case "OfferCreated":
       {
         // create data for dynamic email spread out
-        let to = { email: data.to };
+        let to = [data.to];
         let title = "Offer created to your bundle!";
         let content = `Congratulations! You have received an offer to your bundle ${data.bundleName}.`;
         let link = `${app_url}bundle/${data.bundleID}`;
@@ -60,7 +58,7 @@ const createMessage = (data) => {
     case "OfferCanceled":
       {
         // create data for dynamic email spread out
-        let to = { email: data.to };
+        let to = [data.to];
         let title = "An offer to your bundle canceled";
         let content = `An offer to your bundle ${data.bundleName} is now canceled.`;
         let link = `${app_url}bundle/${data.bundleID}`;
@@ -80,6 +78,15 @@ const createMessage = (data) => {
 
 const sendEmail = (data) => {
   let message = createMessage(data);
+  sgMail.sendMultiple(message, (error, result) => {
+    if (error) {
+      console.log(error);
+      return res.json({ status: "failed" });
+    } else {
+      console.log("That's was it!");
+      return res.json({ status: "success" });
+    }
+  });
 };
 
 module.exports = sendEmail;

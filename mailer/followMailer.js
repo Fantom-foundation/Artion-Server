@@ -1,5 +1,6 @@
 require("dotenv").config();
-
+const sgMail = require("@sendgrid/mail");
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const messageUtils = require("./message.utils");
 
 const app_url = process.env.APP_URL;
@@ -76,6 +77,7 @@ const notifyBundleCreation = async (address, bundleID, bundleName) => {
       content,
       link,
     });
+    sendEmail(message);
     // call send function here
   } catch (error) {
     console.log(error);
@@ -113,6 +115,7 @@ const nofifyNFTShowUp = async (address, contractAddress, tokenID) => {
       name,
       link,
     });
+    sendEmail(message);
     // call send function here
   } catch (error) {
     console.log("new item creation error");
@@ -160,6 +163,7 @@ const notifyAuctionPriceUpdate = async (contractAddress, tokenID, price) => {
       name,
       link,
     });
+    sendEmail(message);
     // call send function here
   } catch (error) {
     console.log("auction price udpate error");
@@ -208,6 +212,7 @@ const notifySingleItemListed = async (
       name,
       link,
     });
+    sendEmail(message);
     // call send function here
   } catch (error) {
     console.log("notify single item listed error");
@@ -248,6 +253,7 @@ const notifyNewAuction = async (contractAddress, tokenID) => {
       name,
       link,
     });
+    sendEmail(message);
     // call send function here
   } catch (error) {
     console.log("nft auction error");
@@ -279,6 +285,7 @@ const notifyBundleListing = async (bundleID, bundleName, address, price) => {
       content,
       link,
     });
+    sendEmail(message);
     // call send function here
   } catch (error) {
     console.log("bundle listed error");
@@ -313,6 +320,7 @@ const notifyBundleUpdate = async (bundleID, bundleName, address, price) => {
       content,
       link,
     });
+    sendEmail(message);
     // call send function here
   } catch (error) {
     console.log("notify bundle update");
@@ -356,6 +364,7 @@ const nofityNFTUpdated = async (address, contractAddress, tokenID, price) => {
       name,
       link,
     });
+    sendEmail(message);
     // call send function here
   } catch (error) {
     console.log("item update error");
@@ -542,6 +551,18 @@ const extractEmailSubscribedAddresses = async (addresses, option) => {
       subscribedAddresses.push(address);
   });
   return subscribedAddresses;
+};
+
+const sendEmail = (msg) => {
+  sgMail.sendMultiple(msg, (error, result) => {
+    if (error) {
+      console.log(error);
+      return res.json({ status: "failed" });
+    } else {
+      console.log("That's was it!");
+      return res.json({ status: "success" });
+    }
+  });
 };
 
 const notifications = {

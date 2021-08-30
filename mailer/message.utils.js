@@ -1,10 +1,13 @@
+const FantomContacts = require("../constants/contacts");
 const SendGridTemplates = require("../constants/mail_template_id");
 const foundationEmail = "support.artion@fantom.foundation";
 
 const createNFTItemMessage = (data) => {
   let message = {
     from: {
-      email: foundationEmail,
+      email: FantomContacts.email,
+      from: foundationEmail,
+      templateId: SendGridTemplates.nftitem,
       personalizations: [
         {
           to: data.to,
@@ -14,10 +17,15 @@ const createNFTItemMessage = (data) => {
             image: data.image,
             name: data.name,
             link: data.link,
+            discord: FantomContacts.discord,
+            twitter: FantomContacts.twitter,
+            instagram: FantomContacts.instagram,
+            telegram: FantomContacts.telegram,
+            reddit: FantomContacts.reddit,
+            artionUnsubscribe: FantomContacts.artionUnsubscribe,
           },
         },
       ],
-      template_id: SendGridTemplates.nftitem,
     },
   };
   return message;
@@ -26,7 +34,8 @@ const createNFTItemMessage = (data) => {
 const createBundleItemMessage = (data) => {
   let message = {
     from: {
-      email: foundationEmail,
+      from: FantomContacts.email,
+      templateId: SendGridTemplates.bundleitem,
       personalizations: [
         {
           to: data.to,
@@ -34,10 +43,15 @@ const createBundleItemMessage = (data) => {
             title: data.title,
             content: data.content,
             link: data.link,
+            discord: FantomContacts.discord,
+            twitter: FantomContacts.twitter,
+            instagram: FantomContacts.instagram,
+            telegram: FantomContacts.telegram,
+            reddit: FantomContacts.reddit,
+            artionUnsubscribe: FantomContacts.artionUnsubscribe,
           },
         },
       ],
-      template_id: SendGridTemplates.bundleitem,
     },
   };
   return message;
@@ -51,10 +65,14 @@ const createApplicationDeniedMessage = () => {};
 
 const createEmailList = (emails) => {
   let to = [];
-  emails.map((email) => {
-    to.push({ email: email });
-  });
-  return to;
+  try {
+    emails.map((email) => {
+      to.push({ email: email });
+    });
+    return to;
+  } catch (error) {
+    return [emails];
+  }
 };
 
 const messageUtils = {
