@@ -8,6 +8,7 @@ const createNFTItemMessage = (data) => {
     personalizations: [
       {
         to: data.to,
+        subject: data.title,
         dynamic_template_data: {
           title: data.title,
           content: data.content,
@@ -34,6 +35,7 @@ const createBundleItemMessage = (data) => {
     personalizations: [
       {
         to: data.to,
+        subject: data.title,
         dynamic_template_data: {
           title: data.title,
           content: data.content,
