@@ -1,46 +1,84 @@
 require("dotenv").config();
-const sgMail = require("@sendgrid/mail");
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const mongoose = require("mongoose");
+const NFTITEM = mongoose.model("NFTITEM");
+const messageUtils = require("./message.utils");
 
 const app_url = process.env.APP_URL;
-const foundationEmail = "support.artion@fantom.foundation";
+const storage_url = process.env.RUNTIME
+  ? "https://storage.testnet.artion.io/image/"
+  : "https://storage.artion.io/image/";
 
-const createMessage = (data) => {
+const getNFTThumbnailPath = async (nft, tokenID) => {
+  try {
+    let token = await NFTITEM.findOne({
+      contractAddress: toLowerCase(nft),
+      tokenID: tokenID,
+    });
+    if (token) return token.thumbnailPath;
+    else return null;
+  } catch (error) {
+    return null;
+  }
+};
+const createMessage = async (data) => {
   let message = {};
   let event = data.event;
-  const artionUri = `${app_url}${data.nftAddress}/${data.tokenID}`;
   switch (event) {
     case "ItemSold":
       {
         if (data.isBuyer) {
-          message = {
-            to: data.to,
-            from: foundationEmail,
-            subject: data.subject,
-            text: "artion notification",
-            html: `<p>Dear ${data.alias}<p/> You have bought a new NFT item, ${data.collectionName}'s ${data.tokenName} at ${data.price} FTM. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  `,
-          };
+          let to = [data.to];
+          let name = data.tokenName;
+          let title = "NFT Item Purchased!";
+          let content = `Congratulations! You have purchased ${name}.`;
+          let image = await getNFTThumbnailPath(data.nftAddress, data.tokenID);
+          image = `${storage_url}${image}`;
+          let link = `${app_url}explore/${data.nftAddress}/${data.tokenID}`;
+          message = messageUtils.createNFTItemMessage({
+            to,
+            title,
+            content,
+            image,
+            name,
+            link,
+          });
         } else {
-          message = {
-            to: data.to,
-            from: foundationEmail,
-            subject: data.subject,
-            text: "artion notification",
-            html: `<p>Dear ${data.alias}<p/> You have sold a new NFT item, ${data.collectionName}'s ${data.tokenName} at ${data.price} FTM. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  `,
-          };
+          let to = [data.to];
+          let name = data.tokenName;
+          let title = "NFT Item Sold!";
+          let content = `Congratulations! You have sold ${name}.`;
+          let image = await getNFTThumbnailPath(data.nftAddress, data.tokenID);
+          image = `${storage_url}${image}`;
+          let link = `${app_url}explore/${data.nftAddress}/${data.tokenID}`;
+          message = messageUtils.createNFTItemMessage({
+            to,
+            title,
+            content,
+            image,
+            name,
+            link,
+          });
         }
       }
       break;
     case "OfferCreated":
       {
         if (data.type == 721) {
-          message = {
-            to: data.to,
-            from: foundationEmail,
-            subject: data.subject,
-            text: "artion notification",
-            html: `<p>Dear ${data.alias}!</p> You have received an offer from ${data.from} for your item ${data.tokenID} of ${data.collectionName} collection at ${data.price} wFTM. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  `,
-          };
+          let to = [data.to];
+          let name = data.tokenName;
+          let title = "Offer Created!";
+          let content = `Congratulations! Someone sent you an offer for ${name}.`;
+          let image = await getNFTThumbnailPath(data.nftAddress, data.tokenID);
+          image = `${storage_url}${image}`;
+          let link = `${app_url}explore/${data.nftAddress}/${data.tokenID}`;
+          message = messageUtils.createNFTItemMessage({
+            to,
+            title,
+            content,
+            image,
+            name,
+            link,
+          });
         } else {
         }
       }
@@ -48,13 +86,21 @@ const createMessage = (data) => {
     case "OfferCanceled":
       {
         if (data.type == 721) {
-          message = {
-            to: data.to,
-            from: foundationEmail,
-            subject: data.subject,
-            text: "artion notification",
-            html: `<p>Dear ${data.alias}!</p> An Offer from ${data.from} for your item ${data.tokenID} of ${data.collectionName} collection has been withdrawn. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>  `,
-          };
+          let to = [data.to];
+          let name = data.tokenName;
+          let title = "Offer Canceled!";
+          let content = `Offer to your nft item, ${name} is now canceled.`;
+          let image = await getNFTThumbnailPath(data.nftAddress, data.tokenID);
+          image = `${storage_url}${image}`;
+          let link = `${app_url}explore/${data.nftAddress}/${data.tokenID}`;
+          message = messageUtils.createNFTItemMessage({
+            to,
+            title,
+            content,
+            image,
+            name,
+            link,
+          });
         } else {
         }
       }
@@ -64,16 +110,15 @@ const createMessage = (data) => {
   return message;
 };
 
-const sendEmailMarketplace = (data) => {
-  let message = createMessage(data);
-  sgMail.send(message).then(
-    () => {},
-    (error) => {
-      if (error.response) {
-        console.error(error.response.body);
-      }
+const sendEmailMarketplace = async (data) => {
+  let message = await createMessage(data);
+  sgMail.sendMultiple(message, (error, result) => {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log("That's was it!");
     }
-  );
+  });
 };
 
 module.exports = sendEmailMarketplace;

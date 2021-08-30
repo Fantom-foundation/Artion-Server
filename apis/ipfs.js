@@ -38,8 +38,8 @@ const pinFileToIPFS = async (
       name: name,
       keyvalues: {
         symbol: symbol,
-        ...(royalty ? { royalty: royalty } : null),
-        ...(xtraUrl ? { IP_Rights: xtraUrl } : null),
+        royalty: royalty,
+        IP_Rights: xtraUrl,
         recipient: address,
       },
     },
@@ -213,7 +213,9 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
         let royalty = fields.royalty;
 
         let xtraUrl = fields.xtra;
+        console.log(xtraUrl);
         if (xtraUrl && !validUrl.isUri(xtraUrl)) {
+          console.log("invalid xtra url");
           return res.status(400).json({
             status: "failed",
           });
@@ -260,8 +262,9 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
             address: address,
             royalty: royalty,
             recipient: address,
+            IP_Rights: xtraUrl,
             createdAt: currentTime,
-            collection: "Fantom Powered Artion Collection",
+            collection: "Fantom Powered NFT Collection",
           },
         };
 

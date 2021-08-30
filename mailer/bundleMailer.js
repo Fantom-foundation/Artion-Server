@@ -3,52 +3,72 @@ const sgMail = require("@sendgrid/mail");
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 const app_url = process.env.APP_URL;
-const foundationEmail = "support.artion@fantom.foundation";
 
 const createMessage = (data) => {
   let message = {};
   let event = data.event;
-  const artionUri = `${app_url}bundle/${data.bundleID}`;
   switch (event) {
     case "ItemSold":
       {
         if (data.isBuyer) {
-          message = {
-            to: data.to,
-            from: foundationEmail,
-            subject: "You purchased a new bundle!",
-            text: "artion notification",
-            html: `<p>Dear ${data.alias}<p/> You have bought a new NFT Bundle, ${data.bundleName} at ${data.price} FTM. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>`,
-          };
+          // create data for dynamic email spread out
+          let to = [data.to];
+          let title = "Bundle Purchased!";
+          let content = `Congratulations! You have purchased a new bundle ${data.bundleName}.`;
+          let link = `${app_url}bundle/${data.bundleID}`;
+
+          message = messageUtils.createBundleItemMessage({
+            to,
+            title,
+            content,
+            link,
+          });
         } else {
-          message = {
-            to: data.to,
-            from: foundationEmail,
-            subject: "You sold out your bundle!",
-            text: "artion notification",
-            html: `<p>Dear ${data.alias}<p/> You have sold a new NFT Bundle, ${data.bundleName} at ${data.price} FTM. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>`,
-          };
+          // create data for dynamic email spread out
+          let to = [data.to];
+          let title = "Bundle Sold!";
+          let content = `Congratulations! You have sold your bundle ${data.bundleName}.`;
+          let link = `${app_url}bundle/${data.bundleID}`;
+
+          message = messageUtils.createBundleItemMessage({
+            to,
+            title,
+            content,
+            link,
+          });
         }
       }
       break;
     case "OfferCreated":
-      message = {
-        to: data.to,
-        from: foundationEmail,
-        subject: "You received an offer for your bundle!",
-        text: "artion notification",
-        html: `<p>Dear ${data.alias}!</p> You have received an offer from ${data.from} for your bundle ${data.bundleName} at ${data.price} wFTM. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>`,
-      };
+      {
+        // create data for dynamic email spread out
+        let to = [data.to];
+        let title = "Offer created to your bundle!";
+        let content = `Congratulations! You have received an offer to your bundle ${data.bundleName}.`;
+        let link = `${app_url}bundle/${data.bundleID}`;
+
+        message = messageUtils.createBundleItemMessage({
+          to,
+          title,
+          content,
+          link,
+        });
+      }
       break;
     case "OfferCanceled":
       {
-        message = {
-          to: data.to,
-          from: foundationEmail,
-          subject: "Offer withdrawn!",
-          text: "artion notification",
-          html: `<p>Dear ${data.alias}!</p> An Offer from ${data.from} for your bundle ${data.bundleName} has been withdrawn. <br/> For more information, click <a href = "${artionUri}">here</a></br><br/></br><br/>`,
-        };
+        // create data for dynamic email spread out
+        let to = [data.to];
+        let title = "An offer to your bundle canceled";
+        let content = `An offer to your bundle ${data.bundleName} is now canceled.`;
+        let link = `${app_url}bundle/${data.bundleID}`;
+
+        message = messageUtils.createBundleItemMessage({
+          to,
+          title,
+          content,
+          link,
+        });
       }
       break;
   }
@@ -58,14 +78,13 @@ const createMessage = (data) => {
 
 const sendEmail = (data) => {
   let message = createMessage(data);
-  sgMail.send(message).then(
-    () => {},
-    (error) => {
-      if (error.response) {
-        console.error(error.response.body);
-      }
+  sgMail.sendMultiple(message, (error, result) => {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log("That's was it!");
     }
-  );
+  });
 };
 
 module.exports = sendEmail;

@@ -76,6 +76,10 @@ const sortItems = (_allTokens, sortby) => {
       tmp = orderBy(_allTokens, ({ priceInUSD }) => priceInUSD || 0, ["desc"]);
       break;
     }
+    case "cheapest": {
+      tmp = orderBy(_allTokens, ({ priceInUSD }) => priceInUSD || 0, ["asc"]);
+      break;
+    }
     case "lastSalePrice": {
       tmp = orderBy(
         _allTokens,
