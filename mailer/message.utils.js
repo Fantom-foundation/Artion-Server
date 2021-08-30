@@ -1,10 +1,9 @@
 const FantomContacts = require("../constants/contacts");
 const SendGridTemplates = require("../constants/mail_template_id");
-const foundationEmail = "support.artion@fantom.foundation";
 
 const createNFTItemMessage = (data) => {
   let message = {
-    from: foundationEmail,
+    from: FantomContacts.email,
     templateId: SendGridTemplates.nftitem,
     personalizations: [
       {
