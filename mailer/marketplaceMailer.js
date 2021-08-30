@@ -115,10 +115,8 @@ const sendEmailMarketplace = async (data) => {
   sgMail.sendMultiple(message, (error, result) => {
     if (error) {
       console.log(error);
-      return res.json({ status: "failed" });
     } else {
       console.log("That's was it!");
-      return res.json({ status: "success" });
     }
   });
 };
