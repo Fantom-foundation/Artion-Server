@@ -15,6 +15,7 @@ router.post("/addUnlockableContent", auth, async (req, res) => {
     let contractAddress = toLowerCase(req.body.contractAddress);
     let tokenID = parseInt(req.body.tokenID);
     let retrievedAddr = toLowerCase(req.body.signatureAddress);
+    let signature = req.body.signature;
     let content = req.body.content;
     let isValidsignature = await validateSignature(
       address,
@@ -54,6 +55,7 @@ router.get("/retrieveUnlockableContent", auth, async (req, res) => {
     let contractAddress = toLowerCase(req.body.contractAddress);
     let tokenID = parseInt(req.body.tokenID);
     let retrievedAddr = toLowerCase(req.body.signatureAddress);
+    let signature = req.body.signature;
     let isValidsignature = await validateSignature(
       address,
       signature,
