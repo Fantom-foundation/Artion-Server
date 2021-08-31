@@ -393,6 +393,7 @@ const selectTokens = async (req, res) => {
       let holdingSupplies = new Map();
       let holdings = await ERC1155HOLDING.find({
         holderAddress: wallet,
+        supplyPerHolder: { $gt: 0 },
       });
       let holders = holdings.map((holder) => {
         holdingSupplies.set(
