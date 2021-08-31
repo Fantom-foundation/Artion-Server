@@ -17,6 +17,7 @@ const Bundle = mongoose.model("Bundle");
 const BundleListing = mongoose.model("BundleListing");
 const BundleOffer = mongoose.model("BundleOffer");
 const TradeHistory = mongoose.model("TradeHistory");
+const UnlockableContents = mongoose.model("UnlockableContents");
 
 const orderBy = require("lodash.orderby");
 const toLowerCase = require("../utils/utils");
@@ -1074,6 +1075,11 @@ router.post("/getSingleItemDetails", async (req, res) => {
         "lastSalePriceInUSD",
         "saleEndsAt",
       ]);
+    let hasUnlockable = await UnlockableContents.findOne({
+      contractAddress: contractAddress,
+      tokenID: tokenID,
+    });
+    hasUnlockable = hasUnlockable ? true : false;
     return res.json({
       status: "success",
       data: {
@@ -1085,6 +1091,7 @@ router.post("/getSingleItemDetails", async (req, res) => {
         history,
         nfts,
         contentType,
+        hasUnlockable,
       },
     });
   } catch (error) {
