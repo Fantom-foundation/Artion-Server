@@ -232,7 +232,7 @@ router.post("/getMintableCollections", auth, async (req, res) => {
         let sc_1155 = await ERC1155CONTRACT.findOne({
           address: collection.erc721Address,
         });
-        if (sc_1155) tokenTypeMap.set(collection.erc721Address, 721);
+        if (sc_1155) tokenTypeMap.set(collection.erc721Address, 1155);
       }
     });
     await Promise.all(promise);
