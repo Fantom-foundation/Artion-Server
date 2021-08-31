@@ -49,7 +49,7 @@ router.post("/addUnlockableContent", auth, async (req, res) => {
   }
 });
 
-router.get("/retrieveUnlockableContent", auth, async (req, res) => {
+router.post("/retrieveUnlockableContent", auth, async (req, res) => {
   try {
     let address = extractAddress(req, res);
     let contractAddress = toLowerCase(req.body.contractAddress);
