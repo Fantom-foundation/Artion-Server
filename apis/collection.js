@@ -223,16 +223,11 @@ router.post("/getMintableCollections", auth, async (req, res) => {
     let collections = [...internalCollections, ...myCollections];
     let tokenTypeMap = new Map();
     let promise = collections.map(async (collection) => {
-      let sc_721 = await ERC721CONTRACT.findOne({
-        address: collection.erc721Address,
+      let category = await Category.findOne({
+        minterAddress: toLowerCase(collection.erc721Address),
       });
-      if (sc_721) {
-        tokenTypeMap.set(collection.erc721Address, 721);
-      } else {
-        let sc_1155 = await ERC1155CONTRACT.findOne({
-          address: collection.erc721Address,
-        });
-        if (sc_1155) tokenTypeMap.set(collection.erc721Address, 1155);
+      if (category) {
+        tokenTypeMap.set(collection.erc721Address, category.type);
       }
     });
     await Promise.all(promise);
