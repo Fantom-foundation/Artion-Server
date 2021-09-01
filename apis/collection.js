@@ -101,6 +101,8 @@ router.post("/collectiondetails", auth, async (req, res) => {
   let royalty = req.body.royalty ? parseFloat(req.body.royalty) : 0;
 
   let collection = await Collection.findOne({ erc721Address: erc721Address });
+  // verify if 1155 smart contracts
+  let is1155 = await isValidERC1155(erc721Address);
   // this is for editing a collection
   if (collection) {
     collection.erc721Address = erc721Address;
@@ -130,8 +132,6 @@ router.post("/collectiondetails", auth, async (req, res) => {
       });
   } else {
     /* this is for new collection review */
-    // verify if 1155 smart contracts
-    let is1155 = await isValidERC1155(erc721Address);
     if (is1155) {
       // need to add a new 1155 collection
       let sc_1155 = new ERC1155CONTRACT();
@@ -155,7 +155,10 @@ router.post("/collectiondetails", auth, async (req, res) => {
       await category.save();
     }
 
-    let isInternal = await FactoryUtils.isInternalCollection(erc721Address);
+    let isInternal = await FactoryUtils.isInternalCollection(
+      erc721Address,
+      !is1155
+    );
     console.log(
       isInternal[0] ? "collection is internal" : "collection is external"
     );
@@ -218,10 +221,21 @@ router.post("/getMintableCollections", auth, async (req, res) => {
       isAppropriate: true,
     });
     let collections = [...internalCollections, ...myCollections];
+    let tokenTypeMap = new Map();
+    let promise = collections.map(async (collection) => {
+      let category = await Category.findOne({
+        minterAddress: toLowerCase(collection.erc721Address),
+      });
+      if (category) {
+        tokenTypeMap.set(collection.erc721Address, category.type);
+      }
+    });
+    await Promise.all(promise);
     let data = collections.map((collection) => ({
       collectionName: collection.collectionName,
       erc721Address: collection.erc721Address,
       logoImageHash: collection.logoImageHash,
+      type: tokenTypeMap.get(collection.erc721Address),
     }));
     return res.json({
       status: "success",
@@ -325,7 +339,7 @@ router.post("/reviewApplication", admin_auth, async (req, res) => {
           creator,
           royalty,
           feeRecipient,
-          { gasLimit: 3000000 }
+          { gasLimit: 4000000 }
         );
       } catch (error) {
         console.log("error in setting collection royalty");
