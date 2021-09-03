@@ -130,6 +130,8 @@ router.post("/itemSold", service_auth, async (req, res) => {
 
     console.log("item sold");
     console.log(seller, buyer, nft, tokenID, quantity, price, paymentToken);
+    console.log(`unit price is ${getPrice(paymentToken)}`);
+    console.log(`price in usd is ${priceInUSD}`);
     let category = await Category.findOne({ minterAddress: nft });
 
     if (category) {

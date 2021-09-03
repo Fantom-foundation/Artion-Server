@@ -1,11 +1,16 @@
 module.exports = {
   async up(db, client) {
-    await db
-      .collection("nftitems")
-      .updateMany(
-        { isAppropriate: null},
-        { $set: { isAppropriate: true, isFiltered: false } }
-      );
+    await db.collection("nftitems").updateMany(
+      { paymentToken: null },
+      {
+        $set: {
+          paymentToken: "ftm",
+          lastSalePricePaymentToken: "ftm",
+          lastSalePriceInUSD: 0,
+          priceInUSD: 0,
+        },
+      }
+    );
   },
 
   async down(db, client) {

@@ -38,8 +38,8 @@ const pinFileToIPFS = async (
       name: name,
       keyvalues: {
         symbol: symbol,
-        ...(royalty ? { royalty: royalty } : null),
-        ...(xtraUrl ? { IP_Rights: xtraUrl } : null),
+        royalty: royalty,
+        IP_Rights: xtraUrl,
         recipient: address,
       },
     },
@@ -213,7 +213,9 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
         let royalty = fields.royalty;
 
         let xtraUrl = fields.xtra;
+        console.log(xtraUrl);
         if (xtraUrl && !validUrl.isUri(xtraUrl)) {
+          console.log("invalid xtra url");
           return res.status(400).json({
             status: "failed",
           });
@@ -260,8 +262,9 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
             address: address,
             royalty: royalty,
             recipient: address,
+            IP_Rights: xtraUrl,
             createdAt: currentTime,
-            collection: "Fantom Powered Artion Collection",
+            collection: "Fantom Powered NFT Collection",
           },
         };
 
@@ -416,6 +419,8 @@ router.post("/uploadCollectionImage2Server", auth, async (req, res) => {
   let form = new formidable.IncomingForm();
   form.parse(req, async (err, fields, files) => {
     if (err) {
+      console.log("error in parsing the form");
+      console.log(err);
       return res.status(400).json({
         status: "failedParsingForm",
       });
@@ -436,6 +441,8 @@ router.post("/uploadCollectionImage2Server", auth, async (req, res) => {
       imgData = imgData.replace(`data:image\/${extension};base64,`, "");
       fs.writeFile(uploadPath + imageFileName, imgData, "base64", (err) => {
         if (err) {
+          console.log("failed to upload a collection image file");
+          console.log(err);
           return res.status(400).json({
             status: "failed to save an image file",
             err,

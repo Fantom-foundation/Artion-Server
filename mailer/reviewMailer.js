@@ -3,7 +3,7 @@ const sgMail = require("@sendgrid/mail");
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const foundationEmail = "support.artion@fantom.foundation";
 
-const adminEmails = ["fortune.onchain@gmail.com"];
+const adminEmails = ["jason.kwon@fantom.foundation"];
 
 const createDenyMessage = (data) => {
   return {
@@ -11,7 +11,7 @@ const createDenyMessage = (data) => {
     from: foundationEmail,
     subject: data.subject,
     text: "artion notification",
-    html: `Your collection has been denied to register on Artion. <br/></br> reason : ${data.reason} </br></br> Thank You.  <br/><br/>`,
+    html: `Your collection has been denied to register on Artion. <br/><br/> reason : ${data.reason} </br></br> Thank You.  <br/><br/>`,
   };
 };
 

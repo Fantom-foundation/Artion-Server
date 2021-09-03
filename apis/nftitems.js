@@ -17,11 +17,13 @@ const Bundle = mongoose.model("Bundle");
 const BundleListing = mongoose.model("BundleListing");
 const BundleOffer = mongoose.model("BundleOffer");
 const TradeHistory = mongoose.model("TradeHistory");
+const UnlockableContents = mongoose.model("UnlockableContents");
 
 const orderBy = require("lodash.orderby");
 const toLowerCase = require("../utils/utils");
 
 const { getPrice } = require("../services/price.feed");
+const sortBy = require("lodash.sortby");
 
 const provider = new ethers.providers.JsonRpcProvider(
   process.env.NETWORK_RPC,
@@ -73,6 +75,10 @@ const sortItems = (_allTokens, sortby) => {
     }
     case "price": {
       tmp = orderBy(_allTokens, ({ priceInUSD }) => priceInUSD || 0, ["desc"]);
+      break;
+    }
+    case "cheapest": {
+      tmp = orderBy(_allTokens, ({ priceInUSD }) => priceInUSD || 0, ["asc"]);
       break;
     }
     case "lastSalePrice": {
@@ -137,6 +143,7 @@ const selectTokens = async (req, res) => {
     // get options from request & process
     let selectedCollections = req.body.collectionAddresses; //collection addresses from request
     let filters = req.body.filterby; //status -> array or null
+    console.log("filters", filters);
     let sortby = req.body.sortby; //sort -> string param
     // create a sort by option
     let selectOption;
@@ -324,7 +331,7 @@ const selectTokens = async (req, res) => {
             ...(collections2filter != null
               ? { minter: { $in: [...collections2filter] } }
               : {}),
-            ...{ deadline: { $gt: new Date() } },
+            // ...{ deadline: { $gt: new Date() } },
           };
           let tokens = await Offer.find(minterFilters4Offer).select([
             "minter",
@@ -339,16 +346,21 @@ const selectTokens = async (req, res) => {
         }
         if (filters.includes("onAuction")) {
           /* for on auction - pick from Auction */
+          console.log("filter encountered here");
           let minterFilters4Auction = {
             ...(collections2filter != null
               ? { minter: { $in: [...collections2filter] } }
               : {}),
-            ...{ endTime: { $gt: new Date() } },
+            // ...{ endTime: { $gt: new Date() } },
           };
+          console.log("minter filters for auction");
+          console.log(minterFilters4Auction);
           let tokens = await Auction.find(minterFilters4Auction).select([
             "minter",
             "tokenID",
           ]);
+          console.log("tokens in auction");
+          console.log(tokens);
           if (tokens) {
             tokens.map((pair) => {
               let minter_id_pair = [pair.minter, pair.tokenID];
@@ -381,6 +393,7 @@ const selectTokens = async (req, res) => {
       let holdingSupplies = new Map();
       let holdings = await ERC1155HOLDING.find({
         holderAddress: wallet,
+        supplyPerHolder: { $gt: 0 },
       });
       let holders = holdings.map((holder) => {
         holdingSupplies.set(
@@ -810,6 +823,8 @@ router.post("/fetchTokens", async (req, res) => {
   let sortby = req.body.sortby; //sort -> string param
   let from = parseInt(req.body.from);
   let count = parseInt(req.body.count);
+  console.log("log from fetch tokens");
+  console.log(count, from, type, sortby);
   let items = [];
   if (type == "all") {
     let nfts = await selectTokens(req, res);
@@ -1061,6 +1076,11 @@ router.post("/getSingleItemDetails", async (req, res) => {
         "lastSalePriceInUSD",
         "saleEndsAt",
       ]);
+    let hasUnlockable = await UnlockableContents.findOne({
+      contractAddress: contractAddress,
+      tokenID: tokenID,
+    });
+    hasUnlockable = hasUnlockable ? true : false;
     return res.json({
       status: "success",
       data: {
@@ -1072,6 +1092,7 @@ router.post("/getSingleItemDetails", async (req, res) => {
         history,
         nfts,
         contentType,
+        hasUnlockable,
       },
     });
   } catch (error) {
