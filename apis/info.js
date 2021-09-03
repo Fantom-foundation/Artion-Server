@@ -302,6 +302,7 @@ router.get("/getAccountActivity/:address", async (req, res) => {
           owner: token.owner,
           quantity: lfa.quantity,
           price: lfa.price,
+          paymentToken: lfa.paymentToken,
           createdAt: lfa._id.getTimestamp(),
           alias: account ? account[0] : null,
           image: account ? account[1] : null,
@@ -408,6 +409,7 @@ router.get("/getActivityFromOthers/:address", async (req, res) => {
         "tokenID",
         "quantity",
         "pricePerItem",
+        "paymentToken",
         "deadline",
         "minter",
       ]);
