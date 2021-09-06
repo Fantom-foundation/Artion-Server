@@ -18,6 +18,7 @@ const provider = new ethers.providers.JsonRpcProvider(
   process.env.NETWORK_RPC,
   parseInt(process.env.NETWORK_CHAINID)
 );
+const validatorAddress = process.env.VALIDATORADDRESS;
 
 const SimplifiedERC721ABI = require("../constants/simplifiederc721abi");
 const SimplifiedERC1155ABI = require("../constants/simplifiederc1155abi");
@@ -145,7 +146,9 @@ const handle1155SingleTransfer = async (
               tokenID: tokenID,
             });
             await removeLike(contractAddress, tokenID);
-          } catch (error) {}
+          } catch (error) {
+            console.log(error);
+          }
         } else {
           // now remove the supply
           supply = supply - value;
@@ -194,7 +197,9 @@ const handle1155SingleTransfer = async (
             let isBanned = await is1155CollectionBanned(contractAddress);
             newTk.isAppropriate = !isBanned;
             await newTk.save();
-          } catch (error) {}
+          } catch (error) {
+            console.log(error);
+          }
         }
         let holding = await ERC1155HOLDING.findOne({
           contractAddress: contractAddress,
@@ -210,7 +215,9 @@ const handle1155SingleTransfer = async (
             holding.holderAddress = to;
             holding.supplyPerHolder = value;
             await holding.save();
-          } catch (error) {}
+          } catch (error) {
+            console.log(error);
+          }
         }
       }
     } else {
@@ -233,7 +240,9 @@ const handle1155SingleTransfer = async (
             db_fromSupply.supplyPerHolder = fromSupply;
             await db_fromSupply.save();
           }
-        } catch (error) {}
+        } catch (error) {
+          console.log(error);
+        }
       }
       if (db_toSupply) {
         try {
@@ -241,7 +250,9 @@ const handle1155SingleTransfer = async (
             db_toSupply.supplyPerHolder = toSupply;
             await db_toSupply.save();
           }
-        } catch (error) {}
+        } catch (error) {
+          console.log(error);
+        }
       } else {
         try {
           // now update the holdings collection
@@ -251,10 +262,14 @@ const handle1155SingleTransfer = async (
           holding.holderAddress = to;
           holding.supplyPerHolder = toSupply;
           await holding.save();
-        } catch (error) {}
+        } catch (error) {
+          console.log(error);
+        }
       }
     }
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 router.post(
@@ -264,6 +279,7 @@ router.post(
       let address = toLowerCase(req.body.address); //contract address
       let to = toLowerCase(req.body.to); // transferred to
       let tokenID = parseInt(req.body.tokenID); //tokenID
+      console.log(address, to, tokenID);
       let erc721token = await NFTITEM.findOne({
         contractAddress: address,
         tokenID: tokenID,
@@ -316,6 +332,7 @@ router.post(
         }
       }
     } catch (error) {
+      console.log(error);
       return res.json({});
     }
   }
@@ -333,6 +350,7 @@ router.post(
       await handle1155SingleTransfer(from, to, address, id, value);
       return res.json();
     } catch (error) {
+      console.log(error);
       return res.json({});
     }
   }
