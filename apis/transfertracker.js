@@ -421,4 +421,41 @@ router.post(
   }
 );
 
+router.get("/getTrackable721Contracts", async (req, res) => {
+  try {
+    let contracts = await ERC721CONTRACT.find({ isAppropriate: true });
+    let trackable_scs = [];
+    contracts.map((contract) => {
+      trackable_scs.push(contract.address);
+    });
+    return res.json({
+      status: "success",
+      data: trackable_scs,
+    });
+  } catch (error) {
+    return res.json({
+      status: "failed",
+      data: [],
+    });
+  }
+});
+router.get("/getTrackable1155Contracts", async (req, res) => {
+  try {
+    let contracts = await ERC1155CONTRACT.find({ isAppropriate: true });
+    let trackable_scs = [];
+    contracts.map((contract) => {
+      trackable_scs.push(contract.address);
+    });
+    return res.json({
+      status: "success",
+      data: trackable_scs,
+    });
+  } catch (error) {
+    return res.json({
+      status: "failed",
+      data: [],
+    });
+  }
+});
+
 module.exports = router;
