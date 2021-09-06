@@ -14,7 +14,10 @@ const Like = mongoose.model("Like");
 const service_auth = require("./middleware/auth.tracker");
 const toLowerCase = require("../utils/utils");
 
-const provider = new ethers.providers.JsonRpcProvider(rpcapi, chainID);
+const provider = new ethers.providers.JsonRpcProvider(
+  process.env.NETWORK_RPC,
+  parseInt(process.env.NETWORK_CHAINID)
+);
 
 const SimplifiedERC721ABI = require("../constants/simplifiederc721abi");
 const SimplifiedERC1155ABI = require("../constants/simplifiederc1155abi");
