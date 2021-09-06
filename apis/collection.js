@@ -103,6 +103,11 @@ router.post("/collectiondetails", auth, async (req, res) => {
   let collection = await Collection.findOne({ erc721Address: erc721Address });
   // verify if 1155 smart contracts
   let is1155 = await isValidERC1155(erc721Address);
+
+  let isInternal = await FactoryUtils.isInternalCollection(
+    erc721Address,
+    !is1155
+  );
   // this is for editing a collection
   if (collection) {
     collection.erc721Address = erc721Address;
@@ -137,11 +142,11 @@ router.post("/collectiondetails", auth, async (req, res) => {
       let sc_1155 = new ERC1155CONTRACT();
       sc_1155.address = erc721Address;
       sc_1155.name = collectionName;
-      // sc_1155.symbol = "Symbol";
       let symbol = await getSymbol(erc721Address);
       console.log("symbol is", symbol);
       sc_1155.symbol = symbol || "Symbol";
       sc_1155.isVerified = true;
+      sc_1155.isAppropriate = isInternal;
       await sc_1155.save();
       // save new category
       let category = new Category();
@@ -149,19 +154,25 @@ router.post("/collectiondetails", auth, async (req, res) => {
       category.type = 1155;
       await category.save();
     } else {
+      // need to add a new erc721 contract
+      let ifExists = await ERC721CONTRACT.findOne({
+        address: erc721Address,
+      });
+      if (!ifExists) {
+        let sc_721 = new ERC721CONTRACT();
+        sc_721.address = erc721Address;
+        sc_721.name = collectionName;
+        let symbol = await getSymbol(erc721Address);
+        sc_721.symbol = symbol || "Symbol";
+        sc_721.isVerified = true;
+        sc_721.isAppropriate = isInternal;
+        await sc_721.save();
+      }
       let category = new Category();
       category.minterAddress = erc721Address;
       category.type = 721;
       await category.save();
     }
-
-    let isInternal = await FactoryUtils.isInternalCollection(
-      erc721Address,
-      !is1155
-    );
-    console.log(
-      isInternal[0] ? "collection is internal" : "collection is external"
-    );
     // add a new collection
     let _collection = new Collection();
     _collection.erc721Address = erc721Address;
@@ -351,6 +362,23 @@ router.post("/reviewApplication", admin_auth, async (req, res) => {
       // approve -- udpate collection and send email
       collection.status = true;
       await collection.save();
+      // now update isAppropriate
+      try {
+        await ERC721CONTRACT.updateOne(
+          {
+            address: contractAddress,
+          },
+          { isAppropriate: true }
+        );
+      } catch (error) {}
+      try {
+        await ERC1155CONTRACT.updateOne(
+          {
+            address: contractAddress,
+          },
+          { isAppropriate: true }
+        );
+      } catch (error) {}
       // send email
       applicationMailer.sendApplicationReviewedEmail({
         to: email,
