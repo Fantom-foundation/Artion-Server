@@ -1,9 +1,11 @@
 require("dotenv").config();
 const axios = require("axios");
-const mongoose = require("mongoose");
 const ethers = require("ethers");
 const router = require("express").Router();
+const isBase64 = require("is-base64");
+const { base64encode, base64decode } = require("nodejs-base64");
 
+const mongoose = require("mongoose");
 const ERC721CONTRACT = mongoose.model("ERC721CONTRACT");
 const ERC1155CONTRACT = mongoose.model("ERC1155CONTRACT");
 const ERC1155HOLDING = mongoose.model("ERC1155HOLDING");
@@ -307,9 +309,18 @@ router.post(
       } else {
         let sc = loadContract(address, 721);
         let tokenURI = await sc.tokenURI(tokenID);
-        let metadata = await axios.get(tokenURI);
+        let metadata;
         let tokenName = "";
         let imageURL = "";
+        // now check if token uri is base64
+        let isBased64Encoded = isBase64(tokenURI);
+        if (isBased64Encoded) {
+          metadata = base64decode(tokenURI);
+          tokenName = metadata.name;
+          imageURL = metadata.image;
+        } else {
+          metadata = await axios.get(tokenURI);
+        }
         try {
           tokenName = metadata.data.name;
           imageURL = metadata.data.image;
