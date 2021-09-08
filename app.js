@@ -56,7 +56,6 @@ app.options("*", cors()); // include before other routes
 app.use(cors());
 app.use(require("./apis"));
 
-const reset = require("./admin-actions/reset");
 const priceFeed = require("./services/price.feed");
 
 const connect = () => {
@@ -69,7 +68,6 @@ const connect = () => {
     console.log("artion server has been connected to the db server");
     console.log("price feed has been started");
     priceFeed.runPriceFeed();
-    reset();
     app.listen(port, () => {
       console.log(`artion server is running at port ${port}`);
     });
