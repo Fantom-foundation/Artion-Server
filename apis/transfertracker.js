@@ -312,10 +312,14 @@ router.post("/handle721Transfer", service_auth, async (req, res) => {
       // now check if token uri is base64
       let isBased64Encoded = isBase64(tokenURI);
       if (isBased64Encoded) {
-        metadata = base64decode(tokenURI);
-        metadata = JSON.parse(metadata);
-        tokenName = metadata.name;
-        imageURL = metadata.image;
+        try {
+          metadata = base64decode(tokenURI);
+          metadata = metadata.split(",");
+          metadata = metadata[1];
+          metadata = JSON.parse(metadata);
+          tokenName = metadata.name;
+          imageURL = metadata.image;
+        } catch (error) {}
       } else {
         metadata = await axios.get(tokenURI);
         try {
