@@ -62,7 +62,7 @@ const getSupply = async (contractAddress, tokenID, ownerAddress) => {
   }
 };
 
-const is712CollectionBanned = async (contractAddress) => {
+const is721CollectionBanned = async (contractAddress) => {
   let isBanned = bannedCollections.get(contractAddress);
   if (isBanned) return true;
   try {
@@ -313,15 +313,16 @@ router.post("/handle721Transfer", service_auth, async (req, res) => {
       let isBased64Encoded = isBase64(tokenURI);
       if (isBased64Encoded) {
         metadata = base64decode(tokenURI);
+        metadata = JSON.parse(metadata);
         tokenName = metadata.name;
         imageURL = metadata.image;
       } else {
         metadata = await axios.get(tokenURI);
+        try {
+          tokenName = metadata.data.name;
+          imageURL = metadata.data.image;
+        } catch (error) {}
       }
-      try {
-        tokenName = metadata.data.name;
-        imageURL = metadata.data.image;
-      } catch (error) {}
       if (to == validatorAddress) {
         return res.json();
       } else {
@@ -333,7 +334,7 @@ router.post("/handle721Transfer", service_auth, async (req, res) => {
         newTk.imageURL = imageURL;
         newTk.owner = to;
         newTk.createdAt = Date.now();
-        let isBanned = await is712CollectionBanned(address);
+        let isBanned = await is721CollectionBanned(address);
         newTk.isAppropriate = !isBanned;
         await newTk.save();
         return res.json();
