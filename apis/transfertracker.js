@@ -3,13 +3,12 @@ const axios = require("axios");
 const ethers = require("ethers");
 const router = require("express").Router();
 const isBase64 = require("is-base64");
-const { base64encode, base64decode } = require("nodejs-base64");
+const { base64decode } = require("nodejs-base64");
 
 const mongoose = require("mongoose");
 const ERC721CONTRACT = mongoose.model("ERC721CONTRACT");
 const ERC1155CONTRACT = mongoose.model("ERC1155CONTRACT");
 const ERC1155HOLDING = mongoose.model("ERC1155HOLDING");
-const Category = mongoose.model("Category");
 const NFTITEM = mongoose.model("NFTITEM");
 const Like = mongoose.model("Like");
 
