@@ -1,13 +1,14 @@
 require("dotenv").config();
 const axios = require("axios");
-const mongoose = require("mongoose");
 const ethers = require("ethers");
 const router = require("express").Router();
+const isBase64 = require("is-base64");
+const { base64decode } = require("nodejs-base64");
 
+const mongoose = require("mongoose");
 const ERC721CONTRACT = mongoose.model("ERC721CONTRACT");
 const ERC1155CONTRACT = mongoose.model("ERC1155CONTRACT");
 const ERC1155HOLDING = mongoose.model("ERC1155HOLDING");
-const Category = mongoose.model("Category");
 const NFTITEM = mongoose.model("NFTITEM");
 const Like = mongoose.model("Like");
 
@@ -272,156 +273,153 @@ const handle1155SingleTransfer = async (
   }
 };
 
-router.post(
-  "/handle721Transfer",
-  /*service_auth,*/ async (req, res) => {
-    try {
-      let address = toLowerCase(req.body.address); //contract address
-      let to = toLowerCase(req.body.to); // transferred to
-      let tokenID = parseInt(req.body.tokenID); //tokenID
-      console.log(address, to, tokenID);
-      let erc721token = await NFTITEM.findOne({
-        contractAddress: address,
-        tokenID: tokenID,
-      });
+router.post("/handle721Transfer", service_auth, async (req, res) => {
+  try {
+    let address = toLowerCase(req.body.address); //contract address
+    let to = toLowerCase(req.body.to); // transferred to
+    let tokenID = parseInt(req.body.tokenID); //tokenID
+    console.log(address, to, tokenID);
+    let erc721token = await NFTITEM.findOne({
+      contractAddress: address,
+      tokenID: tokenID,
+    });
 
-      if (erc721token) {
-        if (to == erc721token.owner) {
-          return res.json({});
-        }
-        if (to == validatorAddress) {
-          await erc721token.remove();
-          await removeLike(address, tokenID);
-          return res.json();
-        } else {
-          erc721token.owner = to;
-          let now = Date.now();
-          try {
-            if (erc721token.createdAt > now) erc721token.createdAt = now;
-          } catch (error) {
-            console.log("error 11");
-          }
-          await erc721token.save();
-          return res.json({});
-        }
-      } else {
-        let sc = loadContract(address, 721);
-        let tokenURI = await sc.tokenURI(tokenID);
-        let metadata = await axios.get(tokenURI);
-        let tokenName = "";
-        let imageURL = "";
-        try {
-          tokenName = metadata.data.name;
-          imageURL = metadata.data.image;
-        } catch (error) {}
-        if (to == validatorAddress) {
-          return res.json();
-        } else {
-          let newTk = new NFTITEM();
-          newTk.contractAddress = address;
-          newTk.tokenID = tokenID;
-          newTk.name = tokenName;
-          newTk.tokenURI = tokenURI;
-          newTk.imageURL = imageURL;
-          newTk.owner = to;
-          newTk.createdAt = Date.now();
-          let isBanned = await is712CollectionBanned(address);
-          newTk.isAppropriate = !isBanned;
-          await newTk.save();
-          return res.json();
-        }
+    if (erc721token) {
+      if (to == erc721token.owner) {
+        return res.json({});
       }
-    } catch (error) {
-      console.log(error);
-      return res.json({});
-    }
-  }
-);
-
-router.post(
-  "/handle1155SingleTransfer",
-  /*service_auth,*/ async (req, res) => {
-    try {
-      let address = toLowerCase(req.body.address);
-      let from = toLowerCase(req.body.from);
-      let to = toLowerCase(req.body.to);
-      let id = parseInt(req.body.id);
-      let value = parseInt(req.body.value);
-      await handle1155SingleTransfer(from, to, address, id, value);
-      return res.json();
-    } catch (error) {
-      console.log(error);
-      return res.json({});
-    }
-  }
-);
-
-router.post(
-  "/handle1155URI",
-  /*service_auth,*/ async (req, res) => {
-    try {
-      let address = toLowerCase(req.body.address);
-      let id = parseInt(req.body.id);
-      let value = req.body.value;
-      let tk = await NFTITEM.findOne({
-        contractAddress: address,
-        tokenID: id,
-      });
-      if (!tk) {
+      if (to == validatorAddress) {
+        await erc721token.remove();
+        await removeLike(address, tokenID);
+        return res.json();
       } else {
-        let _tkURI = tk.tokenURI;
-        if (_tkURI == "https://") {
-          tk.tokenURI = value;
-        }
+        erc721token.owner = to;
+        let now = Date.now();
         try {
-          let metadata = await axios.get(_tkURI);
-          let name = metadata.data.name;
-          let imageURL = metadata.data.image;
-          tk.imageURL = imageURL;
-          tk.name = name;
-          tk.thumbnailPath = "-";
+          if (erc721token.createdAt > now) erc721token.createdAt = now;
         } catch (error) {
-          tk.name = "";
+          console.log("error 11");
         }
-        await tk.save();
+        await erc721token.save();
+        return res.json({});
+      }
+    } else {
+      let sc = loadContract(address, 721);
+      let tokenURI = await sc.tokenURI(tokenID);
+      let metadata;
+      let tokenName = "";
+      let imageURL = "";
+      // now check if token uri is base64
+      let isBased64Encoded = isBase64(tokenURI);
+      if (isBased64Encoded) {
+        metadata = base64decode(tokenURI);
+        tokenName = metadata.name;
+        imageURL = metadata.image;
+      } else {
+        metadata = await axios.get(tokenURI);
+      }
+      try {
+        tokenName = metadata.data.name;
+        imageURL = metadata.data.image;
+      } catch (error) {}
+      if (to == validatorAddress) {
+        return res.json();
+      } else {
+        let newTk = new NFTITEM();
+        newTk.contractAddress = address;
+        newTk.tokenID = tokenID;
+        newTk.name = tokenName;
+        newTk.tokenURI = tokenURI;
+        newTk.imageURL = imageURL;
+        newTk.owner = to;
+        newTk.createdAt = Date.now();
+        let isBanned = await is712CollectionBanned(address);
+        newTk.isAppropriate = !isBanned;
+        await newTk.save();
         return res.json();
       }
-    } catch (error) {
+    }
+  } catch (error) {
+    console.log(error);
+    return res.json({});
+  }
+});
+
+router.post("/handle1155SingleTransfer", service_auth, async (req, res) => {
+  try {
+    let address = toLowerCase(req.body.address);
+    let from = toLowerCase(req.body.from);
+    let to = toLowerCase(req.body.to);
+    let id = parseInt(req.body.id);
+    let value = parseInt(req.body.value);
+    await handle1155SingleTransfer(from, to, address, id, value);
+    return res.json();
+  } catch (error) {
+    console.log(error);
+    return res.json({});
+  }
+});
+
+router.post("/handle1155URI", service_auth, async (req, res) => {
+  try {
+    let address = toLowerCase(req.body.address);
+    let id = parseInt(req.body.id);
+    let value = req.body.value;
+    let tk = await NFTITEM.findOne({
+      contractAddress: address,
+      tokenID: id,
+    });
+    if (!tk) {
+    } else {
+      let _tkURI = tk.tokenURI;
+      if (_tkURI == "https://") {
+        tk.tokenURI = value;
+      }
+      try {
+        let metadata = await axios.get(_tkURI);
+        let name = metadata.data.name;
+        let imageURL = metadata.data.image;
+        tk.imageURL = imageURL;
+        tk.name = name;
+        tk.thumbnailPath = "-";
+      } catch (error) {
+        tk.name = "";
+      }
+      await tk.save();
       return res.json();
     }
+  } catch (error) {
+    return res.json();
   }
-);
+});
 
-router.post(
-  "/handle1155BatchTransfer",
-  /*service_auth,*/ async (req, res) => {
-    try {
-      let address = toLowerCase(req.body.address);
-      let from = toLowerCase(req.body.from);
-      let to = toLowerCase(req.body.to);
-      let ids = req.body.id;
-      ids = ids.split(",");
-      let values = req.body.value;
-      values = values.split(",");
-      let promises = ids.map(async (_, index) => {
-        operator = toLowerCase(operator);
-        from = toLowerCase(from);
-        to = toLowerCase(to);
-        let id = ids[index];
-        id = parseFloat(id.toString());
-        let value = values[index];
-        value = parseFloat(value.toString());
-        await handleTransferSingle(from, to, address, id, value);
-      });
-      await Promise.all(promises);
-      return res.json({});
-    } catch (error) {
-      return res.json();
-    }
+router.post("/handle1155BatchTransfer", service_auth, async (req, res) => {
+  try {
+    let address = toLowerCase(req.body.address);
+    let from = toLowerCase(req.body.from);
+    let to = toLowerCase(req.body.to);
+    let ids = req.body.id;
+    ids = ids.split(",");
+    let values = req.body.value;
+    values = values.split(",");
+    let promises = ids.map(async (_, index) => {
+      operator = toLowerCase(operator);
+      from = toLowerCase(from);
+      to = toLowerCase(to);
+      let id = ids[index];
+      id = parseFloat(id.toString());
+      let value = values[index];
+      value = parseFloat(value.toString());
+      await handleTransferSingle(from, to, address, id, value);
+    });
+    await Promise.all(promises);
+    return res.json({});
+  } catch (error) {
+    return res.json();
   }
-);
+});
 
-router.get("/getTrackable721Contracts", async (req, res) => {
+router.get("/getTrackable721Contracts", service_auth, async (req, res) => {
   try {
     let contracts = await ERC721CONTRACT.find({ isAppropriate: true });
     let trackable_scs = [];
@@ -439,7 +437,7 @@ router.get("/getTrackable721Contracts", async (req, res) => {
     });
   }
 });
-router.get("/getTrackable1155Contracts", async (req, res) => {
+router.get("/getTrackable1155Contracts", service_auth, async (req, res) => {
   try {
     let contracts = await ERC1155CONTRACT.find({ isAppropriate: true });
     let trackable_scs = [];
