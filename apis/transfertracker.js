@@ -319,7 +319,7 @@ router.post(
           let isBased64Encoded = isBase64(tokenURI);
           if (isBased64Encoded) {
             try {
-              metadata = Buffer.from(tokenURI, "base64").toString("utf-8");
+              metadata = Buffer.from(tokenURI, 'base64').toString('utf8');
               metadata = JSON.parse(metadata);
               console.log(metadata);
               tokenName = metadata.name;
