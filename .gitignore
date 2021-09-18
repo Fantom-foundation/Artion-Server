@@ -7,3 +7,4 @@ test.js
 .env-mainnet
 .env-test
 /admin-actions
+.DS_Store
