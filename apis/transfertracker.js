@@ -3,7 +3,6 @@ const axios = require("axios");
 const ethers = require("ethers");
 const router = require("express").Router();
 const isBase64 = require("is-base64");
-const { base64decode } = require("nodejs-base64");
 
 const mongoose = require("mongoose");
 const ERC721CONTRACT = mongoose.model("ERC721CONTRACT");
@@ -320,7 +319,7 @@ router.post(
           let isBased64Encoded = isBase64(tokenURI);
           if (isBased64Encoded) {
             try {
-              metadata = base64decode(tokenURI);
+              metadata = Buffer.from(tokenURI, 'base64').toString('utf8');
               metadata = JSON.parse(metadata);
               console.log(metadata);
               tokenName = metadata.name;
