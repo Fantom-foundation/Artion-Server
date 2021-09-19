@@ -443,7 +443,7 @@ router.post("/getCollectionInfo", async (req, res) => {
   if (collection)
     return res.json({
       status: "success",
-      data: minifyCollection(collection),
+      data: { ...minifyCollection(collection), isVerified: true },
     });
   collection = await ERC721CONTRACT.findOne({
     address: address,
