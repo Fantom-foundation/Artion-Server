@@ -240,7 +240,7 @@ const notifyNewAuction = async (contractAddress, tokenID) => {
     // create data for dynamic email spread out
     let to = messageUtils.createEmailList(emails);
     let title = "New Auction!";
-    let content = `Artion User(${owner}) has put an NFT in auction.`;
+    let content = `Artion User(${address}) has put an NFT in auction.`;
     let image = await getNFTThumbnailPath(contractAddress, tokenID);
     image = `${storage_url}${image}`;
     let name = nftName;

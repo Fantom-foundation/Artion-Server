@@ -7,43 +7,58 @@ const Account = mongoose.model("Account");
 const Bid = mongoose.model("Bid");
 const NFTITEM = mongoose.model("NFTITEM");
 const TradeHistory = mongoose.model("TradeHistory");
-const NotificationSetting = mongoose.model("NotificationSetting");
+const EventDeadLetterQueue = mongoose.model("EventDeadLetterQueue");
+// const NotificationSetting = mongoose.model("NotificationSetting");
 
-const sendEmail = require("../mailer/auctionMailer");
-const getCollectionName = require("../mailer/utils");
-const notifications = require("../mailer/followMailer");
+// const sendEmail = require("../mailer/auctionMailer");
+// const getCollectionName = require("../mailer/utils");
+// const notifications = require("../mailer/followMailer");
 const toLowerCase = require("../utils/utils");
-const { getPrice } = require("../services/price.feed");
+// const { getPrice } = require("../services/price.feed");
+const AuctionContractAbi = require('../constants/auctionabi');
+const ethers = require("ethers");
+// const CollectionFactoryContract = require("../constants/factory_abi");
+const PAYTOKENS = require('../constants/tokens');
 
-const get721ItemName = async (nft, tokenID) => {
-  try {
-    let token = await NFTITEM.findOne({
-      contractAddress: toLowerCase(nft),
-      tokenID: tokenID,
-    });
-    if (token) return token.name;
-    else return tokenID;
-  } catch (error) {
-    return tokenID;
-  }
-};
+const provider = new ethers.providers.JsonRpcProvider(
+  process.env.NETWORK_RPC,
+  parseInt(process.env.NETWORK_CHAINID)
+);
+const ownerWallet = new ethers.Wallet(process.env.ROAYLTY_PK, provider);
 
-const getUserAlias = async (walletAddress) => {
-  try {
-    let account = await Account.findOne({ address: walletAddress });
-    if (account) return account.alias;
-    else return walletAddress;
-  } catch (error) {
-    return walletAddress;
-  }
-};
+const AuctionContractAddress = process.env.AUCTION_ADDRESS;
+const auctionSC = new ethers.Contract(
+  AuctionContractAddress,
+  AuctionContractAbi,
+  ownerWallet
+);
 
-const getAuctionEndTime = async (sc, nftAddress, tokenID) => {
+// const get721ItemName = async (nft, tokenID) => {
+//   try {
+//     let token = await NFTITEM.findOne({
+//       contractAddress: toLowerCase(nft),
+//       tokenID: tokenID,
+//     });
+//     if (token) return token.name;
+//     else return tokenID;
+//   } catch (error) {
+//     return tokenID;
+//   }
+// };
+//
+// const getUserAlias = async (walletAddress) => {
+//   try {
+//     let account = await Account.findOne({ address: walletAddress });
+//     if (account) return account.alias;
+//     else return walletAddress;
+//   } catch (error) {
+//     return walletAddress;
+//   }
+// };
+
+const getAuction = async (nftAddress, tokenID) => {
   try {
-    let auction = await sc.getAuction(nftAddress, tokenID);
-    if (auction) {
-      return new Date(parseInt(auction._endTime.toString()) * 1000);
-    } else return null;
+    return auctionSC.getAuction(nftAddress, tokenID);
   } catch (error) {
     return null;
   }
@@ -51,414 +66,366 @@ const getAuctionEndTime = async (sc, nftAddress, tokenID) => {
 
 router.post("/auctionCreated", service_auth, async (req, res) => {
   try {
-    let nftAddress = req.body.nftAddress;
-    let tokenID = req.body.tokenID;
-    tokenID = parseInt(tokenID);
-    try {
+      const { event: eventName, blockNumber, transactionHash, transactionIndex, logIndex, args } = req.body;
+      const [ nftAddress, tokenIdBN, payToken ] = args;
+      const tokenId = parseInt(tokenIdBN.hex)
+      const auctionPayToken = PAYTOKENS.find((token) => token.address === payToken.toLowerCase());
+      const auction = await getAuction(nftAddress, parseInt(tokenId));
+
+      if (!nftAddress || !tokenId || !auctionPayToken || !auction) {
+        await EventDeadLetterQueue.create({ blockNumber, transactionHash, transactionIndex, logIndex, eventName, args: [ nftAddress, tokenId, payToken ] })
+        return res.json({ failed: "missing data" });
+      }
+
+      // Delete existing auctions for NFT
       await Auction.deleteMany({
         minter: nftAddress,
-        tokenID: tokenID,
+        tokenID: tokenId,
       });
-      let auction = new Auction();
-      auction.minter = nftAddress;
-      auction.tokenID = tokenID;
-      auction.bidder = 0;
-      await auction.save();
-    } catch (error) {}
-    // update sale ends time
-    try {
-      let token = await NFTITEM.findOne({
-        contractAddress: nftAddress,
-        tokenID: tokenID,
-      });
-      if (token) {
-        let endTime = await getAuctionEndTime(auctionSC, nftAddress, tokenID);
-        token.saleEndsAt = endTime;
-        await token.save();
+
+      // Save new auction for NFT
+      const newAuction = {
+        minter: nftAddress,
+        tokenID: tokenId,
+        bidder: 0,
+        paymentToken: auctionPayToken.symbol,
+        transactionHash,
+        startTime: new Date(parseInt(auction._startTime) * 1000),
+        endTime: new Date(parseInt(auction._endTime) * 1000),
+        reservePrice: ethers.utils.formatUnits(auction._reservePrice.toString(), auctionPayToken.decimals),
       }
-    } catch (error) {}
-    // notify followers
-    notifications.notifyNewAuction(nftAddress, tokenID);
-    return res.json({});
+
+      await Auction.create(newAuction);
+
+      // TODO: no idea why saving endTime in token this is needed
+      const updateToken = await NFTITEM.findOne({
+        contractAddress: nftAddress,
+        tokenID: tokenId,
+      });
+      if (updateToken) {
+        updateToken.saleEndsAt = parseInt(auction._endTime.toString()) * 1000;
+        await updateToken.save();
+      }
+
+      // TODO: notifying users is disabled
+      // notify followers
+      // notifications.notifyNewAuction(nftAddress, tokenID);
+
+      return res.json({status: "success"});
+    } catch (err) {
+      console.error(err);
+      return res.json({status: "failed", error: err})
+    }
+});
+
+router.post("/auctionCancelled", service_auth, async (req, res) => {
+  try {
+    const { event: eventName, blockNumber, transactionHash, transactionIndex, logIndex, args } = req.body;
+    const [ nftAddress, tokenIdBN ] = args;
+    const tokenId = parseInt(tokenIdBN.hex)
+
+    if (!nftAddress || !tokenId) {
+      await EventDeadLetterQueue.create({ blockNumber, transactionHash, transactionIndex, logIndex, eventName, args: [ nftAddress, tokenId ] })
+      return res.json({ failed: "missing data" });
+    }
+
+    // Delete auction, update bids & token endtime
+    await Auction.deleteMany({
+      minter: nftAddress,
+      tokenID: tokenId,
+    });
+    await Bid.updateMany({
+      minter: nftAddress,
+      tokenID: tokenId,
+    }, { auctionActive: false, winningBid: false });
+
+    const token = await NFTITEM.findOne({
+      contractAddress: nftAddress,
+      tokenID: tokenId,
+    });
+    if (token) {
+      token.saleEndsAt = null;
+      await token.save();
+    }
+
+    // TODO enable notifications
+    // const bid = await Bid.findOne({
+    //   minter: nftAddress,
+    //   tokenID: tokenID,
+    // });
+    // if (bid) {
+    //   let bidder = bid.bidder;
+    //   let account = await Account.findOne({ address: bidder });
+    //   // check if user listens
+    //   let ns = await NotificationSetting.findOne({ address: bidder });
+    //   if (account && ns.sAuctionOfBidCancel) {
+    //     let to = account.email;
+    //     let alias = account.alias;
+    //     let collectionName = await getCollectionName(nftAddress);
+    //     let tokenName = await get721ItemName(nftAddress, tokenID);
+    //     let data = {
+    //       type: "auction",
+    //       to: to,
+    //       event: "AuctionCancelled",
+    //       subject: "Auction cancelled!",
+    //       alias: alias,
+    //       collectionName: collectionName,
+    //       tokenName: tokenName,
+    //       tokenID: tokenID,
+    //       nftAddress: nftAddress,
+    //     };
+    //     sendEmail(data);
+    //   }
+    // }
+
+    return res.json({ status: "success"});
   } catch (error) {
-    return res.status(400);
+    console.error(error);
+    return res.json({ status: "failed", error });
   }
 });
 
 router.post("updateAuctionStartTime", service_auth, async (req, res) => {
   try {
-    let nftAddress = req.body.nftAddress;
-    let tokenID = req.body.tokenID;
-    let startTime = parseFloat(req.body.startTime);
-    tokenID = parseInt(tokenID);
-    try {
+    const { event: eventName, blockNumber, transactionHash, transactionIndex, logIndex, args } = req.body;
+    const [ nftAddress, tokenIdBN, startTimeBN ] = args;
+    const tokenId = parseInt(tokenIdBN.hex)
+    const startTime = parseInt(startTimeBN.hex)
+
+    if (!nftAddress || !tokenId || !startTimeBN) {
+      await EventDeadLetterQueue.create({ blockNumber, transactionHash, transactionIndex, logIndex, eventName, args: [ nftAddress, tokenId, startTime ] })
+      return res.json({ failed: "missing data" });
+    }
+
       let auction = await Auction.findOne({
         minter: nftAddress,
-        tokenID: tokenID,
+        tokenID: tokenId,
       });
       if (auction) {
-        auction.startTime = startTime;
+        auction.startTime = new Date(parseInt(startTime) * 1000);
         await auction.save();
       }
-    } catch (error) {}
-    return res.json({});
+    return res.json({ status: "success"});
   } catch (error) {
-    return res.json({ status: "failed" });
+    console.error(error);
+    return res.json({ status: "failed", error });
   }
 });
 
 router.post("updateAuctionEndTime", service_auth, async (req, res) => {
   try {
-    let nftAddress = req.body.nftAddress;
-    let tokenID = req.body.tokenID;
-    let endTime = parseFloat(req.body.endTime);
-    tokenID = parseInt(tokenID);
-    // update saleEndsAt for 721 tk
-    try {
-      let tk = await NFTITEM.findOne({
-        contractAddress: nftAddress,
-        tokenID: tokenID,
-      });
-      if (tk) {
-        tk.saleEndsAt = endTime;
-        await tk.save();
-      }
-    } catch (error) {}
-    try {
-      let auction = await Auction.findOne({
-        minter: nftAddress,
-        tokenID: tokenID,
-      });
-      if (auction) {
-        auction.endTime = endTime;
-        await auction.save();
-      }
-    } catch (error) {}
-    return res.json({});
+    const { event: eventName, blockNumber, transactionHash, transactionIndex, logIndex, args } = req.body;
+    const [ nftAddress, tokenIdBN, endTimeBN ] = args;
+    const tokenId = parseInt(tokenIdBN.hex)
+    const endTime = parseInt(endTimeBN.hex)
+
+    if (!nftAddress || !tokenId || !endTimeBN) {
+      await EventDeadLetterQueue.create({ blockNumber, transactionHash, transactionIndex, logIndex, eventName, args: [ nftAddress, tokenId, endTime ] })
+      return res.json({ failed: "missing data" });
+    }
+
+    let auction = await Auction.findOne({
+      minter: nftAddress,
+      tokenID: tokenId,
+    });
+    if (auction) {
+      auction.endtime = new Date(parseInt(endTime) * 1000);
+      await auction.save();
+    }
+
+    const updateToken = await NFTITEM.findOne({
+      contractAddress: nftAddress,
+      tokenID: tokenId,
+    });
+
+    //TODO is this needed?
+    if (updateToken) {
+      updateToken.saleEndsAt = parseInt(endTime) * 1000;
+      await updateToken.save();
+    }
+
+    return res.json({ status: "success"});
   } catch (error) {
-    return res.json({ status: "failed" });
+    console.error(error);
+    return res.json({ status: "failed", error });
   }
 });
 
 router.post("/updateAuctionReservePrice", service_auth, async (req, res) => {
   try {
-    let nftAddress = req.body.nftAddress;
-    let tokenID = parseInt(req.body.tokenID);
-    let paymentToken = toLowerCase(paymentToken);
-    let reservePrice = reservePrice(req.body.reservePrice);
-    let bid = await Bid.findOne({
-      minter: nftAddress,
-      tokenID: tokenID,
-    });
-    if (bid) {
-      let bidder = bid.bidder;
-      let account = await Account.findOne({ address: bidder });
+    const { event: eventName, blockNumber, transactionHash, transactionIndex, logIndex, args } = req.body;
+    const [ nftAddress, tokenIdBN, payToken, reservePriceBN ] = args;
+    const tokenId = parseInt(tokenIdBN.hex)
+    const auctionPayToken = PAYTOKENS.find((token) => token.address === payToken.toLowerCase());
+    const reservePrice = auctionPayToken && ethers.utils.formatUnits(ethers.BigNumber.from(reservePriceBN.hex), auctionPayToken.decimals);
 
-      // check if user is listening for this event
-      let ns = await NotificationSetting.findOne({ address: bidder });
-      if (account && ns.sNftAuctionPrice) {
-        let to = account.email;
-        let alias = account.alias;
-        let collectionName = await getCollectionName(nftAddress);
-        let tokenName = await get721ItemName(nftAddress, tokenID);
-        let data = {
-          type: "auction",
-          to: to,
-          event: "UpdateAuctionReservePrice",
-          subject: "NFT Auction Price Updated",
-          alias: alias,
-          collectionName: collectionName,
-          tokenName: tokenName,
-          tokenID: tokenID,
-          nftAddress: nftAddress,
-          newPrice: reservePrice,
-          paymentToken: paymentToken,
-        };
-        sendEmail(data);
-      }
+    if (!nftAddress || !tokenId || !auctionPayToken || !reservePrice) {
+      await EventDeadLetterQueue.create({ blockNumber, transactionHash, transactionIndex, logIndex, eventName, args: [ nftAddress, tokenId, payToken, reservePrice ] })
+      return res.json({ failed: "missing data" });
     }
-    // now send to followers notifications
-    notifications.notifyAuctionPriceUpdate(
-      nftAddress,
-      tokenID,
-      reservePrice,
-      paymentToken
-    );
-    return res.json({});
+
+    const auction = await Auction.findOne({
+      minter: nftAddress,
+      tokenID: tokenId,
+    });
+    if (auction) {
+      auction.reservePrice = reservePrice;
+      await auction.save();
+    }
+    return res.json({ status: "success"});
   } catch (error) {
-    return res.json({ status: "failed" });
+    console.error(error);
+    return res.json({ status: "failed", error });
   }
 });
 
 router.post("/bidPlaced", service_auth, async (req, res) => {
   try {
-    let nftAddress = req.body.nftAddress;
-    let tokenID = req.body.tokenID;
-    let bidder = req.body.bidder;
-    let bid = req.body.bid;
-    bid = parseFloat(bid);
-    tokenID = parseInt(tokenID);
-    try {
-      let tk = await NFTITEM.findOne({
-        tokenID: tokenID,
-        contractAddress: nftAddress,
-      });
+    const { event: eventName, blockNumber, transactionHash, transactionIndex, logIndex, args } = req.body;
+    const [ nftAddress, tokenIdBN, bidder, bidBN ] = args;
+    const tokenId = parseInt(tokenIdBN.hex)
 
-      // there is only 1 bidder, the top bidder will be the only one who is selected
-      if (tk) {
-        let address = tk.owner;
-        let account = await Account.findOne({ address: address });
-        // check if user is listening for this event
-        let ns = await NotificationSetting.findOne({ address: address });
-        if (account && ns.sNftBidToAuction) {
-          let to = account.email;
-          let alias = account.alias;
-          let collectionName = await getCollectionName(nftAddress);
-          let tokenName = await get721ItemName(nftAddress, tokenID);
-          let bidderAlias = await getUserAlias(bidder);
-          let data = {
-            type: "auction",
-            to: to,
-            event: "BidPlaced",
-            subject: "You got a bid for your item!",
-            alias: alias,
-            bidderAlias: bidderAlias,
-            collectionName: collectionName,
-            tokenName: tokenName,
-            tokenID: tokenID,
-            nftAddress: nftAddress,
-            bid: bid,
-          };
-          sendEmail(data);
-        }
-      }
-      await Bid.deleteMany({
-        minter: nftAddress,
-        tokenID: tokenID,
-      });
-      let newBid = new Bid();
-      newBid.minter = nftAddress;
-      newBid.tokenID = tokenID;
-      newBid.bidder = bidder;
-      newBid.bid = bid;
-      await newBid.save();
-    } catch (error) {}
-    return res.json({});
+    const auction = await Auction.findOne({
+      minter: nftAddress,
+      tokenID: tokenId,
+    });
+
+    const auctionPayToken = PAYTOKENS.find((token) => token.symbol === auction?.paymentToken);
+    const bid = auctionPayToken && ethers.utils.formatUnits(ethers.BigNumber.from(bidBN.hex), auctionPayToken.decimals);
+
+    if (!nftAddress || !tokenId || !bidder || !bid || !auction) {
+      await EventDeadLetterQueue.create({ blockNumber, transactionHash, transactionIndex, logIndex, eventName, args: [ nftAddress, tokenId, payToken, reservePrice ] })
+      return res.json({ failed: "missing data" });
+    }
+
+    // Current winning bid to false
+    await Bid.updateMany({
+      minter: nftAddress,
+      tokenID: tokenId,
+      auctionActive: true,
+    }, { winningBid: false })
+
+    // Create new winning bid
+    const createBid = {
+      minter: nftAddress,
+      tokenID: tokenId,
+      bidder,
+      bid,
+      paymentToken: auction.paymentToken,
+      auctionActive: true,
+      winningBid: true,
+    }
+    await Bid.create(createBid);
+
+    return res.json({status: "success"});
   } catch (error) {
-    return res.json({ status: "failed" });
+    console.error(error);
+    return res.json({ status: "failed", error });
   }
 });
 
 router.post("/bidWithdrawn", service_auth, async (req, res) => {
   try {
-    let nftAddress = req.body.nftAddress;
-    let tokenID = req.body.tokenID;
-    let bidder = req.body.bidder;
-    let bid = req.body.bid;
-    bid = parseFloat(bid);
-    tokenID = parseInt(tokenID);
-    // send mail
-    let tk = await NFTITEM.findOne({
-      tokenID: tokenID,
-      contractAddress: nftAddress,
+    const { event: eventName, blockNumber, transactionHash, transactionIndex, logIndex, args } = req.body;
+    const [ nftAddress, tokenIdBN, bidder, bidBN ] = args;
+    const tokenId = parseInt(tokenIdBN.hex)
+
+    const auction = await Auction.findOne({
+      minter: nftAddress,
+      tokenID: tokenId,
     });
-    if (tk) {
-      let address = tk.owner;
-      let account = await Account.findOne({ address: address });
-      // check if user is listening
-      let ns = await NotificationSetting.findOne({ address: address });
-      if (account && ns.sNftBidToAuctionCancel) {
-        let to = account.email;
-        let alias = account.alias;
-        let collectionName = await getCollectionName(nftAddress);
-        let tokenName = await get721ItemName(nftAddress, tokenID);
-        let bidderAlias = await getUserAlias(bidder);
-        let data = {
-          type: "auction",
-          to: to,
-          event: "BidWithdrawn",
-          subject: "You got a bid withdrawn for your item!",
-          alias: alias,
-          bidderAlias: bidderAlias,
-          collectionName: collectionName,
-          tokenName: tokenName,
-          tokenID: tokenID,
-          nftAddress: nftAddress,
-          bid: bid,
-        };
-        sendEmail(data);
-      }
-    } else {
+
+    const auctionPayToken = PAYTOKENS.find((token) => token.symbol === auction?.paymentToken);
+    const bid = ethers.utils.formatUnits(ethers.BigNumber.from(bidBN.hex), auctionPayToken.decimals);
+
+    if (!nftAddress || !tokenId || !bidder || !bidBN || !auction) {
+      await EventDeadLetterQueue.create({ blockNumber, transactionHash, transactionIndex, logIndex, eventName, args: [ nftAddress, tokenId, payToken, reservePrice ] })
+      return res.json({ failed: "missing data" });
     }
-    // remove bids
-    try {
-      nftAddress = nftAddress;
-      bidder = bidder;
-      await Bid.deleteMany({
-        minter: nftAddress,
-        tokenID: tokenID,
-      });
-    } catch (error) {}
-    return res.json({});
+
+    await Bid.updateOne({minter: nftAddress, tokenID: tokenId, bidder, bid }, { withdrawn: true })
+
+    return res.json({status: "success"});
   } catch (error) {
-    return res.json({ status: "failed" });
+    console.error(error);
+    return res.json({ status: "failed", error });
   }
 });
 
 router.post("/auctionResulted", service_auth, async (req, res) => {
   try {
-    let nftAddress = req.body.nftAddress;
-    let tokenID = parseInt(req.body.tokenID);
-    let winner = req.body.winner;
-    let winningBid = parseFloat(req.body.winningBid);
-    let paymentToken = toLowerCase(req.body.paymentToken);
-    let priceInUSD = winningBid * getPrice(paymentToken);
-    try {
-      // send mail
-      try {
-        let account = await Account.findOne({ address: winner });
-        // check if user listens
-        let ns = await NotificationSetting.findOne({ address: winner });
-        if (account && ns.sAuctionWin) {
-          let to = account.email;
-          let alias = account.alias;
-          let collectionName = await getCollectionName(nftAddress);
-          let tokenName = await get721ItemName(nftAddress, tokenID);
-          let data = {
-            type: "auction",
-            to: to,
-            event: "AuctionResulted",
-            subject: "You won the NFT Item!",
-            alias: alias,
-            collectionName: collectionName,
-            tokenName: tokenName,
-            tokenID: tokenID,
-            nftAddress: nftAddress,
-            winningBid: winningBid,
-            paymentToken: paymentToken,
-            priceInUSD: priceInUSD,
-          };
-          sendEmail(data);
-        }
-      } catch (error) {}
-      // update the last sale price
-      let token = await NFTITEM.findOne({
-        contractAddress: nftAddress,
-        tokenID: tokenID,
-      });
-      if (token) {
-        token.price = winningBid;
-        token.paymentToken = paymentToken;
-        token.priceInUSD = priceInUSD;
-        token.lastSalePrice = winningBid;
-        token.lastSalePricePaymentToken = paymentToken;
-        token.lastSalePriceInUSD = lastSalePriceInUSD;
-        token.soldAt = new Date();
-        // update sale ends at as well
-        token.saleEndsAt = null;
-        await token.save();
-        try {
-          let from = token.owner;
-          let history = new TradeHistory();
-          history.collectionAddress = nftAddress;
-          history.tokenID = tokenID;
-          history.from = from;
-          history.to = winner;
-          history.price = winningBid;
-          history.paymentToken = paymentToken;
-          history.priceInUSD = priceInUSD;
-          history.isAuction = true;
-          await history.save();
-        } catch (error) {}
-      }
+    const { event: eventName, blockNumber, transactionHash, transactionIndex, logIndex, args } = req.body;
+    const [ nftAddress, tokenIdBN, winner, paymentToken, unitPriceBN, winningBidBN ] = args;
+    const tokenId = parseInt(tokenIdBN.hex)
 
-      try {
-        await Auction.deleteMany({
-          minter: nftAddress,
-          tokenID: tokenID,
-        });
-      } catch (error) {}
-      try {
-        await Bid.deleteMany({
-          minter: nftAddress,
-          tokenID: tokenID,
-        });
-      } catch (error) {}
-    } catch (error) {}
-    return res.json({});
-  } catch (error) {
-    return res.json({ status: "failed" });
-  }
-});
+    const auctionPayToken = PAYTOKENS.find((token) => token.symbol === paymentToken.toLowerCase());
+    const winningBid = ethers.utils.formatUnits(ethers.BigNumber.from(winningBidBN.hex), auctionPayToken.decimals);
+    const unitPrice = ethers.utils.formatUnits(ethers.BigNumber.from(unitPriceBN.hex), auctionPayToken.decimals);
 
-router.post("/auctionCancelled", service_auth, async (req, res) => {
-  try {
-    let nftAddress = req.body.nftAddress;
-    let tokenID = req.body.tokenID;
-    tokenID = parseInt(tokenID);
-    // first send email
-    let bid = await Bid.findOne({
-      minter: nftAddress,
-      tokenID: tokenID,
-    });
-    if (bid) {
-      let bidder = bid.bidder;
-      let account = await Account.findOne({ address: bidder });
-      // check if user listens
-      let ns = await NotificationSetting.findOne({ address: bidder });
-      if (account && ns.sAuctionOfBidCancel) {
-        let to = account.email;
-        let alias = account.alias;
-        let collectionName = await getCollectionName(nftAddress);
-        let tokenName = await get721ItemName(nftAddress, tokenID);
-        let data = {
-          type: "auction",
-          to: to,
-          event: "AuctionCancelled",
-          subject: "Auction cancelled!",
-          alias: alias,
-          collectionName: collectionName,
-          tokenName: tokenName,
-          tokenID: tokenID,
-          nftAddress: nftAddress,
-        };
-        sendEmail(data);
-      }
+    if (!nftAddress || !tokenId || !winningBid) {
+      await EventDeadLetterQueue.create({ blockNumber, transactionHash, transactionIndex, logIndex, eventName, args: [ nftAddress, tokenId, winner, paymentToken, unitPrice, winningBid ] })
+      return res.json({ failed: "missing data" });
     }
 
-    // update
-    try {
-      let tk = await NFTITEM.findOne({
-        contractAddress: nftAddress,
-        tokenID: tokenID,
-      });
-      if (tk) {
-        tk.saleEndsAt = new null();
-        await tk.save();
-      }
-    } catch (error) {}
-    try {
-      await Auction.deleteMany({
-        minter: nftAddress,
-        tokenID: tokenID,
-      });
-      await Bid.deleteMany({
-        minter: nftAddress,
-        tokenID: tokenID,
-      });
-    } catch (error) {}
-    return res.json({});
+    // Delete auction, update bids & token endtime
+    await Auction.deleteMany({
+      minter: nftAddress,
+      tokenID: tokenId,
+    });
+    await Bid.updateMany({
+      minter: nftAddress,
+      tokenID: tokenId,
+      bidder: { $ne: winningBid }
+    }, { auctionActive: false, winningBid: false });
+    await Bid.updateOne({
+      minter: nftAddress,
+      tokenID: tokenId,
+      bidder: winningBid,
+    }, { auctionActive: false });
+
+    const token = await NFTITEM.findOne({
+      contractAddress: nftAddress,
+      tokenID: tokenID,
+    });
+    if (token) {
+      token.price = winningBid;
+      token.paymentToken = paymentToken;
+      token.priceInUSD = unitPrice;
+      token.lastSalePrice = winningBid;
+      token.lastSalePricePaymentToken = paymentToken;
+      token.lastSalePriceInUSD = unitPrice * winningBid;
+      token.soldAt = new Date();
+      // update sale ends at as well
+      token.saleEndsAt = null;
+      await token.save();
+
+      const from = token.owner;
+      const history = new TradeHistory();
+      history.collectionAddress = nftAddress;
+      history.tokenID = tokenID;
+      history.from = from;
+      history.to = winner;
+      history.price = winningBid;
+      history.paymentToken = paymentToken;
+      history.priceInUSD = unitPrice;
+      history.isAuction = true;
+      await history.save();
+    }
+
+    return res.json({ status: "success"});
   } catch (error) {
-    return res.json({ status: "failed" });
+    console.error(error);
+    return res.json({ status: "failed", error });
   }
 });
 
 router.post("/bidRefunded", service_auth, async (req, res) => {
+  // TODO do we need history for this
   try {
-    let nft = toLowerCase(req.body.nft);
-    let tokenID = parseInt(req.body.tokenID);
-    let bidder = toLowerCase(req.body.bidder);
-    let bid = parseFloat(req.body.bid);
+    // let nft = toLowerCase(req.body.nft);
+    // let tokenID = parseInt(req.body.tokenID);
+    // let bidder = toLowerCase(req.body.bidder);
+    // let bid = parseFloat(req.body.bid);
     // notify user that his bid is refunded
     return res.json({});
   } catch (error) {

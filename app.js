@@ -49,6 +49,7 @@ require("./models/turkwork");
 require("./models/sitelock");
 require("./models/paytoken");
 require("./models/unlockable");
+require("./models/events_deadletter_queue");
 
 app.use(bodyParser.json());
 app.use(express.json());
