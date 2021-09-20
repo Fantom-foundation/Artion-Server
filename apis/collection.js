@@ -146,7 +146,7 @@ router.post("/collectiondetails", auth, async (req, res) => {
       console.log("symbol is", symbol);
       sc_1155.symbol = symbol || "Symbol";
       sc_1155.isVerified = true;
-      sc_1155.isAppropriate = isInternal;
+      sc_1155.isAppropriate = true;
       await sc_1155.save();
       // save new category
       let category = new Category();
@@ -165,7 +165,7 @@ router.post("/collectiondetails", auth, async (req, res) => {
         let symbol = await getSymbol(erc721Address);
         sc_721.symbol = symbol || "Symbol";
         sc_721.isVerified = true;
-        sc_721.isAppropriate = isInternal;
+        sc_721.isAppropriate = true;
         await sc_721.save();
       }
       let category = new Category();
