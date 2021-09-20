@@ -196,6 +196,7 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
   try {
     form.parse(req, async (err, fields, files) => {
       if (err) {
+        console.error("[1] uploadToIPFSerr: ", {err});
         return res.status(400).json({
           status: "failed",
         });
@@ -213,9 +214,8 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
         let royalty = fields.royalty;
 
         let xtraUrl = fields.xtra;
-        console.log(xtraUrl);
         if (xtraUrl && !validUrl.isUri(xtraUrl)) {
-          console.log("invalid xtra url");
+          console.error("[2] uploadToIPFSerr: ", {xtraUrl});
           return res.status(400).json({
             status: "failed",
           });
@@ -230,6 +230,7 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
         imgData = imgData.replace(`data:image\/${extension};base64,`, "");
         fs.writeFile(uploadPath + imageFileName, imgData, "base64", (err) => {
           if (err) {
+            console.error("[3] uploadToIPFSerr: ", {err});
             return res.status(400).json({
               status: "failed to save an image file",
               err,
