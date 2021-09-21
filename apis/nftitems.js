@@ -1,55 +1,63 @@
-require("dotenv").config();
-const router = require("express").Router();
-const ethers = require("ethers");
+require('dotenv').config();
+const router = require('express').Router();
+const ethers = require('ethers');
 
-const mongoose = require("mongoose");
-const NFTITEM = mongoose.model("NFTITEM");
-const ERC1155HOLDING = mongoose.model("ERC1155HOLDING");
-const Category = mongoose.model("Category");
-const Collection = mongoose.model("Collection");
-const Listing = mongoose.model("Listing");
-const Offer = mongoose.model("Offer");
-const Bid = mongoose.model("Bid");
-const Auction = mongoose.model("Auction");
-const Account = mongoose.model("Account");
-const BundleInfo = mongoose.model("BundleInfo");
-const Bundle = mongoose.model("Bundle");
-const BundleListing = mongoose.model("BundleListing");
-const BundleOffer = mongoose.model("BundleOffer");
-const TradeHistory = mongoose.model("TradeHistory");
-const UnlockableContents = mongoose.model("UnlockableContents");
+const mongoose = require('mongoose');
+const NFTITEM = mongoose.model('NFTITEM');
+const ERC1155HOLDING = mongoose.model('ERC1155HOLDING');
+const Category = mongoose.model('Category');
+const Collection = mongoose.model('Collection');
+const Listing = mongoose.model('Listing');
+const Offer = mongoose.model('Offer');
+const Bid = mongoose.model('Bid');
+const Auction = mongoose.model('Auction');
+const Account = mongoose.model('Account');
+const BundleInfo = mongoose.model('BundleInfo');
+const Bundle = mongoose.model('Bundle');
+const BundleListing = mongoose.model('BundleListing');
+const BundleOffer = mongoose.model('BundleOffer');
+const TradeHistory = mongoose.model('TradeHistory');
+const UnlockableContents = mongoose.model('UnlockableContents');
 
-const orderBy = require("lodash.orderby");
-const toLowerCase = require("../utils/utils");
+const orderBy = require('lodash.orderby');
+const toLowerCase = require('../utils/utils');
 
-const { getPrice } = require("../services/price.feed");
-const sortBy = require("lodash.sortby");
+const { getPrice } = require('../services/price.feed');
+const sortBy = require('lodash.sortby');
 
 const provider = new ethers.providers.JsonRpcProvider(
   process.env.NETWORK_RPC,
   parseInt(process.env.NETWORK_CHAINID)
 );
 
-const nonImage = "non-image";
+const nonImage = 'non-image';
 
-router.post("/increaseViews", async (req, res) => {
+const updatePrices = (items) => {
+  items.map((item) => {
+    item.currentPriceInUSD = item.price * getPrice(item.paymentToken);
+  });
+
+  return items;
+};
+
+router.post('/increaseViews', async (req, res) => {
   try {
     let contractAddress = req.body.contractAddress;
     contractAddress = toLowerCase(contractAddress);
     let tokenID = parseInt(req.body.tokenID);
     let token = await NFTITEM.findOne({
       contractAddress: contractAddress,
-      tokenID: tokenID,
+      tokenID: tokenID
     });
     token.viewed = token.viewed + 1;
     let _token = await token.save();
     return res.json({
-      status: "success",
-      data: _token.viewed,
+      status: 'success',
+      data: _token.viewed
     });
   } catch (error) {
     return res.status(400).json({
-      status: "failed",
+      status: 'failed'
     });
   }
 });
@@ -57,59 +65,67 @@ router.post("/increaseViews", async (req, res) => {
 const sortItems = (_allTokens, sortby) => {
   let tmp = [];
   switch (sortby) {
-    case "createdAt": {
+    case 'createdAt': {
       tmp = orderBy(
         _allTokens,
         ({ createdAt }) => createdAt || new Date(1970, 1, 1),
-        ["desc"]
+        ['desc']
       );
       break;
     }
-    case "oldest": {
+    case 'oldest': {
       tmp = orderBy(
         _allTokens,
         ({ createdAt }) => createdAt || new Date(1970, 1, 1),
-        ["asc"]
+        ['asc']
       );
       break;
     }
-    case "price": {
-      tmp = orderBy(_allTokens, ({ priceInUSD }) => priceInUSD || 0, ["desc"]);
+    case 'price': {
+      tmp = orderBy(
+        _allTokens,
+        ({ currentPriceInUSD }) => currentPriceInUSD || 0,
+        ['desc']
+      );
       break;
     }
-    case "cheapest": {
-      tmp = orderBy(_allTokens, ({ priceInUSD }) => priceInUSD || 0, ["asc"]);
+    case 'cheapest': {
+      tmp = orderBy(
+        _allTokens,
+        ({ currentPriceInUSD }) => currentPriceInUSD || 0,
+        ['asc']
+      );
       break;
     }
-    case "lastSalePrice": {
+    case 'lastSalePrice': {
       tmp = orderBy(
         _allTokens,
         ({ lastSalePriceInUSD }) => lastSalePriceInUSD || 0,
-        ["desc"]
+        ['desc']
       );
       break;
     }
-    case "viewed": {
-      tmp = orderBy(_allTokens, ({ viewed }) => viewed || 0, ["desc"]);
+    case 'viewed': {
+      tmp = orderBy(_allTokens, ({ viewed }) => viewed || 0, ['desc']);
       break;
     }
-    case "listedAt": {
+    case 'listedAt': {
       tmp = orderBy(
         _allTokens,
         ({ listedAt }) => listedAt || new Date(1970, 1, 1),
-        ["desc"]
+        ['desc']
       );
       break;
     }
-    case "soldAt": {
+    case 'soldAt': {
       tmp = orderBy(
         _allTokens,
         ({ soldAt }) => soldAt || new Date(1970, 1, 1),
-        ["desc"]
+        ['desc']
       );
       break;
     }
-    case "saleEndsAt": {
+    case 'saleEndsAt': {
       tmp = orderBy(
         _allTokens,
         ({ saleEndsAt }) =>
@@ -118,7 +134,7 @@ const sortItems = (_allTokens, sortby) => {
               ? saleEndsAt - new Date()
               : 1623424669
             : 1623424670,
-        ["asc"]
+        ['asc']
       );
       break;
     }
@@ -143,96 +159,96 @@ const selectTokens = async (req, res) => {
     // get options from request & process
     let selectedCollections = req.body.collectionAddresses; //collection addresses from request
     let filters = req.body.filterby; //status -> array or null
-    console.log("filters", filters);
+    console.log('filters', filters);
     let sortby = req.body.sortby; //sort -> string param
     // create a sort by option
     let selectOption;
     let _sortBy = sortby;
-    if (sortby == "oldest") sortby = "createdAt";
-    if (sortby == "lastSalePrice")
+    if (sortby == 'oldest') sortby = 'createdAt';
+    if (sortby == 'lastSalePrice')
       selectOption = [
-        "contractAddress",
-        "tokenID",
-        "tokenURI",
-        "tokenType",
-        "thumbnailPath",
-        "name",
-        "imageURL",
-        "supply",
-        "price",
-        "paymentToken",
-        "priceInUSD",
-        "liked",
-        "isAppropriate",
-        "saleEndsAt",
-        "createdAt",
+        'contractAddress',
+        'tokenID',
+        'tokenURI',
+        'tokenType',
+        'thumbnailPath',
+        'name',
+        'imageURL',
+        'supply',
+        'price',
+        'paymentToken',
+        'priceInUSD',
+        'liked',
+        'isAppropriate',
+        'saleEndsAt',
+        'createdAt',
         _sortBy,
-        "lastSalePricePaymentToken",
-        "lastSalePriceInUSD",
+        'lastSalePricePaymentToken',
+        'lastSalePriceInUSD'
       ];
-    else if (sortby == "saleEndsAt")
+    else if (sortby == 'saleEndsAt')
       selectOption = [
-        "contractAddress",
-        "tokenID",
-        "tokenURI",
-        "tokenType",
-        "thumbnailPath",
-        "name",
-        "imageURL",
-        "supply",
-        "price",
-        "paymentToken",
-        "priceInUSD",
-        "liked",
-        "isAppropriate",
-        "lastSalePrice",
-        "lastSalePricePaymentToken",
-        "lastSalePriceInUSD",
-        "createdAt",
-        _sortBy,
+        'contractAddress',
+        'tokenID',
+        'tokenURI',
+        'tokenType',
+        'thumbnailPath',
+        'name',
+        'imageURL',
+        'supply',
+        'price',
+        'paymentToken',
+        'priceInUSD',
+        'liked',
+        'isAppropriate',
+        'lastSalePrice',
+        'lastSalePricePaymentToken',
+        'lastSalePriceInUSD',
+        'createdAt',
+        _sortBy
       ];
-    else if (sortby == "createdAt")
+    else if (sortby == 'createdAt')
       selectOption = [
-        "contractAddress",
-        "tokenID",
-        "tokenURI",
-        "tokenType",
-        "thumbnailPath",
-        "name",
-        "imageURL",
-        "supply",
-        "price",
-        "paymentToken",
-        "priceInUSD",
-        "liked",
-        "isAppropriate",
-        "lastSalePrice",
-        "lastSalePricePaymentToken",
-        "lastSalePriceInUSD",
-        "saleEndsAt",
-        "createdAt",
+        'contractAddress',
+        'tokenID',
+        'tokenURI',
+        'tokenType',
+        'thumbnailPath',
+        'name',
+        'imageURL',
+        'supply',
+        'price',
+        'paymentToken',
+        'priceInUSD',
+        'liked',
+        'isAppropriate',
+        'lastSalePrice',
+        'lastSalePricePaymentToken',
+        'lastSalePriceInUSD',
+        'saleEndsAt',
+        'createdAt'
       ];
     else
       selectOption = [
-        "contractAddress",
-        "tokenID",
-        "tokenURI",
-        "tokenType",
-        "thumbnailPath",
-        "name",
-        "imageURL",
-        "supply",
-        "price",
-        "paymentToken",
-        "priceInUSD",
-        "liked",
-        "isAppropriate",
-        "lastSalePrice",
-        "lastSalePricePaymentToken",
-        "lastSalePriceInUSD",
-        "saleEndsAt",
-        "createdAt",
-        sortby,
+        'contractAddress',
+        'tokenID',
+        'tokenURI',
+        'tokenType',
+        'thumbnailPath',
+        'name',
+        'imageURL',
+        'supply',
+        'price',
+        'paymentToken',
+        'priceInUSD',
+        'liked',
+        'isAppropriate',
+        'lastSalePrice',
+        'lastSalePricePaymentToken',
+        'lastSalePriceInUSD',
+        'saleEndsAt',
+        'createdAt',
+        sortby
       ];
     let wallet = req.body.address; // account address from meta mask
     if (wallet) wallet = toLowerCase(wallet);
@@ -250,8 +266,8 @@ const selectTokens = async (req, res) => {
 
     if (category != undefined) {
       categoryCollections = await Collection.find({
-        categories: category,
-      }).select("erc721Address");
+        categories: category
+      }).select('erc721Address');
       categoryCollections = categoryCollections.map((c) =>
         toLowerCase(c.erc721Address)
       );
@@ -282,7 +298,7 @@ const selectTokens = async (req, res) => {
             ? { contractAddress: { $in: [...collections2filter] } }
             : {}),
           thumbnailPath: { $ne: nonImage },
-          isAppropriate: true,
+          isAppropriate: true
         };
         let allTokens = await NFTITEM.find(collectionFilters)
           .select(selectOption)
@@ -296,14 +312,14 @@ const selectTokens = async (req, res) => {
         let minterFilters = {
           ...(collections2filter != null
             ? { minter: { $in: [...collections2filter] } }
-            : {}),
+            : {})
         };
         let statusFilteredTokens = [];
-        if (filters.includes("hasBids")) {
+        if (filters.includes('hasBids')) {
           /* for buy now - pick from Bid */
           let tokens = await Bid.find(minterFilters).select([
-            "minter",
-            "tokenID",
+            'minter',
+            'tokenID'
           ]);
           if (tokens) {
             tokens.map((pair) => {
@@ -312,11 +328,11 @@ const selectTokens = async (req, res) => {
             });
           }
         }
-        if (filters.includes("buyNow")) {
+        if (filters.includes('buyNow')) {
           /* for had bids - pick from Listing */
           let tokens = await Listing.find(minterFilters).select([
-            "minter",
-            "tokenID",
+            'minter',
+            'tokenID'
           ]);
           if (tokens) {
             tokens.map((pair) => {
@@ -325,17 +341,17 @@ const selectTokens = async (req, res) => {
             });
           }
         }
-        if (filters.includes("hasOffers")) {
+        if (filters.includes('hasOffers')) {
           /* for has offers - pick from Offer */
           let minterFilters4Offer = {
             ...(collections2filter != null
               ? { minter: { $in: [...collections2filter] } }
-              : {}),
+              : {})
             // ...{ deadline: { $gt: new Date() } },
           };
           let tokens = await Offer.find(minterFilters4Offer).select([
-            "minter",
-            "tokenID",
+            'minter',
+            'tokenID'
           ]);
           if (tokens) {
             tokens.map((pair) => {
@@ -344,22 +360,22 @@ const selectTokens = async (req, res) => {
             });
           }
         }
-        if (filters.includes("onAuction")) {
+        if (filters.includes('onAuction')) {
           /* for on auction - pick from Auction */
-          console.log("filter encountered here");
+          console.log('filter encountered here');
           let minterFilters4Auction = {
             ...(collections2filter != null
               ? { minter: { $in: [...collections2filter] } }
-              : {}),
+              : {})
             // ...{ endTime: { $gt: new Date() } },
           };
-          console.log("minter filters for auction");
+          console.log('minter filters for auction');
           console.log(minterFilters4Auction);
           let tokens = await Auction.find(minterFilters4Auction).select([
-            "minter",
-            "tokenID",
+            'minter',
+            'tokenID'
           ]);
-          console.log("tokens in auction");
+          console.log('tokens in auction');
           console.log(tokens);
           if (tokens) {
             tokens.map((pair) => {
@@ -376,7 +392,7 @@ const selectTokens = async (req, res) => {
         let statusPromise = statusFilteredTokens.map(async (tk) => {
           let token = await NFTITEM.findOne({
             contractAddress: tk[0],
-            tokenID: tk[1],
+            tokenID: tk[1]
           }).select(selectOption);
           if (token) {
             allFilteredTokens.push(token);
@@ -393,7 +409,7 @@ const selectTokens = async (req, res) => {
       let holdingSupplies = new Map();
       let holdings = await ERC1155HOLDING.find({
         holderAddress: wallet,
-        supplyPerHolder: { $gt: 0 },
+        supplyPerHolder: { $gt: 0 }
       });
       let holders = holdings.map((holder) => {
         holdingSupplies.set(
@@ -414,14 +430,14 @@ const selectTokens = async (req, res) => {
             : {}),
           ...(wallet != null ? { owner: wallet } : {}),
           thumbnailPath: { $ne: nonImage },
-          isAppropriate: true,
+          isAppropriate: true
         };
         let collectionFilters1155 = {
           ...(collections2filter != null
             ? { contractAddress: { $in: [...collections2filter] } }
             : {}),
           thumbnailPath: { $ne: nonImage },
-          isAppropriate: true,
+          isAppropriate: true
         };
         let tokens_721 = await NFTITEM.find(collectionFilters721)
           .select(selectOption)
@@ -433,7 +449,7 @@ const selectTokens = async (req, res) => {
         _tokens_1155.map((token_1155) => {
           let isIncluded = isIncludedInArray(holders, [
             token_1155.contractAddress,
-            token_1155.tokenID,
+            token_1155.tokenID
           ]);
           if (isIncluded)
             tokens_1155.push({
@@ -459,7 +475,7 @@ const selectTokens = async (req, res) => {
               isAppropriate: token_1155.isAppropriate,
               holderSupply: holdingSupplies.get(
                 token_1155.contractAddress + token_1155.tokenID
-              ),
+              )
             });
         });
         let allTokens = [...tokens_721, ...tokens_1155];
@@ -472,14 +488,14 @@ const selectTokens = async (req, res) => {
         let minterFilters = {
           ...(collections2filter != null
             ? { minter: { $in: [...collections2filter] } }
-            : {}),
+            : {})
         };
         let statusFilteredTokens = [];
-        if (filters.includes("hasBids")) {
+        if (filters.includes('hasBids')) {
           /* for buy now - pick from Bid */
           let tokens = await Bid.find(minterFilters).select([
-            "minter",
-            "tokenID",
+            'minter',
+            'tokenID'
           ]);
           if (tokens) {
             tokens.map((pair) => {
@@ -488,11 +504,11 @@ const selectTokens = async (req, res) => {
             });
           }
         }
-        if (filters.includes("buyNow")) {
+        if (filters.includes('buyNow')) {
           /* for had bids - pick from Listing */
           let tokens = await Listing.find(minterFilters).select([
-            "minter",
-            "tokenID",
+            'minter',
+            'tokenID'
           ]);
           if (tokens) {
             tokens.map((pair) => {
@@ -501,11 +517,11 @@ const selectTokens = async (req, res) => {
             });
           }
         }
-        if (filters.includes("hasOffers")) {
+        if (filters.includes('hasOffers')) {
           /* for has offers - pick from Offer */
           let tokens = await Offer.find(minterFilters).select([
-            "minter",
-            "tokenID",
+            'minter',
+            'tokenID'
           ]);
           if (tokens) {
             tokens.map((pair) => {
@@ -514,11 +530,11 @@ const selectTokens = async (req, res) => {
             });
           }
         }
-        if (filters.includes("onAuction")) {
+        if (filters.includes('onAuction')) {
           /* for on auction - pick from Auction */
           let tokens = await Auction.find(minterFilters).select([
-            "minter",
-            "tokenID",
+            'minter',
+            'tokenID'
           ]);
           if (tokens) {
             tokens.map((pair) => {
@@ -543,19 +559,19 @@ const selectTokens = async (req, res) => {
             let token = await NFTITEM.findOne({
               contractAddress: tk[0],
               tokenID: tk[1],
-              owner: wallet,
+              owner: wallet
             }).select(selectOption);
             if (token) allFilteredTokens721.push(token);
           } else if (parseInt(tokenCategory[1]) == 1155) {
             let token = await NFTITEM.findOne({
               contractAddress: tk[0],
-              tokenID: tk[1],
+              tokenID: tk[1]
             }).select(selectOption);
             if (token) {
               if (
                 isIncludedInArray(holders, [
                   token.contractAddress,
-                  token.tokenID,
+                  token.tokenID
                 ])
               )
                 allFilteredTokens1155.push(token);
@@ -576,12 +592,12 @@ const getBundleItemDetails = async (bundleItem) => {
   try {
     let nftItem = await NFTITEM.findOne({
       contractAddress: bundleItem.contractAddress,
-      tokenID: bundleItem.tokenID,
+      tokenID: bundleItem.tokenID
     });
     if (nftItem)
       return {
         imageURL: nftItem.imageURL,
-        thumbnailPath: nftItem.thumbnailPath,
+        thumbnailPath: nftItem.thumbnailPath
       };
     else return {};
   } catch (error) {
@@ -595,7 +611,7 @@ const entailBundleInfoItems = async (bundleInfoItems) => {
     let detail = await getBundleItemDetails(bundleInfoItem);
     details.push({
       ...bundleInfoItem._doc,
-      ...detail,
+      ...detail
     });
   });
   await Promise.all(promise);
@@ -621,8 +637,8 @@ const selectBundles = async (req, res) => {
 
     if (category != undefined) {
       categoryCollections = await Collection.find({
-        categories: category,
-      }).select("erc721Address");
+        categories: category
+      }).select('erc721Address');
       categoryCollections = categoryCollections.map((c) =>
         toLowerCase(c.erc721Address)
       );
@@ -649,7 +665,7 @@ const selectBundles = async (req, res) => {
       let collectionFilters = {
         ...(collections2filter != null
           ? { contractAddress: { $in: [...collections2filter] } }
-          : {}),
+          : {})
       };
 
       let bundleInfos = await BundleInfo.find(collectionFilters);
@@ -663,8 +679,8 @@ const selectBundles = async (req, res) => {
       });
 
       let bundleFilter = {
-        ...(wallet != null ? { owner: { $regex: wallet, $options: "i" } } : {}),
-        ...{ _id: { $in: bundleIDs } },
+        ...(wallet != null ? { owner: { $regex: wallet, $options: 'i' } } : {}),
+        ...{ _id: { $in: bundleIDs } }
       };
 
       let bundles = await Bundle.find(bundleFilter);
@@ -689,11 +705,11 @@ const selectBundles = async (req, res) => {
           listedAt: bundle._doc.listedAt,
           soldAt: bundle._doc.soldAt,
           createdAt: bundle._doc.createdAt,
-          items: bundleItems,
+          items: bundleItems
         });
       });
       return data;
-    } else if (filters.includes("buyNow") || filters.includes("onAuction")) {
+    } else if (filters.includes('buyNow') || filters.includes('onAuction')) {
       /*
         when no status option 
          */
@@ -701,20 +717,20 @@ const selectBundles = async (req, res) => {
       let collectionFilters = {
         ...(collections2filter != null
           ? { contractAddress: { $in: [...collections2filter] } }
-          : {}),
+          : {})
       };
 
       let data = [];
       let filterBundleIDs = [];
-      if (filters.includes("buyNow")) {
-        let listedBundles = await BundleListing.find().select(["bundleID"]);
+      if (filters.includes('buyNow')) {
+        let listedBundles = await BundleListing.find().select(['bundleID']);
         let listedBundleIDs = listedBundles.map(
           (listedBundle) => listedBundle.bundleID
         );
         filterBundleIDs = [...filterBundleIDs, ...listedBundleIDs];
       }
-      if (filters.includes("hasOffers")) {
-        let offerBundles = await BundleOffer.find().select(["bundleID"]);
+      if (filters.includes('hasOffers')) {
+        let offerBundles = await BundleOffer.find().select(['bundleID']);
         let offerBundleIDs = offerBundles.map(
           (offerBundle) => offerBundle.bundleID
         );
@@ -730,8 +746,8 @@ const selectBundles = async (req, res) => {
         }
       });
       let bundleFilter = {
-        ...(wallet != null ? { owner: { $regex: wallet, $options: "i" } } : {}),
-        ...{ _id: { $in: bundleIDs } },
+        ...(wallet != null ? { owner: { $regex: wallet, $options: 'i' } } : {}),
+        ...{ _id: { $in: bundleIDs } }
       };
       let bundles = await Bundle.find(bundleFilter);
       bundles.map((bundle) => {
@@ -752,7 +768,7 @@ const selectBundles = async (req, res) => {
           listedAt: bundle._doc.listedAt,
           soldAt: bundle._doc.soldAt,
           createdAt: bundle._doc.createdAt,
-          items: bundleItems,
+          items: bundleItems
         });
       });
       return data;
@@ -764,7 +780,7 @@ const selectBundles = async (req, res) => {
       let collectionFilters = {
         ...(collections2filter != null
           ? { contractAddress: { $in: [...collections2filter] } }
-          : {}),
+          : {})
       };
       let bundleInfos = await BundleInfo.find(collectionFilters);
       bundleInfos = await entailBundleInfoItems(bundleInfos);
@@ -775,8 +791,8 @@ const selectBundles = async (req, res) => {
         }
       });
       let bundleFilter = {
-        ...(wallet != null ? { owner: { $regex: wallet, $options: "i" } } : {}),
-        ...{ _id: { $in: bundleIDs } },
+        ...(wallet != null ? { owner: { $regex: wallet, $options: 'i' } } : {}),
+        ...{ _id: { $in: bundleIDs } }
       };
       let bundles = await Bundle.find(bundleFilter);
       let data = [];
@@ -792,7 +808,7 @@ const selectBundles = async (req, res) => {
           thumbnailPath: bi.thumbnailPath,
           tokenID: bi.tokenID,
           tokenType: bi.tokenType,
-          tokenURI: bi.tokenURI,
+          tokenURI: bi.tokenURI
         }));
         data.push({
           viewed: bundle._doc.viewed,
@@ -808,7 +824,7 @@ const selectBundles = async (req, res) => {
           listedAt: bundle._doc.listedAt,
           soldAt: bundle._doc.soldAt,
           createdAt: bundle._doc.createdAt,
-          items: bundleItems,
+          items: bundleItems
         });
       });
       return data;
@@ -818,23 +834,25 @@ const selectBundles = async (req, res) => {
   }
 };
 
-router.post("/fetchTokens", async (req, res) => {
+router.post('/fetchTokens', async (req, res) => {
   let type = req.body.type; // type - item type
   let sortby = req.body.sortby; //sort -> string param
   let from = parseInt(req.body.from);
   let count = parseInt(req.body.count);
-  console.log("log from fetch tokens");
+  console.log('log from fetch tokens');
   console.log(count, from, type, sortby);
   let items = [];
-  if (type == "all") {
+  if (type == 'all') {
     let nfts = await selectTokens(req, res);
     let bundles = await selectBundles(req, res);
     items = [...nfts, ...bundles];
-  } else if (type == "single") {
+  } else if (type == 'single') {
     items = await selectTokens(req, res);
-  } else if (type == "bundle") {
+  } else if (type == 'bundle') {
     items = await selectBundles(req, res);
   }
+
+  items = updatePrices(items);
 
   let data = sortItems(items, sortby);
 
@@ -891,15 +909,15 @@ router.post("/fetchTokens", async (req, res) => {
       : {}),
     ...(sr.isAppropriate != null && sr.isAppropriate != undefined
       ? { isAppropriate: sr.isAppropriate }
-      : { isAppropriate: false }),
+      : { isAppropriate: false })
   }));
 
   return res.json({
-    status: "success",
+    status: 'success',
     data: {
       tokens: searchResults,
-      total: data.length,
-    },
+      total: data.length
+    }
   });
 });
 
@@ -908,40 +926,40 @@ const parseAddress = (data) => {
   return data.substring(0, 2) + data.substring(length - 40);
 };
 
-router.post("/transfer721History", async (req, res) => {
+router.post('/transfer721History', async (req, res) => {
   try {
     let tokenID = parseInt(req.body.tokenID);
     let address = toLowerCase(req.body.address);
     let history = await fetchTransferHistory721(address, tokenID);
     return res.json({
-      status: "success",
-      data: history,
+      status: 'success',
+      data: history
     });
   } catch (error) {
     console.log(error);
     return res.json({
-      status: "failed",
+      status: 'failed'
     });
   }
 });
 
-router.post("/transfer1155History", async (req, res) => {
+router.post('/transfer1155History', async (req, res) => {
   try {
     let tokenID = parseInt(req.body.tokenID);
     let address = toLowerCase(req.body.address);
     let history = await fetchTransferHistory1155(address, tokenID);
     return res.json({
-      status: "success",
-      data: history,
+      status: 'success',
+      data: history
     });
   } catch (error) {
     return res.json({
-      status: "failed",
+      status: 'failed'
     });
   }
 });
 
-router.post("/getSingleItemDetails", async (req, res) => {
+router.post('/getSingleItemDetails', async (req, res) => {
   try {
     let contractAddress = toLowerCase(req.body.contractAddress);
     let tokenID = parseInt(req.body.tokenID);
@@ -951,23 +969,23 @@ router.post("/getSingleItemDetails", async (req, res) => {
     let nft = await NFTITEM.findOne({
       contractAddress: contractAddress,
       tokenID: tokenID,
-      isAppropriate: true,
+      isAppropriate: true
     });
     if (!nft)
       return res.json({
-        status: "failed",
+        status: 'failed'
       });
     // content type
     let contentType = nft.contentType;
     // likes count
     let likes = nft ? nft.liked : 0;
     // token uri
-    let uri = nft ? nft.tokenURI : "";
+    let uri = nft ? nft.tokenURI : '';
     // get listings
     let listings = [];
     let _listings = await Listing.find({
       minter: contractAddress,
-      tokenID: tokenID,
+      tokenID: tokenID
     });
     let listingPromise = _listings.map(async (list) => {
       let account = await getAccountInfo(list.owner);
@@ -981,18 +999,18 @@ router.post("/getSingleItemDetails", async (req, res) => {
         priceInUSD: list.priceInUSD,
         paymentToken: list.paymentToken,
         alias: account ? account[0] : null,
-        image: account ? account[1] : null,
+        image: account ? account[1] : null
       });
     });
     await Promise.all(listingPromise);
-    listings = orderBy(listings, "price", "asc");
+    listings = orderBy(listings, 'price', 'asc');
 
     // get offers
     let offers = [];
 
     let _offers = await Offer.find({
-      minter: { $regex: new RegExp(contractAddress, "i") },
-      tokenID: tokenID,
+      minter: { $regex: new RegExp(contractAddress, 'i') },
+      tokenID: tokenID
     });
     let offerPromise = _offers.map(async (offer) => {
       let account = await getAccountInfo(offer.creator);
@@ -1006,27 +1024,27 @@ router.post("/getSingleItemDetails", async (req, res) => {
         priceInUSD: offer.priceInUSD,
         deadline: offer.deadline,
         alias: account ? account[0] : null,
-        image: account ? account[1] : null,
+        image: account ? account[1] : null
       });
     });
     await Promise.all(offerPromise);
     // get trade history
     let _history = await TradeHistory.find({
-      collectionAddress: { $regex: new RegExp(contractAddress, "i") },
-      tokenID: tokenID,
+      collectionAddress: { $regex: new RegExp(contractAddress, 'i') },
+      tokenID: tokenID
     })
       .select([
-        "from",
-        "to",
-        "tokenID",
-        "price",
-        "paymentToken",
-        "priceInUSD",
-        "value",
-        "createdAt",
-        "isAuction",
+        'from',
+        'to',
+        'tokenID',
+        'price',
+        'paymentToken',
+        'priceInUSD',
+        'value',
+        'createdAt',
+        'isAuction'
       ])
-      .sort({ createdAt: "desc" });
+      .sort({ createdAt: 'desc' });
     let history = [];
 
     let historyPromise = _history.map(async (hist) => {
@@ -1045,7 +1063,7 @@ router.post("/getSingleItemDetails", async (req, res) => {
         fromAlias: sender ? sender[0] : null,
         fromImage: sender ? sender[1] : null,
         toAlias: receiver ? receiver[0] : null,
-        toImage: receiver ? receiver[1] : null,
+        toImage: receiver ? receiver[1] : null
       });
     });
     await Promise.all(historyPromise);
@@ -1053,36 +1071,36 @@ router.post("/getSingleItemDetails", async (req, res) => {
     let nfts = await NFTITEM.find({
       contractAddress: contractAddress,
       tokenID: { $ne: tokenID },
-      isAppropriate: true,
+      isAppropriate: true
     })
-      .sort({ viewed: "desc" })
+      .sort({ viewed: 'desc' })
       .limit(10)
       .select([
-        "thumbnailPath",
-        "supply",
-        "price",
-        "paymentToken",
-        "priceInUSD",
-        "tokenType",
-        "tokenID",
-        "tokenURI",
-        "name",
-        "imageURL",
-        "liked",
-        "contractAddress",
-        "isAppropriate",
-        "lastSalePrice",
-        "lastSalePricePaymentToken",
-        "lastSalePriceInUSD",
-        "saleEndsAt",
+        'thumbnailPath',
+        'supply',
+        'price',
+        'paymentToken',
+        'priceInUSD',
+        'tokenType',
+        'tokenID',
+        'tokenURI',
+        'name',
+        'imageURL',
+        'liked',
+        'contractAddress',
+        'isAppropriate',
+        'lastSalePrice',
+        'lastSalePricePaymentToken',
+        'lastSalePriceInUSD',
+        'saleEndsAt'
       ]);
     let hasUnlockable = await UnlockableContents.findOne({
       contractAddress: contractAddress,
-      tokenID: tokenID,
+      tokenID: tokenID
     });
     hasUnlockable = hasUnlockable ? true : false;
     return res.json({
-      status: "success",
+      status: 'success',
       data: {
         tokenType,
         likes,
@@ -1092,13 +1110,13 @@ router.post("/getSingleItemDetails", async (req, res) => {
         history,
         nfts,
         contentType,
-        hasUnlockable,
-      },
+        hasUnlockable
+      }
     });
   } catch (error) {
     console.log(error);
     return res.json({
-      status: "failed",
+      status: 'failed'
     });
   }
 });
@@ -1129,11 +1147,11 @@ const fetchTransferHistory721 = async (address, tokenID) => {
     address: address,
     fromBlock: 0,
     topics: [
-      ethers.utils.id("Transfer(address,address,uint256)"),
+      ethers.utils.id('Transfer(address,address,uint256)'),
       null,
       null,
-      ethers.utils.hexZeroPad(tokenID, 32),
-    ],
+      ethers.utils.hexZeroPad(tokenID, 32)
+    ]
   });
 
   let history = [];
@@ -1151,7 +1169,7 @@ const fetchTransferHistory721 = async (address, tokenID) => {
       fromAlias: sender ? sender[0] : null,
       fromImage: sender ? sender[1] : null,
       toAlias: receiver ? receiver[0] : null,
-      toImage: receiver ? receiver[1] : null,
+      toImage: receiver ? receiver[1] : null
     });
   });
   await Promise.all(promise);
@@ -1160,7 +1178,7 @@ const fetchTransferHistory721 = async (address, tokenID) => {
 const parseSingleTrasferData = (data) => {
   return [
     parseInt(data.substring(0, 66), 16),
-    parseInt(data.substring(66), 16),
+    parseInt(data.substring(66), 16)
   ];
 };
 
@@ -1170,28 +1188,28 @@ const fetchTransferHistory1155 = async (address, id) => {
     fromBlock: 0,
     topics: [
       ethers.utils.id(
-        "TransferSingle(address,address,address,uint256,uint256)"
+        'TransferSingle(address,address,address,uint256,uint256)'
       ),
       null,
       null,
       null,
       null,
-      null,
-    ],
+      null
+    ]
   });
   let batchTransferEvts = await provider.getLogs({
     address: address,
     fromBlock: 0,
     topics: [
       ethers.utils.id(
-        "TransferBatch(address,address,address,uint256[],uint256[])"
+        'TransferBatch(address,address,address,uint256[],uint256[])'
       ),
       null,
       null,
       null,
       null,
-      null,
-    ],
+      null
+    ]
   });
 
   let history = [];
@@ -1219,7 +1237,7 @@ const fetchTransferHistory1155 = async (address, id) => {
         fromAlias: sender ? sender[0] : null,
         fromImage: sender ? sender[1] : null,
         toAlias: receiver ? receiver[0] : null,
-        toImage: receiver ? receiver[1] : null,
+        toImage: receiver ? receiver[1] : null
       });
     }
   });
@@ -1247,7 +1265,7 @@ const fetchTransferHistory1155 = async (address, id) => {
             fromAlias: sender ? sender[0] : null,
             fromImage: sender ? sender[1] : null,
             toAlias: receiver ? receiver[0] : null,
-            toImage: receiver ? receiver[1] : null,
+            toImage: receiver ? receiver[1] : null
           });
         }
       });
@@ -1256,7 +1274,7 @@ const fetchTransferHistory1155 = async (address, id) => {
   });
   await Promise.all(batchPromise);
   // process batch transfer event logs
-  let _history = orderBy(history, "blockTime", "asc");
+  let _history = orderBy(history, 'blockTime', 'asc');
   return _history;
 };
 
