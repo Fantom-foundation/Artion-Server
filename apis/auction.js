@@ -2,6 +2,8 @@ require("dotenv").config();
 const router = require("express").Router();
 const service_auth = require("./middleware/auth.tracker");
 const mongoose = require("mongoose");
+const ethers = require("ethers");
+
 const Auction = mongoose.model("Auction");
 const Account = mongoose.model("Account");
 const Bid = mongoose.model("Bid");
@@ -16,7 +18,6 @@ const EventDeadLetterQueue = mongoose.model("EventDeadLetterQueue");
 const toLowerCase = require("../utils/utils");
 // const { getPrice } = require("../services/price.feed");
 const AuctionContractAbi = require('../constants/auctionabi');
-const ethers = require("ethers");
 // const CollectionFactoryContract = require("../constants/factory_abi");
 const PAYTOKENS = require('../constants/tokens');
 

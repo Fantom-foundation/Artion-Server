@@ -1,11 +1,22 @@
+const DISABLED_PAYTOKENS = process.env.NETWORK_CHAINID === "250" ? [
+    {
+      address: '0x0000000000000000000000000000000000000000',
+      name: 'Fantom',
+      symbol: 'ftm',
+      decimals: 18,
+    }
+  ] :
+  [
+    {
+      address: '0x0000000000000000000000000000000000000000',
+      name: 'Fantom',
+      symbol: 'ftm',
+      decimals: 18,
+    }
+  ]
+
+
 const PAYTOKENS = process.env.NETWORK_CHAINID === "250" ? [
-    // {
-    //   address: '',
-    //   name: 'Fantom',
-    //   symbol: 'FTM',
-    //   decimals: 18,
-    //   icon: iconFTM,
-    // },
     {
       address: '0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83',
       name: 'Wrapped Fantom',
@@ -32,13 +43,6 @@ const PAYTOKENS = process.env.NETWORK_CHAINID === "250" ? [
     },
   ] :
   [
-    // {
-    //   address: '',
-    //   name: 'Fantom',
-    //   symbol: 'FTM',
-    //   decimals: 18,
-    //   icon: iconFTM,
-    // },
     {
       address: '0xf1277d1ed8ad466beddf92ef448a132661956621',
       name: 'Wrapped Fantom',
@@ -47,4 +51,4 @@ const PAYTOKENS = process.env.NETWORK_CHAINID === "250" ? [
     },
   ]
 
-module.exports = PAYTOKENS;
+module.exports = { PAYTOKENS, DISABLED_PAYTOKENS };

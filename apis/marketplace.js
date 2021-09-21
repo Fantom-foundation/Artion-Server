@@ -1,6 +1,7 @@
 require("dotenv").config();
 const mongoose = require("mongoose");
 const router = require("express").Router();
+const ethers = require("ethers");
 
 const Listing = mongoose.model("Listing");
 const TradeHistory = mongoose.model("TradeHistory");
@@ -18,6 +19,7 @@ const getCollectionName = require("../mailer/utils");
 const contractutils = require("../services/contract.utils");
 const toLowerCase = require("../utils/utils");
 const { getPrice } = require("../services/price.feed");
+const { PAYTOKENS, DISABLED_PAYTOKENS } = require('../constants/tokens');
 
 const getNFTItemName = async (nft, tokenID) => {
   try {
@@ -48,215 +50,252 @@ const isOfferCancelNotifiable = async (receiver, nft, tokenID) => {
   return toLowerCase(owner) == receiver;
 };
 
+// router.post("/test", service_auth, async (req, res) => {
+//   const result = await Listing.find({
+//     owner: owner,
+//     minter: nft,
+//     tokenID: tokenId,
+//     blockNumber: { $lt: blockNumber }
+//   });
+//   console.log(result);
+// })
+
 router.post("/itemListed", service_auth, async (req, res) => {
   try {
-    let owner = req.body.owner;
-    let nft = req.body.nft;
-    let tokenID = parseInt(req.body.tokenID);
-    let quantity = parseInt(req.body.quantity);
-    let pricePerItem = parseFloat(req.body.pricePerItem);
-    let paymentToken = toLowerCase(req.body.paymentToken);
-    let startingTime = parseFloat(req.body.startingTime);
+    const { args, blockNumber } = req.body;
+    const [ owner, nft, tokenIdBN, quantityBN, paytoken, pricePerItemBN, startingTimeBN ] = args;
+
+    const itemPayToken = [...PAYTOKENS, ...DISABLED_PAYTOKENS].find((token) => token.address.toLowerCase() === paytoken.toLowerCase());
+    const pricePerItem = ethers.utils.formatUnits(ethers.BigNumber.from(pricePerItemBN.hex), itemPayToken.decimals);
+    const tokenId = parseInt(tokenIdBN.hex);
+    const quantity = parseInt(quantityBN.hex);
+    const startingTime = parseInt(startingTimeBN.hex) * 1000;
+
 
     // first update the token price
     let category = await Category.findOne({ minterAddress: nft });
     if (category) {
       let token = await NFTITEM.findOne({
         contractAddress: nft,
-        tokenID: tokenID,
+        tokenID: tokenId,
+        blockNumber: { $lt: blockNumber }
       });
       if (token) {
         token.price = pricePerItem;
-        token.paymentToken = paymentToken;
+        token.paymentToken = itemPayToken.symbol;
         token.listedAt = new Date(); // set listed date
+        token.blockNumber = blockNumber;
         await token.save();
       }
     }
-    // remove if the same icon list still exists
-    try {
-      await Listing.deleteMany({
-        owner: owner,
-        minter: nft,
-        tokenID: tokenID,
-      });
-    } catch (error) {
-      console.log("listing deletion error");
-      console.log(error);
-    }
+
+    // remove if the a listing already exists
+    await Listing.deleteMany({
+      owner: owner,
+      minter: nft,
+      tokenID: tokenId,
+      blockNumber: { $lt: blockNumber }
+    });
 
     try {
-      let newList = new Listing();
-      newList.owner = owner;
-      newList.minter = nft;
-      newList.tokenID = tokenID;
-      newList.quantity = quantity;
-      newList.price = pricePerItem;
-      newList.paymentToken = paymentToken;
-      newList.startTime = startingTime;
-      await newList.save();
-    } catch (error) {
-      console.log("new listing addition error");
-      console.log(error);
+      const existingListing = await Listing.find({
+        owner: owner,
+        minter: nft,
+        tokenID: tokenId,
+      });
+
+      if (!existingListing.length) {
+        const newList = new Listing();
+        newList.owner = owner;
+        newList.minter = nft;
+        newList.tokenID = tokenId;
+        newList.quantity = quantity;
+        newList.price = pricePerItem;
+        newList.paymentToken = itemPayToken.symbol;
+        newList.startTime = startingTime;
+        newList.blockNumber = blockNumber;
+        await newList.save();
+      }
+    } catch (err) {
+      console.error("[ListItem] failed to save listing: ", err.message);
     }
     // now notify followers
-    notifications.notifySingleItemListed(
-      owner,
-      nft,
-      tokenID,
-      quantity,
-      pricePerItem,
-      paymentToken
-    );
-    return res.json({});
+    try {
+      await notifications.notifySingleItemListed(
+        owner,
+        nft,
+        tokenId,
+        quantity,
+        pricePerItem,
+        itemPayToken.symbol
+      );
+    } catch(err) {
+      console.error("Failed to notify followers: ", err.message);
+    }
+
+    return res.json({status: "success"});
   } catch (error) {
-    console.log("new item listed error");
-    console.log(error);
-    return res.json({ status: "failed" });
+    console.log("ItemListed error: ", { txHash: req.body.transactionHash });
+    console.log({ error });
+
+    return res.status(400).json({ status: "failed", error });
   }
 });
 
 router.post("/itemSold", service_auth, async (req, res) => {
   try {
-    let seller = req.body.seller;
-    let buyer = req.body.buyer;
-    let nft = req.body.nft;
-    let tokenID = parseInt(req.body.tokenID);
-    let quantity = parseInt(req.body.quantity);
-    let price = parseFloat(req.body.price);
-    let paymentToken = toLowerCase(req.body.paymentToken);
-    let priceInUSD = price * getPrice(paymentToken);
+    const { args, blockNumber, transactionHash } = req.body;
+    const [ seller, buyer, nft, tokenIdBN, quantityBN, paytoken, unitPriceBN, pricePerItemBN ] = args;
+
+    const itemPayToken = [...PAYTOKENS, ...DISABLED_PAYTOKENS].find((token) => token.address.toLowerCase() === paytoken.toLowerCase());
+    const unitPrice = ethers.utils.formatUnits(ethers.BigNumber.from(unitPriceBN.hex), itemPayToken.decimals);
+    const pricePerItem = ethers.utils.formatUnits(ethers.BigNumber.from(pricePerItemBN.hex), itemPayToken.decimals);
+    const tokenId = parseInt(tokenIdBN.hex);
+    const quantity = parseInt(quantityBN.hex);
+
+    const priceInUSD = pricePerItem * getPrice(itemPayToken.address);
+
     // update last sale price
     // first update the token price
-
-    console.log("item sold");
-    console.log(seller, buyer, nft, tokenID, quantity, price, paymentToken);
-    console.log(`unit price is ${getPrice(paymentToken)}`);
-    console.log(`price in usd is ${priceInUSD}`);
     let category = await Category.findOne({ minterAddress: nft });
-
     if (category) {
       let token = await NFTITEM.findOne({
         contractAddress: nft,
-        tokenID: tokenID,
+        tokenID: tokenId,
+        blockNumber: { $lte: blockNumber },
       });
       if (token) {
-        token.price = price;
-        token.paymentToken = paymentToken;
-        token.priceInUSD = priceInUSD;
-        token.lastSalePrice = price;
-        token.lastSalePricePaymentToken = paymentToken;
+        token.price = unitPrice;
+        token.paymentToken = itemPayToken.symbol;
+        token.priceInUSD = getPrice(itemPayToken.address);
+        token.lastSalePrice = pricePerItem;
+        token.lastSalePricePaymentToken = itemPayToken.symbol;
         token.lastSalePriceInUSD = priceInUSD;
         token.soldAt = new Date(); //set recently sold date
-        token.listedAt = new Date(1970, 1, 1); //remove listed date
         await token.save();
       }
-      // send mail here to buyer first
-      let account = await Account.findOne({ address: buyer });
-      // checks if user listens
-      let ns = await NotificationSetting.findOne({ address: buyer });
-      if (account && ns.sNftBuy) {
-        let to = account.email;
-        let alias = account.alias;
-        let collectionName = await getCollectionName(nft);
-        let tokenName = await getNFTItemName(nft, tokenID);
-        let data = {
-          type: "sale",
-          to: to,
-          isBuyer: true,
-          event: "ItemSold",
-          subject: "You have purchased an NFT Item!",
-          alias: alias,
-          collectionName: collectionName,
-          tokenName: tokenName,
-          tokenID: tokenID,
-          nftAddress: nft,
-          price: price,
-          paymentToken: paymentToken,
-          priceInUSD: priceInUSD,
-        };
-        sendEmail(data);
+
+      try {
+        // send mail here to buyer first
+        let account = await Account.findOne({address: buyer});
+        // checks if user listens
+        let ns = await NotificationSetting.findOne({address: buyer});
+        if (account && ns.sNftBuy) {
+          let to = account.email;
+          let alias = account.alias;
+          let collectionName = await getCollectionName(nft);
+          let tokenName = await getNFTItemName(nft, tokenId);
+          let data = {
+            type: "sale",
+            to: to,
+            isBuyer: true,
+            event: "ItemSold",
+            subject: "You have purchased an NFT Item!",
+            alias: alias,
+            collectionName: collectionName,
+            tokenName: tokenName,
+            tokenID: tokenId,
+            nftAddress: nft,
+            price: pricePerItem,
+            paymentToken: itemPayToken.symbol,
+            priceInUSD: priceInUSD,
+          };
+          sendEmail(data);
+        }
+      } catch (err) {
+        console.error("Failed to notify buyer: ", err.message)
       }
-      // checks if user listens
-      account = await Account.findOne({ address: seller });
-      ns = await NotificationSetting.findOne({ address: seller });
-      if (account && ns.sNftSell) {
-        let to = account.email;
-        let alias = account.alias;
-        let collectionName = await getCollectionName(nft);
-        let tokenName = await getNFTItemName(nft, tokenID);
-        let data = {
-          type: "sale",
-          to: to,
-          isBuyer: false,
-          event: "ItemSold",
-          subject: "You have sold out an NFT Item!",
-          alias: alias,
-          collectionName: collectionName,
-          tokenName: tokenName,
-          tokenID: tokenID,
-          nftAddress: nft,
-          price: price,
-          paymentToken: paymentToken,
-          priceInUSD: priceInUSD,
-        };
-        sendEmail(data);
+
+      try {
+        // checks if user listens
+        const account = await Account.findOne({address: seller});
+        const ns = await NotificationSetting.findOne({address: seller});
+        if (account && ns.sNftSell) {
+          let to = account.email;
+          let alias = account.alias;
+          let collectionName = await getCollectionName(nft);
+          let tokenName = await getNFTItemName(nft, tokenId);
+          let data = {
+            type: "sale",
+            to: to,
+            isBuyer: false,
+            event: "ItemSold",
+            subject: "You have sold out an NFT Item!",
+            alias: alias,
+            collectionName: collectionName,
+            tokenName: tokenName,
+            tokenID: tokenId,
+            nftAddress: nft,
+            price: pricePerItem,
+            paymentToken: itemPayToken.symbol,
+            priceInUSD: priceInUSD,
+          };
+          sendEmail(data);
+        }
+      } catch (err) {
+        console.error("Failed to notify seller: ", err.message);
       }
     }
 
-    try {
       // add new trade history
-      let history = new TradeHistory();
-      history.collectionAddress = nft;
-      history.from = seller;
-      history.to = buyer;
-      history.tokenID = tokenID;
-      history.price = price;
-      history.paymentToken = paymentToken;
-      history.priceInUSD = priceInUSD;
-      history.value = quantity;
-      await history.save();
-    } catch (error) {
-      console.log("error in saving trade history");
-      console.log(error);
-    }
     try {
-      // remove from listing
-      await Listing.deleteMany({
-        owner: seller,
-        minter: nft,
-        tokenID: tokenID,
-      });
-    } catch (error) {
-      console.log("error in removing listing");
-      console.log(error);
+      let existingHistory = await TradeHistory.find({ txHash: transactionHash });
+      if (!existingHistory.length) {
+        history = new TradeHistory();
+        history.collectionAddress = nft;
+        history.from = seller;
+        history.to = buyer;
+        history.tokenID = tokenId;
+        history.price = pricePerItem;
+        history.paymentToken = itemPayToken.symbol;
+        history.priceInUSD = priceInUSD;
+        history.value = quantity;
+        history.txHash = transactionHash;
+        await history.save();
+      }
+    } catch (err) {
+      console.error("[ItemSold] Error inserting into tradehistory: ", err.message)
     }
-    return res.json({});
+
+    // remove from listing
+    await Listing.deleteMany({
+      owner: seller,
+      minter: nft,
+      tokenID: tokenId,
+      blockNumber: { $lte: blockNumber}
+    });
+
+    return res.json({status: "success"});
   } catch (error) {
-    console.log("error in api call");
-    console.log(error);
-    return res.json({ status: "failed" });
+    console.log("ItemSold error: ", { txHash: req.body.transactionHash });
+    console.log({ error });
+
+    return res.status(400).json({ status: "failed", error });
   }
 });
 //   item updated
 
 router.post("/itemUpdated", service_auth, async (req, res) => {
   try {
-    let owner = req.body.owner;
-    let nft = req.body.nft;
-    let tokenID = parseInt(req.body.tokenID);
-    let price = parseFloat(req.body.price);
-    let paymentToken = toLowerCase(req.body.paymentToken);
+    const {args, blockNumber} = req.body;
+    const [owner, nft, tokenIdBN, paytoken, newPricePerItemBN] = args;
+
+    const itemPayToken = [...PAYTOKENS, ...DISABLED_PAYTOKENS].find((token) => token.address.toLowerCase() === paytoken.toLowerCase());
+    const newPricePerItem = ethers.utils.formatUnits(ethers.BigNumber.from(newPricePerItemBN.hex), itemPayToken.decimals);
+    const tokenId = parseInt(tokenIdBN.hex);
+
     // update the price of the nft here
     // first update the token price
-    let category = await Category.findOne({ minterAddress: nft });
+    let category = await Category.findOne({minterAddress: nft});
     if (category) {
       let token = await NFTITEM.findOne({
         contractAddress: nft,
-        tokenID: tokenID,
+        tokenID: tokenId,
+        blockNumber: {$lt: blockNumber}
       });
       if (token) {
-        token.price = price;
-        token.paymentToken = paymentToken;
+        token.price = newPricePerItem;
+        token.paymentToken = itemPayToken.symbol;
         await token.save();
       }
     }
@@ -264,53 +303,68 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
     let list = await Listing.findOne({
       owner: owner,
       minter: nft,
-      tokenID: tokenID,
+      tokenID: tokenId,
+      blockNumber: {$lt: blockNumber},
     });
     if (list) {
-      list.price = price;
-      list.paymentToken = paymentToken;
+      list.price = newPricePerItem;
+      list.paymentToken = itemPayToken.symbol;
+      list.blockNumber = blockNumber;
       await list.save();
     }
 
-    // send notification
-    notifications.nofityNFTUpdated(owner, nft, tokenID, price, paymentToken);
-    return res.json({});
+    try {
+      // send notification
+      await notifications.nofityNFTUpdated(owner, nft, tokenId, newPricePerItem, itemPayToken.symbol);
+    } catch (err) {
+      console.error("Failed to notify owner", err.message);
+    }
+
+    return res.json({status: "success"});
   } catch (error) {
-    return res.json({ status: "failed" });
+    console.log("ItemUpdated error: ", { txHash: req.body.transactionHash });
+    console.log({ error });
+
+    return res.status(400).json({ status: "failed", error });
   }
 });
 
 router.post("/itemCanceled", service_auth, async (req, res) => {
   try {
-    let owner = req.body.owner;
-    let nft = req.body.nft;
-    let tokenID = req.body.tokenID;
-    tokenID = parseInt(tokenID);
+    const {args, blockNumber} = req.body;
+    const [owner, nft, tokenIdBN] = args;
+
+    const tokenId = parseInt(tokenIdBN.hex);
+
     let category = await Category.findOne({ minterAddress: nft });
     if (category) {
       let token = await NFTITEM.findOne({
         contractAddress: nft,
-        tokenID: tokenID,
+        tokenID: tokenId,
+        blockNumber: {$lt: blockNumber},
       });
       if (token) {
-        token.price = token.lastSalePrice;
-        token.paymentToken = token.lastSalePricePaymentToken;
-        token.priceInUSD = token.lastSalePriceInUSD;
-        token.listedAt = new Date(1970, 1, 1); //remove listed date
+        token.price = null;
+        token.paymentToken = null;
+        token.priceInUSD = null;
+        token.listedAt = null; //remove listed date
         await token.save();
       }
     }
-    try {
-      // remove from listing
-      await Listing.deleteMany({
-        owner: owner,
-        minter: nft,
-        tokenID: tokenID,
-      });
-    } catch (error) {}
-    return res.json({});
+    // remove from listing
+    await Listing.deleteMany({
+      owner: owner,
+      minter: nft,
+      tokenID: tokenId,
+      blockNumber: {$lt: blockNumber}
+    });
+
+    return res.json({status: "success"});
   } catch (error) {
-    return res.json({ status: "failed" });
+    console.log("ItemCanceled error: ", { txHash: req.body.transactionHash });
+    console.log({ error });
+
+    return res.status(400).json({ status: "failed", error });
   }
 });
 
