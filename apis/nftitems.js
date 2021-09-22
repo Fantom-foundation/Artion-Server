@@ -855,6 +855,7 @@ router.post('/fetchTokens', async (req, res) => {
   items = updatePrices(items);
 
   let data = sortItems(items, sortby);
+  console.log(data);
 
   let _searchResults = data.slice(from, from + count);
 

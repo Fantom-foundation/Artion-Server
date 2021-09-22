@@ -226,6 +226,7 @@ const notifyNewAuction = async (contractAddress, tokenID) => {
       contractAddress: contractAddress,
       tokenID: tokenID,
     });
+
     let address = nftItem.owner;
     const followers = await Follow.find({ to: address });
     let addresses = followers.map((follower) => follower.from);

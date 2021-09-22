@@ -10,6 +10,8 @@ const Bid = mongoose.Schema(
     auctionActive: { type: Boolean, required: true },
     winningBid: { type: Boolean, required: true },
     withdrawn: { type: Boolean, required: false },
+    blockNumber: { type: Number, required: true },
+    txHash: {type: String, required: true },
   },{
     timestamps: true,
   },

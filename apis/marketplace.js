@@ -403,7 +403,7 @@ router.post("/offerCreated", service_auth, async (req, res) => {
         blockNumber: {$lt: blockNumber},
       });
 
-      let existingOffer = await Offer.find({
+      const existingOffer = await Offer.find({
         creator: creator,
         minter: nft,
         tokenID: tokenId,
