@@ -9,7 +9,6 @@ const Account = mongoose.model("Account");
 const Bid = mongoose.model("Bid");
 const NFTITEM = mongoose.model("NFTITEM");
 const TradeHistory = mongoose.model("TradeHistory");
-const EventDeadLetterQueue = mongoose.model("EventDeadLetterQueue");
 // const NotificationSetting = mongoose.model("NotificationSetting");
 
 // const sendEmail = require("../mailer/auctionMailer");
