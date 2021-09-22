@@ -84,7 +84,7 @@ router.post("/itemListed", service_auth, async (req, res) => {
       });
       if (token) {
         token.price = pricePerItem;
-        token.paymentToken = itemPayToken.symbol;
+        token.paymentToken = itemPayToken.address;
         token.listedAt = new Date(); // set listed date
         token.blockNumber = blockNumber;
         await token.save();
@@ -113,7 +113,7 @@ router.post("/itemListed", service_auth, async (req, res) => {
         newList.tokenID = tokenId;
         newList.quantity = quantity;
         newList.price = pricePerItem;
-        newList.paymentToken = itemPayToken.symbol;
+        newList.paymentToken = itemPayToken.address;
         newList.startTime = startingTime;
         newList.blockNumber = blockNumber;
         await newList.save();
@@ -129,7 +129,7 @@ router.post("/itemListed", service_auth, async (req, res) => {
         tokenId,
         quantity,
         pricePerItem,
-        itemPayToken.symbol
+        itemPayToken.address
       );
     } catch(err) {
       console.error("[ItemListed] Failed to notify followers: ", err.message);
@@ -172,10 +172,10 @@ router.post("/itemSold", service_auth, async (req, res) => {
       });
       if (token) {
         token.price = unitPrice;
-        token.paymentToken = itemPayToken.symbol;
+        token.paymentToken = itemPayToken.address;
         token.priceInUSD = getPrice(itemPayToken.address);
         token.lastSalePrice = pricePerItem;
-        token.lastSalePricePaymentToken = itemPayToken.symbol;
+        token.lastSalePricePaymentToken = itemPayToken.address;
         token.lastSalePriceInUSD = priceInUSD;
         token.soldAt = new Date(); //set recently sold date
         await token.save();
@@ -203,10 +203,10 @@ router.post("/itemSold", service_auth, async (req, res) => {
             tokenID: tokenId,
             nftAddress: nft,
             price: pricePerItem,
-            paymentToken: itemPayToken.symbol,
+            paymentToken: itemPayToken.address,
             priceInUSD: priceInUSD,
           };
-          sendEmail(data);
+          await sendEmail(data);
         }
       } catch (err) {
         console.error("[ItemSold] Failed to notify buyer: ", err.message)
@@ -233,10 +233,10 @@ router.post("/itemSold", service_auth, async (req, res) => {
             tokenID: tokenId,
             nftAddress: nft,
             price: pricePerItem,
-            paymentToken: itemPayToken.symbol,
+            paymentToken: itemPayToken.address,
             priceInUSD: priceInUSD,
           };
-          sendEmail(data);
+          await sendEmail(data);
         }
       } catch (err) {
         console.error("[ItemSold] Failed to notify seller: ", err.message);
@@ -253,7 +253,7 @@ router.post("/itemSold", service_auth, async (req, res) => {
         history.to = buyer;
         history.tokenID = tokenId;
         history.price = pricePerItem;
-        history.paymentToken = itemPayToken.symbol;
+        history.paymentToken = itemPayToken.address;
         history.priceInUSD = priceInUSD;
         history.value = quantity;
         history.txHash = transactionHash;
@@ -304,7 +304,7 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
       });
       if (token) {
         token.price = newPricePerItem;
-        token.paymentToken = itemPayToken.symbol;
+        token.paymentToken = itemPayToken.address;
         await token.save();
       }
     }
@@ -317,14 +317,14 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
     });
     if (list) {
       list.price = newPricePerItem;
-      list.paymentToken = itemPayToken.symbol;
+      list.paymentToken = itemPayToken.address;
       list.blockNumber = blockNumber;
       await list.save();
     }
 
     try {
       // send notification
-      await notifications.nofityNFTUpdated(owner, nft, tokenId, newPricePerItem, itemPayToken.symbol);
+      await notifications.nofityNFTUpdated(owner, nft, tokenId, newPricePerItem, itemPayToken.address);
     } catch (err) {
       console.error("[ItemUpdated] Failed to notify owner", err.message);
     }
@@ -416,7 +416,7 @@ router.post("/offerCreated", service_auth, async (req, res) => {
         offer.tokenID = tokenId;
         offer.quantity = quantity;
         offer.pricePerItem = pricePerItem;
-        offer.paymentToken = itemPayToken.symbol;
+        offer.paymentToken = itemPayToken.address;
         offer.priceInUSD = priceInUSD;
         offer.deadline = new Date(deadline);
         offer.blockNumber = blockNumber;

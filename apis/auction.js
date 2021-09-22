@@ -95,7 +95,7 @@ router.post("/auctionCreated", service_auth, async (req, res) => {
           minter: nftAddress,
           tokenID: tokenId,
           bidder: 0,
-          paymentToken: auctionPayToken.symbol,
+          paymentToken: auctionPayToken.address,
           txHash: transactionHash,
           startTime: new Date(parseInt(auction._startTime) * 1000),
           endTime: new Date(parseInt(auction._endTime) * 1000),
@@ -342,15 +342,15 @@ router.post("/auctionResulted", service_auth, async (req, res) => {
     if (result.deletedCount > 0) {
       const token = await NFTITEM.findOne({
         contractAddress: nftAddress,
-        tokenID: tokenID,
+        tokenID: tokenId,
       });
 
       if (token) {
         token.price = winningBid;
-        token.paymentToken = paymentToken;
+        token.paymentToken = auctionPayToken.address;
         token.priceInUSD = unitPrice;
         token.lastSalePrice = winningBid;
-        token.lastSalePricePaymentToken = paymentToken;
+        token.lastSalePricePaymentToken = auctionPayToken.address;
         token.lastSalePriceInUSD = unitPrice * winningBid;
         token.soldAt = new Date();
         // update sale ends at as well
@@ -362,11 +362,11 @@ router.post("/auctionResulted", service_auth, async (req, res) => {
           const from = token.owner;
           const history = new TradeHistory();
           history.collectionAddress = nftAddress;
-          history.tokenID = tokenID;
+          history.tokenID = tokenId;
           history.from = from;
           history.to = winner;
           history.price = winningBid;
-          history.paymentToken = paymentToken;
+          history.paymentToken = auctionPayToken.address;
           history.priceInUSD = unitPrice;
           history.isAuction = true;
           history.txHash = transactionHash;
@@ -403,7 +403,7 @@ router.post("/bidPlaced", service_auth, async (req, res) => {
     });
 
     if (auction) {
-      const auctionPayToken = [...PAYTOKENS, ...DISABLED_PAYTOKENS].find((token) => token.symbol.toLowerCase() === auction?.paymentToken.toLowerCase());
+      const auctionPayToken = [...PAYTOKENS, ...DISABLED_PAYTOKENS].find((token) => token.symbol.toLowerCase() === (auction && auction.paymentToken.toLowerCase()));
       const bid = auctionPayToken && ethers.utils.formatUnits(ethers.BigNumber.from(bidBN.hex), auctionPayToken.decimals);
 
       // Current winning bid to false
@@ -429,7 +429,7 @@ router.post("/bidPlaced", service_auth, async (req, res) => {
             tokenID: tokenId,
             bidder,
             bid,
-            paymentToken: auction.paymentToken,
+            paymentToken: auctionPayToken.address,
             auctionActive: true,
             winningBid: true,
             blockNumber,
@@ -469,7 +469,7 @@ router.post("/bidWithdrawn", service_auth, async (req, res) => {
       blockNumber: {$lt: blockNumber},
     });
     if (auction) {
-      const auctionPayToken = [...PAYTOKENS, ...DISABLED_PAYTOKENS].find((token) => token.symbol.toLowerCase() === auction?.paymentToken.toLowerCase());
+      const auctionPayToken = [...PAYTOKENS, ...DISABLED_PAYTOKENS].find((token) => token.symbol.toLowerCase() === (auction && auction.paymentToken.toLowerCase()));
       const bid = ethers.utils.formatUnits(ethers.BigNumber.from(bidBN.hex), auctionPayToken.decimals);
       await Bid.updateOne({minter: nftAddress, tokenID: tokenId, bidder, bid}, {withdrawn: true, winningBid: false});
     }
