@@ -471,7 +471,7 @@ router.post("/bidWithdrawn", service_auth, async (req, res) => {
     if (auction) {
       const auctionPayToken = [...PAYTOKENS, ...DISABLED_PAYTOKENS].find((token) => token.symbol.toLowerCase() === auction?.paymentToken.toLowerCase());
       const bid = ethers.utils.formatUnits(ethers.BigNumber.from(bidBN.hex), auctionPayToken.decimals);
-      await Bid.updateOne({minter: nftAddress, tokenID: tokenId, bidder, bid}, {withdrawn: true});
+      await Bid.updateOne({minter: nftAddress, tokenID: tokenId, bidder, bid}, {withdrawn: true, winningBid: false});
     }
 
     console.info("[BidWithdrawn] Success: ", { transactionHash, blockNumber });
