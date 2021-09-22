@@ -14,7 +14,6 @@ const TradeHistory = mongoose.model("TradeHistory");
 // const sendEmail = require("../mailer/auctionMailer");
 // const getCollectionName = require("../mailer/utils");
 // const notifications = require("../mailer/followMailer");
-const toLowerCase = require("../utils/utils");
 // const { getPrice } = require("../services/price.feed");
 const AuctionContractAbi = require('../constants/auctionabi');
 // const CollectionFactoryContract = require("../constants/factory_abi");
@@ -402,7 +401,7 @@ router.post("/bidPlaced", service_auth, async (req, res) => {
     });
 
     if (auction) {
-      const auctionPayToken = [...PAYTOKENS, ...DISABLED_PAYTOKENS].find((token) => token.symbol.toLowerCase() === (auction && auction.paymentToken.toLowerCase()));
+      const auctionPayToken = [...PAYTOKENS, ...DISABLED_PAYTOKENS].find((token) => token.address.toLowerCase() === (auction && auction.paymentToken.toLowerCase()));
       const bid = auctionPayToken && ethers.utils.formatUnits(ethers.BigNumber.from(bidBN.hex), auctionPayToken.decimals);
 
       // Current winning bid to false
@@ -437,7 +436,7 @@ router.post("/bidPlaced", service_auth, async (req, res) => {
           await Bid.create(createBid);
         }
       } catch (err) {
-        console.error("[BidPlaced] Failed to create new bid: ", error.message);
+        console.error("[BidPlaced] Failed to create new bid: ", err.message);
       }
     }
 
@@ -468,7 +467,7 @@ router.post("/bidWithdrawn", service_auth, async (req, res) => {
       blockNumber: {$lt: blockNumber},
     });
     if (auction) {
-      const auctionPayToken = [...PAYTOKENS, ...DISABLED_PAYTOKENS].find((token) => token.symbol.toLowerCase() === (auction && auction.paymentToken.toLowerCase()));
+      const auctionPayToken = [...PAYTOKENS, ...DISABLED_PAYTOKENS].find((token) => token.address.toLowerCase() === auction.paymentToken.toLowerCase());
       const bid = ethers.utils.formatUnits(ethers.BigNumber.from(bidBN.hex), auctionPayToken.decimals);
       await Bid.updateOne({minter: nftAddress, tokenID: tokenId, bidder, bid}, {withdrawn: true, winningBid: false});
     }

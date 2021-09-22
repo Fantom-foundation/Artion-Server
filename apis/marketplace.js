@@ -470,7 +470,7 @@ router.post("/offerCreated", service_auth, async (req, res) => {
         }
       }
     } catch (error) {
-      console.error("[OfferCreated] Failed to notify owner ". error.message)
+      console.error("[OfferCreated] Failed to notify owner ", error.message)
     }
 
     console.info("[OfferCreated] Success: ", { transactionHash, blockNumber });
@@ -546,7 +546,7 @@ router.post("/offerCanceled", service_auth, async (req, res) => {
         }
       }
     } catch (error) {
-      console.error("[OfferCanceled] Failed to notify owner ". error.message)
+      console.error("[OfferCanceled] Failed to notify owner ", error.message)
     }
 
     console.info("[OfferCanceled] Success: ", { transactionHash, blockNumber });
