@@ -215,8 +215,8 @@ const notifySingleItemListed = async (
     sendEmail(message);
     // call send function here
   } catch (error) {
-    console.log("notify single item listed error");
-    console.log(error);
+    // console.log("notify single item listed error");
+    // console.log(error);
   }
 };
 

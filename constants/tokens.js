@@ -30,13 +30,13 @@ const PAYTOKENS = process.env.NETWORK_CHAINID === "250" ? [
       decimals: 6,
     },
     {
-      address: '0x04068DA6C83AFCFA0e13ba15A6696662335D5B75',
+      address: '0x04068da6c83afcfa0e13ba15a6696662335d5b75',
       name: 'USD Coin',
       symbol: 'usdc',
       decimals: 6,
     },
     {
-      address: '0x8D11eC38a3EB5E956B052f67Da8Bdc9bef8Abf3E',
+      address: '0x8d11ec38a3eb5e956b052f67da8bdc9bef8abf3e',
       name: 'Dai Stablecoin',
       symbol: 'dai',
       decimals: 18,
