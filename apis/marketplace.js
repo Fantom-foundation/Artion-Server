@@ -419,7 +419,7 @@ router.post("/offerCreated", service_auth, async (req, res) => {
         offer.pricePerItem = pricePerItem;
         offer.paymentToken = itemPayToken.address;
         offer.priceInUSD = priceInUSD;
-        offer.deadline = new Date(deadline);
+        offer.deadline = deadline;
         offer.blockNumber = blockNumber;
         await offer.save();
       }
