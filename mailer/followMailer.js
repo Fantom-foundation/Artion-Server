@@ -1,6 +1,7 @@
 require("dotenv").config();
 const sgMail = require("@sendgrid/mail");
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const mailingListEmail = "noreply-artion@fantom.foundation";
 const messageUtils = require("./message.utils");
 
 const app_url = process.env.APP_URL;
@@ -66,13 +67,15 @@ const notifyBundleCreation = async (address, bundleID, bundleName) => {
     let owner = await getUserAlias(address);
 
     // create data for dynamic email spread out
-    let to = messageUtils.createEmailList(emails);
+    let to = mailingListEmail;
+    let bcc = messageUtils.createEmailList(emails);
     let title = "New Bundle Created!";
     let content = `Artion User(${owner}) has created ${bundleName} bundle.`;
     let link = `${app_url}bundle/${bundleID}`;
 
-    let message = messageUtils.createBundleItemMessage({
+    let message = messageUtils.createBundleItemMessageList({
       to,
+      bcc,
       title,
       content,
       link,
@@ -100,15 +103,17 @@ const nofifyNFTShowUp = async (address, contractAddress, tokenID) => {
     let nftName = await getNFTItemName(contractAddress, tokenID);
 
     // create data for dynamic email spread out
-    let to = messageUtils.createEmailList(emails);
+    let to = mailingListEmail;
+    let bcc = messageUtils.createEmailList(emails);
     let title = "New NFT Item Created!";
     let content = `Artion User(${owner}) has created ${nftName} nft item.`;
     let image = await getNFTThumbnailPath(contractAddress, tokenID);
     image = `${storage_url}${image}`;
     let name = nftName;
     let link = `${app_url}explore/${contractAddress}/${tokenID}`;
-    let message = messageUtils.createNFTItemMessage({
+    let message = messageUtils.createNFTItemMessageList({
       to,
+      bcc,
       title,
       content,
       image,
@@ -148,15 +153,17 @@ const notifyAuctionPriceUpdate = async (contractAddress, tokenID, price) => {
     emails = emails.filter((email) => email);
 
     // create data for dynamic email spread out
-    let to = messageUtils.createEmailList(emails);
+    let to = mailingListEmail;
+    let bcc = messageUtils.createEmailList(emails);
     let title = "Auction Price Updated!";
     let content = `Artion User(${owner}) has updated an auction price.`;
     let image = await getNFTThumbnailPath(contractAddress, tokenID);
     image = `${storage_url}${image}`;
     let name = nftName;
     let link = `${app_url}explore/${contractAddress}/${tokenID}`;
-    let message = messageUtils.createNFTItemMessage({
+    let message = messageUtils.createNFTItemMessageList({
       to,
+      bcc,
       title,
       content,
       image,
@@ -197,15 +204,17 @@ const notifySingleItemListed = async (
     emails = emails.filter((email) => email);
 
     // create data for dynamic email spread out
-    let to = messageUtils.createEmailList(emails);
+    let to = mailingListEmail;
+    let bcc = messageUtils.createEmailList(emails);
     let title = "New Item Listed!";
     let content = `Artion User(${owner}) has listed a new NFT(${nftName}).`;
     let image = await getNFTThumbnailPath(contractAddress, tokenID);
     image = `${storage_url}${image}`;
     let name = nftName;
     let link = `${app_url}explore/${contractAddress}/${tokenID}`;
-    let message = messageUtils.createNFTItemMessage({
+    let message = messageUtils.createNFTItemMessageList({
       to,
+      bcc,
       title,
       content,
       image,
@@ -238,15 +247,17 @@ const notifyNewAuction = async (contractAddress, tokenID) => {
     let nftName = nftItem.name;
 
     // create data for dynamic email spread out
-    let to = messageUtils.createEmailList(emails);
+    let to = mailingListEmail;
+    let bcc = messageUtils.createEmailList(emails);
     let title = "New Auction!";
     let content = `Artion User(${owner}) has put an NFT in auction.`;
     let image = await getNFTThumbnailPath(contractAddress, tokenID);
     image = `${storage_url}${image}`;
     let name = nftName;
     let link = `${app_url}explore/${contractAddress}/${tokenID}`;
-    let message = messageUtils.createNFTItemMessage({
+    let message = messageUtils.createNFTItemMessageList({
       to,
+      bcc,
       title,
       content,
       image,
@@ -274,13 +285,15 @@ const notifyBundleListing = async (bundleID, bundleName, address, price) => {
     let owner = await getUserAlias(address);
 
     // create data for dynamic email spread out
-    let to = messageUtils.createEmailList(emails);
+    let to = mailingListEmail;
+    let bcc = messageUtils.createEmailList(emails);
     let title = "Bundle Listed!";
     let content = `Artion User(${owner}) has listed ${bundleName} bundle.`;
     let link = `${app_url}bundle/${bundleID}`;
 
-    let message = messageUtils.createBundleItemMessage({
+    let message = messageUtils.createBundleItemMessageList({
       to,
+      bcc,
       title,
       content,
       link,
@@ -309,13 +322,15 @@ const notifyBundleUpdate = async (bundleID, bundleName, address, price) => {
     let owner = await getUserAlias(address);
 
     // create data for dynamic email spread out
-    let to = messageUtils.createEmailList(emails);
+    let to = mailingListEmail;
+    let bcc = messageUtils.createEmailList(emails);
     let title = "Bundle Price Updated!";
     let content = `Artion User(${owner}) has updated ${bundleName} bundle's price.`;
     let link = `${app_url}bundle/${bundleID}`;
 
-    let message = messageUtils.createBundleItemMessage({
+    let message = messageUtils.createBundleItemMessageList({
       to,
+      bcc,
       title,
       content,
       link,
@@ -349,15 +364,17 @@ const nofityNFTUpdated = async (address, contractAddress, tokenID, price) => {
     emails = emails.filter((email) => email);
 
     // create data for dynamic email spread out
-    let to = messageUtils.createEmailList(emails);
+    let to = mailingListEmail;
+    let bcc = messageUtils.createEmailList(emails);
     let title = "NFT Price Updated!";
     let content = `Artion User(${owner}) has updated nft(${nftName})'s price.`;
     let image = await getNFTThumbnailPath(contractAddress, tokenID);
     image = `${storage_url}${image}`;
     let name = nftName;
     let link = `${app_url}explore/${contractAddress}/${tokenID}`;
-    let message = messageUtils.createNFTItemMessage({
+    let message = messageUtils.createNFTItemMessageList({
       to,
+      bcc,
       title,
       content,
       image,

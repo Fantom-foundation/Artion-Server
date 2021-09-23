@@ -67,6 +67,56 @@ const createEmailList = (emails) => {
   }
 };
 
+const createNFTItemMessageList = (data) => {
+  let message = {
+    from: FantomContacts.email,
+    templateId: SendGridTemplates.nftitem,
+    personalizations: [
+      {
+        to: data.to,
+        bcc: data.bcc,
+        dynamic_template_data: {
+          title: data.title,
+          content: data.content,
+          image: data.image,
+          name: data.name,
+          link: data.link,
+          discord: FantomContacts.discord,
+          twitter: FantomContacts.twitter,
+          telegram: FantomContacts.telegram,
+          reddit: FantomContacts.reddit,
+          artionUnsubscribe: FantomContacts.artionUnsubscribe,
+        },
+      },
+    ],
+  };
+  return message;
+};
+
+const createBundleItemMessageList = (data) => {
+  let message = {
+    from: FantomContacts.email,
+    templateId: SendGridTemplates.bundleitem,
+    personalizations: [
+      {
+        to: data.to,
+        bcc: data.bcc,
+        dynamic_template_data: {
+          title: data.title,
+          content: data.content,
+          link: data.link,
+          discord: FantomContacts.discord,
+          twitter: FantomContacts.twitter,
+          telegram: FantomContacts.telegram,
+          reddit: FantomContacts.reddit,
+          artionUnsubscribe: FantomContacts.artionUnsubscribe,
+        },
+      },
+    ],
+  };
+  return message;
+};
+
 const messageUtils = {
   createNFTItemMessage,
   createBundleItemMessage,
@@ -74,6 +124,8 @@ const messageUtils = {
   createApplicationApprovedMessage,
   createApplicationDeniedMessage,
   createEmailList,
+  createNFTItemMessageList,
+  createBundleItemMessageList,
 };
 
 module.exports = messageUtils;
