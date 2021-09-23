@@ -281,7 +281,6 @@ router.post(
       let address = toLowerCase(req.body.address); //contract address
       let to = toLowerCase(req.body.to); // transferred to
       let tokenID = parseInt(req.body.tokenID); //tokenID
-      console.log(address, to, tokenID);
       let erc721token = await NFTITEM.findOne({
         contractAddress: address,
         tokenID: tokenID,
@@ -321,7 +320,6 @@ router.post(
             try {
               metadata = Buffer.from(tokenURI, 'base64').toString('utf8');
               metadata = JSON.parse(metadata);
-              console.log(metadata);
               tokenName = metadata.name;
               imageURL = metadata.image;
             } catch (error) {

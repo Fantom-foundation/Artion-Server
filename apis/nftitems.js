@@ -370,13 +370,11 @@ const selectTokens = async (req, res) => {
             // ...{ endTime: { $gt: new Date() } },
           };
           console.log('minter filters for auction');
-          console.log(minterFilters4Auction);
           let tokens = await Auction.find(minterFilters4Auction).select([
             'minter',
             'tokenID'
           ]);
           console.log('tokens in auction');
-          console.log(tokens);
           if (tokens) {
             tokens.map((pair) => {
               let minter_id_pair = [pair.minter, pair.tokenID];
@@ -840,7 +838,6 @@ router.post('/fetchTokens', async (req, res) => {
   let from = parseInt(req.body.from);
   let count = parseInt(req.body.count);
   console.log('log from fetch tokens');
-  console.log(count, from, type, sortby);
   let items = [];
   if (type == 'all') {
     let nfts = await selectTokens(req, res);
@@ -855,7 +852,6 @@ router.post('/fetchTokens', async (req, res) => {
   items = updatePrices(items);
 
   let data = sortItems(items, sortby);
-  console.log(data);
 
   let _searchResults = data.slice(from, from + count);
 

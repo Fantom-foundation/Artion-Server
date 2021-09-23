@@ -35,7 +35,6 @@ router.post("/getToken", async (req, res) => {
       let ns = new NotificationSetting();
       ns.address = address;
       let _ns = await ns.save();
-      console.log(_ns);
     } catch (error) {
       console.log(error);
     }
