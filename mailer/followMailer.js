@@ -51,20 +51,25 @@ const getNFTThumbnailPath = async (nft, tokenID) => {
   }
 };
 
-const notifyBundleCreation = async (address, bundleID, bundleName) => {
-  try {
-    const followers = await Follow.find({ to: address });
-    let addresses = followers.map((follower) => follower.from);
-    addresses = await extractEmailSubscribedAddresses(
-      addresses,
-      "fBundleCreation"
-    );
-    let accounts = await Account.find({ address: { $in: addresses } });
-    let emails = accounts.map((account) =>
+const extractSubcriberEmails = async (address, option) => {
+  const followers = await Follow.find({ to: address });
+  let addresses = followers.map((follower) => follower.from);
+  if (option) {
+      addresses = await extractEmailSubscribedAddresses(addresses, option);
+  }
+  let accounts = await Account.find({ address: { $in: addresses } });
+  let emails = accounts.map((account) =>
       account.email ? account.email : null
-    );
-    emails = emails.filter((email) => email);
+  );
+  emails = emails.filter((email) => email);
+  return emails;
+};
+
+const notifyBundleCreation = async (address, bundleID, bundleName) => {
+  address = toLowerCase(address);
+  try {
     let owner = await getUserAlias(address);
+    let emails = await extractSubcriberEmails(address, "fBundleCreation");
 
     // create data for dynamic email spread out
     let to = mailingListEmail;
@@ -92,15 +97,9 @@ const nofifyNFTShowUp = async (address, contractAddress, tokenID) => {
   contractAddress = toLowerCase(contractAddress);
   tokenID = parseInt(tokenID);
   try {
-    const followers = await Follow.find({ to: address });
-    let addresses = followers.map((follower) => follower.from);
-    let accounts = await Account.find({ address: { $in: addresses } });
-    let emails = accounts.map((account) =>
-      account.email ? account.email : null
-    );
-    emails = emails.filter((email) => email);
     let owner = await getUserAlias(address);
     let nftName = await getNFTItemName(contractAddress, tokenID);
+    let emails = await extractSubcriberEmails(address, null); // option is null
 
     // create data for dynamic email spread out
     let to = mailingListEmail;
@@ -129,8 +128,9 @@ const nofifyNFTShowUp = async (address, contractAddress, tokenID) => {
 };
 
 const notifyAuctionPriceUpdate = async (contractAddress, tokenID, price) => {
+  contractAddress = toLowerCase(contractAddress);
+  tokenID = parseInt(tokenID);
   try {
-    contractAddress = toLowerCase(contractAddress);
     let nft = await NFTITEM.findOne({
       contractAddress: contractAddress,
       tokenID: tokenID,
@@ -140,17 +140,7 @@ const notifyAuctionPriceUpdate = async (contractAddress, tokenID, price) => {
     let ownerAccount = await Account.findOne({ address: address });
     let owner = ownerAccount.alias;
 
-    const followers = await Follow.find({ to: address });
-    let addresses = followers.map((follower) => follower.from);
-    addresses = await extractEmailSubscribedAddresses(
-      addresses,
-      "fNftAuctionPrice"
-    );
-    let accounts = await Account.find({ address: { $in: addresses } });
-    let emails = accounts.map((account) =>
-      account.email ? account.email : null
-    );
-    emails = emails.filter((email) => email);
+    let emails = await extractSubcriberEmails(address, "fNftAuctionPrice");
 
     // create data for dynamic email spread out
     let to = mailingListEmail;
@@ -185,23 +175,13 @@ const notifySingleItemListed = async (
   quantity,
   price
 ) => {
+  address = toLowerCase(address);
+  contractAddress = toLowerCase(contractAddress);
+  tokenID = parseInt(tokenID);
   try {
-    let nft = await NFTITEM.findOne({
-      contractAddress: contractAddress,
-      tokenID: tokenID,
-    });
-    let nftName = nft.name ? nft.name : nft.tokenID;
-    let ownerAccount = await Account.findOne({ address: address });
-    let owner = ownerAccount.alias;
-
-    const followers = await Follow.find({ to: address });
-    let addresses = followers.map((follower) => follower.from);
-    addresses = await extractEmailSubscribedAddresses(addresses, "fNftList");
-    let accounts = await Account.find({ address: { $in: addresses } });
-    let emails = accounts.map((account) =>
-      account.email ? account.email : null
-    );
-    emails = emails.filter((email) => email);
+    let owner = await getUserAlias(address);
+    let nftName = await getNFTItemName(contractAddress, tokenID);
+    let emails = await extractSubcriberEmails(address, "fNftList");
 
     // create data for dynamic email spread out
     let to = mailingListEmail;
@@ -230,21 +210,17 @@ const notifySingleItemListed = async (
 };
 
 const notifyNewAuction = async (contractAddress, tokenID) => {
+  contractAddress = toLowerCase(contractAddress);
+  tokenID = parseInt(tokenID);
   try {
     let nftItem = await NFTITEM.findOne({
       contractAddress: contractAddress,
       tokenID: tokenID,
     });
     let address = nftItem.owner;
-    const followers = await Follow.find({ to: address });
-    let addresses = followers.map((follower) => follower.from);
-    addresses = await extractEmailSubscribedAddresses(addresses, "fNftAuction");
-    let accounts = await Account.find({ address: { $in: addresses } });
-    let emails = accounts.map((account) =>
-      account.email ? account.email : null
-    );
-    emails = emails.filter((email) => email);
     let nftName = nftItem.name;
+
+    let emails = await extractSubcriberEmails(address, "fNftAuction");
 
     // create data for dynamic email spread out
     let to = mailingListEmail;
@@ -274,14 +250,7 @@ const notifyNewAuction = async (contractAddress, tokenID) => {
 
 const notifyBundleListing = async (bundleID, bundleName, address, price) => {
   try {
-    const followers = await Follow.find({ to: address });
-    let addresses = followers.map((follower) => follower.from);
-    addresses = await extractEmailSubscribedAddresses(addresses, "fBundleList");
-    let accounts = await Account.find({ address: { $in: addresses } });
-    let emails = accounts.map((account) =>
-      account.email ? account.email : null
-    );
-    emails = emails.filter((email) => email);
+    let emails = await extractSubcriberEmails(address, "fBundleList");
     let owner = await getUserAlias(address);
 
     // create data for dynamic email spread out
@@ -308,17 +277,7 @@ const notifyBundleListing = async (bundleID, bundleName, address, price) => {
 
 const notifyBundleUpdate = async (bundleID, bundleName, address, price) => {
   try {
-    const followers = await Follow.find({ to: address });
-    let addresses = followers.map((follower) => follower.from);
-    addresses = await extractEmailSubscribedAddresses(
-      addresses,
-      "fBundlePrice"
-    );
-    let accounts = await Account.find({ address: { $in: addresses } });
-    let emails = accounts.map((account) =>
-      account.email ? account.email : null
-    );
-    emails = emails.filter((email) => email);
+    let emails = await extractSubcriberEmails(address, "fBundlePrice");
     let owner = await getUserAlias(address);
 
     // create data for dynamic email spread out
@@ -345,8 +304,10 @@ const notifyBundleUpdate = async (bundleID, bundleName, address, price) => {
 
 const nofityNFTUpdated = async (address, contractAddress, tokenID, price) => {
   try {
-    const artionUri = `${app_url}explore/${contractAddress}/${tokenID}`;
-    let nft = await NFTITEM.findOne({
+      contractAddress = toLowerCase(contractAddress);
+      tokenID = parseInt(tokenID);
+
+      let nft = await NFTITEM.findOne({
       contractAddress: contractAddress,
       tokenID: tokenID,
     });
@@ -354,14 +315,7 @@ const nofityNFTUpdated = async (address, contractAddress, tokenID, price) => {
     let ownerAccount = await Account.findOne({ address: address });
     let owner = ownerAccount.alias;
 
-    const followers = await Follow.find({ to: address });
-    let addresses = followers.map((follower) => follower.from);
-    addresses = await extractEmailSubscribedAddresses(addresses, "fNftPrice");
-    let accounts = await Account.find({ address: { $in: addresses } });
-    let emails = accounts.map((account) =>
-      account.email ? account.email : null
-    );
-    emails = emails.filter((email) => email);
+    let emails = await extractSubcriberEmails(address, "fNftPrice");
 
     // create data for dynamic email spread out
     let to = mailingListEmail;
