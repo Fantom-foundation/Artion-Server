@@ -7,7 +7,7 @@ const FantomContacts = {
   artionUnsubscribe: `https://${
     process.env.RUNTIME ? "testnet." : ""
   }artion.io/settings/notification`,
-  email: "artion@fantom.foundation",
+  email: "support.artion@fantom.foundation",
 };
 
 module.exports = FantomContacts;
