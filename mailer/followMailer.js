@@ -80,7 +80,7 @@ const notifyBundleCreation = async (address, bundleID, bundleName) => {
     sendEmail(message);
     // call send function here
   } catch (error) {
-    console.log(error);
+    // console.log(error);
   }
 };
 
@@ -118,8 +118,8 @@ const nofifyNFTShowUp = async (address, contractAddress, tokenID) => {
     sendEmail(message);
     // call send function here
   } catch (error) {
-    console.log("new item creation error");
-    console.log(error);
+    console.log("NOTIFY: new item creation error");
+    // console.log(error);
   }
 };
 
@@ -166,8 +166,8 @@ const notifyAuctionPriceUpdate = async (contractAddress, tokenID, price) => {
     sendEmail(message);
     // call send function here
   } catch (error) {
-    console.log("auction price udpate error");
-    console.log(error);
+    console.log("NOTIFY: auction price update error");
+    // console.log(error);
   }
 };
 
@@ -215,8 +215,8 @@ const notifySingleItemListed = async (
     sendEmail(message);
     // call send function here
   } catch (error) {
-    console.log("notify single item listed error");
-    console.log(error);
+    console.log("NOTIFY: single item listed error");
+    // console.log(error);
   }
 };
 
@@ -226,6 +226,7 @@ const notifyNewAuction = async (contractAddress, tokenID) => {
       contractAddress: contractAddress,
       tokenID: tokenID,
     });
+
     let address = nftItem.owner;
     const followers = await Follow.find({ to: address });
     let addresses = followers.map((follower) => follower.from);
@@ -240,7 +241,7 @@ const notifyNewAuction = async (contractAddress, tokenID) => {
     // create data for dynamic email spread out
     let to = messageUtils.createEmailList(emails);
     let title = "New Auction!";
-    let content = `Artion User(${owner}) has put an NFT in auction.`;
+    let content = `Artion User(${address}) has put an NFT in auction.`;
     let image = await getNFTThumbnailPath(contractAddress, tokenID);
     image = `${storage_url}${image}`;
     let name = nftName;
@@ -256,8 +257,8 @@ const notifyNewAuction = async (contractAddress, tokenID) => {
     sendEmail(message);
     // call send function here
   } catch (error) {
-    console.log("nft auction error");
-    console.log(error);
+    console.log("NOTIFY: nft auction error");
+    // console.log(error);
   }
 };
 
@@ -288,8 +289,8 @@ const notifyBundleListing = async (bundleID, bundleName, address, price) => {
     sendEmail(message);
     // call send function here
   } catch (error) {
-    console.log("bundle listed error");
-    console.log(error);
+    console.log("NOTIFY: bundle listed error");
+    // console.log(error);
   }
 };
 
@@ -323,8 +324,8 @@ const notifyBundleUpdate = async (bundleID, bundleName, address, price) => {
     sendEmail(message);
     // call send function here
   } catch (error) {
-    console.log("notify bundle update");
-    console.log(error);
+    console.log("NOTIFY: notify bundle update");
+    // console.log(error);
   }
 };
 
@@ -367,8 +368,8 @@ const nofityNFTUpdated = async (address, contractAddress, tokenID, price) => {
     sendEmail(message);
     // call send function here
   } catch (error) {
-    console.log("item update error");
-    console.log(error);
+    console.log("NOTIFY: item update error");
+    // console.log(error);
   }
 };
 
@@ -556,7 +557,7 @@ const extractEmailSubscribedAddresses = async (addresses, option) => {
 const sendEmail = (msg) => {
   sgMail.sendMultiple(msg, (error, result) => {
     if (error) {
-      console.log(error);
+      console.log("Failed to send EMAIL: ", error);
     } else {
       console.log("That's was it!");
     }

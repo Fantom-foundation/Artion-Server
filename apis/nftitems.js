@@ -290,7 +290,7 @@ const selectTokens = async (req, res) => {
     if (!wallet) {
       if (filters == undefined) {
         /*
-        when no status option 
+        when no status option
          */
         /* contract address filter */
         let collectionFilters = {
@@ -421,7 +421,7 @@ const selectTokens = async (req, res) => {
 
       if (filters == undefined) {
         /*
-        when no status option 
+        when no status option
          */
         /* contract address filter */
         let collectionFilters721 = {
@@ -659,7 +659,7 @@ const selectBundles = async (req, res) => {
     // if (!wallet) {
     if (filters == null) {
       /*
-        when no status option 
+        when no status option
          */
       /* contract address filter */
       let collectionFilters = {
@@ -711,7 +711,7 @@ const selectBundles = async (req, res) => {
       return data;
     } else if (filters.includes('buyNow') || filters.includes('onAuction')) {
       /*
-        when no status option 
+        when no status option
          */
       /* contract address filter */
       let collectionFilters = {
@@ -774,7 +774,7 @@ const selectBundles = async (req, res) => {
       return data;
     } else {
       /*
-        when no status option 
+        when no status option
          */
       /* contract address filter */
       let collectionFilters = {
@@ -855,6 +855,7 @@ router.post('/fetchTokens', async (req, res) => {
   items = updatePrices(items);
 
   let data = sortItems(items, sortby);
+  console.log(data);
 
   let _searchResults = data.slice(from, from + count);
 

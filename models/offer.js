@@ -8,8 +8,9 @@ const Offer = mongoose.Schema({
   paymentToken: { type: String, default: "ftm" }, // payment erc20 token address
   pricePerItem: { type: Number }, // price in payment token
   priceInUSD: { type: Number, default: 0 },
-  deadline: { type: Number },
+  deadline: { type: Date, required: false },
+  blockNumber: { type: Number, required: true },
 });
-// Offer.index({ minter: 1, tokenID: -1 }, { unique: true });
+Offer.index({ minter: 1, tokenID: -1, creator: 1 }, { unique: true });
 
 mongoose.model("Offer", Offer);
