@@ -336,7 +336,7 @@ const nofityNFTUpdated = async (address, contractAddress, tokenID, price) => {
       name,
       link,
     });
-    sendEmail(message);
+    await sendEmail(message);
     // call send function here
   } catch (error) {
     console.log("NOTIFY: item update error");
