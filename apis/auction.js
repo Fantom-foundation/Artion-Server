@@ -95,7 +95,7 @@ router.post("/auctionCreated", service_auth, async (req, res) => {
           bidder: 0,
           paymentToken: auctionPayToken.address,
           txHash: transactionHash,
-          startTime: new Date(parseInt(auction._startTime) * 1000),
+          startTime: parseInt(auction._startTime) * 1000,
           endTime: new Date(parseInt(auction._endTime) * 1000),
           reservePrice: ethers.utils.formatUnits(auction._reservePrice.toString(), auctionPayToken.decimals),
           blockNumber,
@@ -211,7 +211,7 @@ router.post("/updateAuctionStartTime", service_auth, async (req, res) => {
 
     const nftAddress = nftAddressC.toLowerCase();
     const tokenId = parseInt(tokenIdBN.hex)
-    const startTime = parseInt(startTimeBN.hex)
+    const startTime = parseInt(startTimeBN.hex) * 1000;
 
     const auction = await Auction.findOne({
       minter: nftAddress,
@@ -219,7 +219,7 @@ router.post("/updateAuctionStartTime", service_auth, async (req, res) => {
       blockNumber: {$lt: blockNumber},
     });
     if (auction) {
-      auction.startTime = new Date(parseInt(startTime) * 1000);
+      auction.startTime = startTime;
       await auction.save();
     }
 
