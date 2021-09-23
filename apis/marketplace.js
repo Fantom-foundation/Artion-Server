@@ -58,6 +58,7 @@ const isOfferCancelNotifiable = async (receiver, nft, tokenID) => {
 //     blockNumber: { $lt: blockNumber }
 //   });
 //   console.log(result);
+//
 // })
 
 router.post("/itemListed", service_auth, async (req, res) => {
@@ -245,7 +246,7 @@ router.post("/itemSold", service_auth, async (req, res) => {
 
       // add new trade history
     try {
-      let existingHistory = await TradeHistory.find({ txHash: transactionHash });
+      const existingHistory = await TradeHistory.find({ txHash: transactionHash });
       if (!existingHistory.length) {
         history = new TradeHistory();
         history.collectionAddress = nft;
@@ -520,7 +521,7 @@ router.post("/offerCanceled", service_auth, async (req, res) => {
             let isNotifiable = await isOfferCancelNotifiable(
               owner.address,
               nft,
-              tokenID
+              tokenId
             );
             if (!isNotifiable) return;
             let alias = await getUserAlias(owner.address);
