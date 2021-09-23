@@ -508,7 +508,7 @@ router.post("/offerCanceled", service_auth, async (req, res) => {
         if (type == 721) {
           let tokenOwner = await NFTITEM.findOne({
             contractAddress: nft,
-            tokenID: tokenID,
+            tokenID: tokenId,
           });
           let owner = await Account.findOne({
             address: tokenOwner.owner,
