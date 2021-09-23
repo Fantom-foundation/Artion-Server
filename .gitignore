@@ -4,6 +4,7 @@
 cipher.js
 test.js
 /admin-actions
+/uploads
 
 # hide all .env files
 .env*

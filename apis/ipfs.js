@@ -226,7 +226,7 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
           imgData.indexOf(";base64")
         );
         let imageFileName =
-          address + name.replace(" ", "") + symbol + "." + extension;
+          address + "_" + name.replace(" ", "") + "_" + symbol.replace(" ", "") + "_" + Date.now() + "." + extension;
         imgData = imgData.replace(`data:image\/${extension};base64,`, "");
         fs.writeFile(uploadPath + imageFileName, imgData, "base64", (err) => {
           if (err) {
