@@ -12,10 +12,12 @@ const TradeHistory = mongoose.Schema(
     priceInUSD: { type: Number, default: 1 },
     saleDate: { type: Date, index: true },
     isAuction: { type: Boolean, default: false },
+    txHash: { type: String, required: true },
   },
   {
     timestamps: true,
   }
 );
+TradeHistory.index({ txHash: 1 }, { unique: true });
 
 mongoose.model("TradeHistory", TradeHistory);

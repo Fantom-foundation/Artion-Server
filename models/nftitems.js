@@ -29,6 +29,7 @@ const NFTITEM = mongoose.Schema(
     contentType: { type: String, default: "image" },
     isAppropriate: { type: Boolean, default: true },
     isFiltered: { type: Boolean, default: false },
+    blockNumber: { type: Number, default: 0},
   },
   {
     timestamps: true,

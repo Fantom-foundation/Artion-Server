@@ -237,6 +237,7 @@ router.post("/getMintableCollections", auth, async (req, res) => {
       let category = await Category.findOne({
         minterAddress: toLowerCase(collection.erc721Address),
       });
+
       if (category) {
         tokenTypeMap.set(collection.erc721Address, category.type);
       }

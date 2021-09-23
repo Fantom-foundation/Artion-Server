@@ -11,6 +11,7 @@ const Listing = mongoose.Schema({
   startTime: { type: Date },
   isPrivate: { type: Boolean, default: false },
   allowedAddress: { type: String },
+  blockNumber: { type: Number, required: true },
 });
 Listing.index({ minter: 1, tokenID: -1, owner: 1 }, { unique: true });
 
