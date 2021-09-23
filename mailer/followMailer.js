@@ -1,6 +1,7 @@
 require("dotenv").config();
 const sgMail = require("@sendgrid/mail");
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const mailingListEmail = "noreply-artion@fantom.foundation";
 const messageUtils = require("./message.utils");
 
 const app_url = process.env.APP_URL;
@@ -50,29 +51,36 @@ const getNFTThumbnailPath = async (nft, tokenID) => {
   }
 };
 
-const notifyBundleCreation = async (address, bundleID, bundleName) => {
-  try {
-    const followers = await Follow.find({ to: address });
-    let addresses = followers.map((follower) => follower.from);
-    addresses = await extractEmailSubscribedAddresses(
-      addresses,
-      "fBundleCreation"
-    );
-    let accounts = await Account.find({ address: { $in: addresses } });
-    let emails = accounts.map((account) =>
+const extractSubcriberEmails = async (address, option) => {
+  const followers = await Follow.find({ to: address });
+  let addresses = followers.map((follower) => follower.from);
+  if (option) {
+      addresses = await extractEmailSubscribedAddresses(addresses, option);
+  }
+  let accounts = await Account.find({ address: { $in: addresses } });
+  let emails = accounts.map((account) =>
       account.email ? account.email : null
-    );
-    emails = emails.filter((email) => email);
+  );
+  emails = emails.filter((email) => email);
+  return emails;
+};
+
+const notifyBundleCreation = async (address, bundleID, bundleName) => {
+  address = toLowerCase(address);
+  try {
     let owner = await getUserAlias(address);
+    let emails = await extractSubcriberEmails(address, "fBundleCreation");
 
     // create data for dynamic email spread out
-    let to = messageUtils.createEmailList(emails);
+    let to = mailingListEmail;
+    let bcc = messageUtils.createEmailList(emails);
     let title = "New Bundle Created!";
     let content = `Artion User(${owner}) has created ${bundleName} bundle.`;
     let link = `${app_url}bundle/${bundleID}`;
 
-    let message = messageUtils.createBundleItemMessage({
+    let message = messageUtils.createBundleItemMessageList({
       to,
+      bcc,
       title,
       content,
       link,
@@ -89,26 +97,22 @@ const nofifyNFTShowUp = async (address, contractAddress, tokenID) => {
   contractAddress = toLowerCase(contractAddress);
   tokenID = parseInt(tokenID);
   try {
-    const followers = await Follow.find({ to: address });
-    let addresses = followers.map((follower) => follower.from);
-    let accounts = await Account.find({ address: { $in: addresses } });
-    let emails = accounts.map((account) =>
-      account.email ? account.email : null
-    );
-    emails = emails.filter((email) => email);
     let owner = await getUserAlias(address);
     let nftName = await getNFTItemName(contractAddress, tokenID);
+    let emails = await extractSubcriberEmails(address, null); // option is null
 
     // create data for dynamic email spread out
-    let to = messageUtils.createEmailList(emails);
+    let to = mailingListEmail;
+    let bcc = messageUtils.createEmailList(emails);
     let title = "New NFT Item Created!";
     let content = `Artion User(${owner}) has created ${nftName} nft item.`;
     let image = await getNFTThumbnailPath(contractAddress, tokenID);
     image = `${storage_url}${image}`;
     let name = nftName;
     let link = `${app_url}explore/${contractAddress}/${tokenID}`;
-    let message = messageUtils.createNFTItemMessage({
+    let message = messageUtils.createNFTItemMessageList({
       to,
+      bcc,
       title,
       content,
       image,
@@ -124,8 +128,9 @@ const nofifyNFTShowUp = async (address, contractAddress, tokenID) => {
 };
 
 const notifyAuctionPriceUpdate = async (contractAddress, tokenID, price) => {
+  contractAddress = toLowerCase(contractAddress);
+  tokenID = parseInt(tokenID);
   try {
-    contractAddress = toLowerCase(contractAddress);
     let nft = await NFTITEM.findOne({
       contractAddress: contractAddress,
       tokenID: tokenID,
@@ -135,28 +140,20 @@ const notifyAuctionPriceUpdate = async (contractAddress, tokenID, price) => {
     let ownerAccount = await Account.findOne({ address: address });
     let owner = ownerAccount.alias;
 
-    const followers = await Follow.find({ to: address });
-    let addresses = followers.map((follower) => follower.from);
-    addresses = await extractEmailSubscribedAddresses(
-      addresses,
-      "fNftAuctionPrice"
-    );
-    let accounts = await Account.find({ address: { $in: addresses } });
-    let emails = accounts.map((account) =>
-      account.email ? account.email : null
-    );
-    emails = emails.filter((email) => email);
+    let emails = await extractSubcriberEmails(address, "fNftAuctionPrice");
 
     // create data for dynamic email spread out
-    let to = messageUtils.createEmailList(emails);
+    let to = mailingListEmail;
+    let bcc = messageUtils.createEmailList(emails);
     let title = "Auction Price Updated!";
     let content = `Artion User(${owner}) has updated an auction price.`;
     let image = await getNFTThumbnailPath(contractAddress, tokenID);
     image = `${storage_url}${image}`;
     let name = nftName;
     let link = `${app_url}explore/${contractAddress}/${tokenID}`;
-    let message = messageUtils.createNFTItemMessage({
+    let message = messageUtils.createNFTItemMessageList({
       to,
+      bcc,
       title,
       content,
       image,
@@ -178,34 +175,26 @@ const notifySingleItemListed = async (
   quantity,
   price
 ) => {
+  address = toLowerCase(address);
+  contractAddress = toLowerCase(contractAddress);
+  tokenID = parseInt(tokenID);
   try {
-    let nft = await NFTITEM.findOne({
-      contractAddress: contractAddress,
-      tokenID: tokenID,
-    });
-    let nftName = nft.name ? nft.name : nft.tokenID;
-    let ownerAccount = await Account.findOne({ address: address });
-    let owner = ownerAccount.alias;
-
-    const followers = await Follow.find({ to: address });
-    let addresses = followers.map((follower) => follower.from);
-    addresses = await extractEmailSubscribedAddresses(addresses, "fNftList");
-    let accounts = await Account.find({ address: { $in: addresses } });
-    let emails = accounts.map((account) =>
-      account.email ? account.email : null
-    );
-    emails = emails.filter((email) => email);
+    let owner = await getUserAlias(address);
+    let nftName = await getNFTItemName(contractAddress, tokenID);
+    let emails = await extractSubcriberEmails(address, "fNftList");
 
     // create data for dynamic email spread out
-    let to = messageUtils.createEmailList(emails);
+    let to = mailingListEmail;
+    let bcc = messageUtils.createEmailList(emails);
     let title = "New Item Listed!";
     let content = `Artion User(${owner}) has listed a new NFT(${nftName}).`;
     let image = await getNFTThumbnailPath(contractAddress, tokenID);
     image = `${storage_url}${image}`;
     let name = nftName;
     let link = `${app_url}explore/${contractAddress}/${tokenID}`;
-    let message = messageUtils.createNFTItemMessage({
+    let message = messageUtils.createNFTItemMessageList({
       to,
+      bcc,
       title,
       content,
       image,
@@ -221,6 +210,8 @@ const notifySingleItemListed = async (
 };
 
 const notifyNewAuction = async (contractAddress, tokenID) => {
+  contractAddress = toLowerCase(contractAddress);
+  tokenID = parseInt(tokenID);
   try {
     let nftItem = await NFTITEM.findOne({
       contractAddress: contractAddress,
@@ -228,26 +219,22 @@ const notifyNewAuction = async (contractAddress, tokenID) => {
     });
 
     let address = nftItem.owner;
-    const followers = await Follow.find({ to: address });
-    let addresses = followers.map((follower) => follower.from);
-    addresses = await extractEmailSubscribedAddresses(addresses, "fNftAuction");
-    let accounts = await Account.find({ address: { $in: addresses } });
-    let emails = accounts.map((account) =>
-      account.email ? account.email : null
-    );
-    emails = emails.filter((email) => email);
     let nftName = nftItem.name;
 
+    let emails = await extractSubcriberEmails(address, "fNftAuction");
+
     // create data for dynamic email spread out
-    let to = messageUtils.createEmailList(emails);
+    let to = mailingListEmail;
+    let bcc = messageUtils.createEmailList(emails);
     let title = "New Auction!";
     let content = `Artion User(${address}) has put an NFT in auction.`;
     let image = await getNFTThumbnailPath(contractAddress, tokenID);
     image = `${storage_url}${image}`;
     let name = nftName;
     let link = `${app_url}explore/${contractAddress}/${tokenID}`;
-    let message = messageUtils.createNFTItemMessage({
+    let message = messageUtils.createNFTItemMessageList({
       to,
+      bcc,
       title,
       content,
       image,
@@ -264,24 +251,19 @@ const notifyNewAuction = async (contractAddress, tokenID) => {
 
 const notifyBundleListing = async (bundleID, bundleName, address, price) => {
   try {
-    const followers = await Follow.find({ to: address });
-    let addresses = followers.map((follower) => follower.from);
-    addresses = await extractEmailSubscribedAddresses(addresses, "fBundleList");
-    let accounts = await Account.find({ address: { $in: addresses } });
-    let emails = accounts.map((account) =>
-      account.email ? account.email : null
-    );
-    emails = emails.filter((email) => email);
+    let emails = await extractSubcriberEmails(address, "fBundleList");
     let owner = await getUserAlias(address);
 
     // create data for dynamic email spread out
-    let to = messageUtils.createEmailList(emails);
+    let to = mailingListEmail;
+    let bcc = messageUtils.createEmailList(emails);
     let title = "Bundle Listed!";
     let content = `Artion User(${owner}) has listed ${bundleName} bundle.`;
     let link = `${app_url}bundle/${bundleID}`;
 
-    let message = messageUtils.createBundleItemMessage({
+    let message = messageUtils.createBundleItemMessageList({
       to,
+      bcc,
       title,
       content,
       link,
@@ -296,27 +278,19 @@ const notifyBundleListing = async (bundleID, bundleName, address, price) => {
 
 const notifyBundleUpdate = async (bundleID, bundleName, address, price) => {
   try {
-    const followers = await Follow.find({ to: address });
-    let addresses = followers.map((follower) => follower.from);
-    addresses = await extractEmailSubscribedAddresses(
-      addresses,
-      "fBundlePrice"
-    );
-    let accounts = await Account.find({ address: { $in: addresses } });
-    let emails = accounts.map((account) =>
-      account.email ? account.email : null
-    );
-    emails = emails.filter((email) => email);
+    let emails = await extractSubcriberEmails(address, "fBundlePrice");
     let owner = await getUserAlias(address);
 
     // create data for dynamic email spread out
-    let to = messageUtils.createEmailList(emails);
+    let to = mailingListEmail;
+    let bcc = messageUtils.createEmailList(emails);
     let title = "Bundle Price Updated!";
     let content = `Artion User(${owner}) has updated ${bundleName} bundle's price.`;
     let link = `${app_url}bundle/${bundleID}`;
 
-    let message = messageUtils.createBundleItemMessage({
+    let message = messageUtils.createBundleItemMessageList({
       to,
+      bcc,
       title,
       content,
       link,
@@ -331,8 +305,10 @@ const notifyBundleUpdate = async (bundleID, bundleName, address, price) => {
 
 const nofityNFTUpdated = async (address, contractAddress, tokenID, price) => {
   try {
-    const artionUri = `${app_url}explore/${contractAddress}/${tokenID}`;
-    let nft = await NFTITEM.findOne({
+      contractAddress = toLowerCase(contractAddress);
+      tokenID = parseInt(tokenID);
+
+      let nft = await NFTITEM.findOne({
       contractAddress: contractAddress,
       tokenID: tokenID,
     });
@@ -340,25 +316,20 @@ const nofityNFTUpdated = async (address, contractAddress, tokenID, price) => {
     let ownerAccount = await Account.findOne({ address: address });
     let owner = ownerAccount.alias;
 
-    const followers = await Follow.find({ to: address });
-    let addresses = followers.map((follower) => follower.from);
-    addresses = await extractEmailSubscribedAddresses(addresses, "fNftPrice");
-    let accounts = await Account.find({ address: { $in: addresses } });
-    let emails = accounts.map((account) =>
-      account.email ? account.email : null
-    );
-    emails = emails.filter((email) => email);
+    let emails = await extractSubcriberEmails(address, "fNftPrice");
 
     // create data for dynamic email spread out
-    let to = messageUtils.createEmailList(emails);
+    let to = mailingListEmail;
+    let bcc = messageUtils.createEmailList(emails);
     let title = "NFT Price Updated!";
     let content = `Artion User(${owner}) has updated nft(${nftName})'s price.`;
     let image = await getNFTThumbnailPath(contractAddress, tokenID);
     image = `${storage_url}${image}`;
     let name = nftName;
     let link = `${app_url}explore/${contractAddress}/${tokenID}`;
-    let message = messageUtils.createNFTItemMessage({
+    let message = messageUtils.createNFTItemMessageList({
       to,
+      bcc,
       title,
       content,
       image,
