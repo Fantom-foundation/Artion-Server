@@ -160,7 +160,7 @@ router.post("/auctionCancelled", service_auth, async (req, res) => {
         tokenID: tokenId,
       });
       if (token) {
-        token.saleEndsAt = null;
+        token.saleEndsAt = new Date();
         await token.save();
       }
     }
@@ -345,15 +345,15 @@ router.post("/auctionResulted", service_auth, async (req, res) => {
       });
 
       if (token) {
-        token.price = null;
-        token.paymentToken = null;
-        token.priceInUSD = null;
+        token.price = 0;
+        token.paymentToken = "ftm";
+        token.priceInUSD = 0;
         token.lastSalePrice = winningBid;
         token.lastSalePricePaymentToken = auctionPayToken.address;
         token.lastSalePriceInUSD = unitPrice * winningBid;
         token.soldAt = new Date();
         // update sale ends at as well
-        token.saleEndsAt = null;
+        token.saleEndsAt = new Date();
         await token.save();
 
         const existingHistory = await TradeHistory.find({txHash: transactionHash});

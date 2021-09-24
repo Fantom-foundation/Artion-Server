@@ -173,9 +173,9 @@ router.post("/itemSold", service_auth, async (req, res) => {
         blockNumber: { $lte: blockNumber },
       });
       if (token) {
-        token.price = null;
-        token.paymentToken = null;
-        token.priceInUSD = null;
+        token.price = 0;
+        token.paymentToken = "ftm";
+        token.priceInUSD = 0;
         token.lastSalePrice = pricePerItem;
         token.lastSalePricePaymentToken = itemPayToken.address;
         token.lastSalePriceInUSD = priceInUSD;
@@ -360,10 +360,9 @@ router.post("/itemCanceled", service_auth, async (req, res) => {
         blockNumber: {$lt: blockNumber},
       });
       if (token) {
-        token.price = null;
-        token.paymentToken = null;
-        token.priceInUSD = null;
-        token.listedAt = null; //remove listed date
+        token.price = 0;
+        token.paymentToken = "ftm";
+        token.priceInUSD = 0;
         await token.save();
       }
     }
