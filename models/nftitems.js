@@ -13,15 +13,15 @@ const NFTITEM = mongoose.Schema(
     supply: { type: Number, default: 1 },
     royalty: { type: Number, default: 0 },
     category: [{ type: String }],
-    price: { type: Number, default: 0 }, //for most expensive in payment token
-    paymentToken: { type: String, default: "ftm" }, // payment erc20 token address
-    priceInUSD: { type: Number, default: 0 },
-    lastSalePrice: { type: Number, default: 0 }, //for highest last sale price
-    lastSalePricePaymentToken: { type: String, default: "ftm" }, // payment erc20 token address
-    lastSalePriceInUSD: { type: Number, default: 0 },
+    price: { type: Number, default: 0, nullable: true }, //for most expensive in payment token
+    paymentToken: { type: String, default: null, nullable: true }, // payment erc20 token address
+    priceInUSD: { type: Number, default: null, nullable: true },
+    lastSalePrice: { type: Number, default: null, nullable: true }, //for highest last sale price
+    lastSalePricePaymentToken: { type: String, default: null, nullable: true }, // payment erc20 token address
+    lastSalePriceInUSD: { type: Number, default: null, nullable: true },
     viewed: { type: Number, default: 0 }, //for mostly viewed
     createdAt: { type: Date }, //for recently created
-    listedAt: { type: Date }, //for recently listed
+    listedAt: { type: Date, nullable: true }, //for recently listed
     soldAt: { type: Date }, //for recently sold
     saleEndsAt: { type: Date }, //for auction
     tokenType: { type: Number, default: 721 },

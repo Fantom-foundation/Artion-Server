@@ -89,6 +89,7 @@ router.post("/auctionCreated", service_auth, async (req, res) => {
 
       // Save new auction for NFT
       if (!existingAuction.length) {
+        const reservePrice = ethers.utils.formatUnits(auction._reservePrice.toString(), auctionPayToken.decimals)
         const newAuction = {
           minter: nftAddress,
           tokenID: tokenId,
@@ -97,7 +98,7 @@ router.post("/auctionCreated", service_auth, async (req, res) => {
           txHash: transactionHash,
           startTime: parseInt(auction._startTime) * 1000,
           endTime: new Date(parseInt(auction._endTime) * 1000),
-          reservePrice: ethers.utils.formatUnits(auction._reservePrice.toString(), auctionPayToken.decimals),
+          reservePrice,
           blockNumber,
         }
         await Auction.create(newAuction);
@@ -327,13 +328,13 @@ router.post("/auctionResulted", service_auth, async (req, res) => {
     await Bid.updateMany({
       minter: nftAddress,
       tokenID: tokenId,
-      bidder: { $ne: winningBid },
+      bidder: { $ne: winner },
       blockNumber: {$lt: blockNumber},
     }, { auctionActive: false, winningBid: false });
     await Bid.updateOne({
       minter: nftAddress,
       tokenID: tokenId,
-      bidder: winningBid,
+      bidder: winner,
       blockNumber: {$lt: blockNumber},
     }, { auctionActive: false });
 
@@ -344,9 +345,9 @@ router.post("/auctionResulted", service_auth, async (req, res) => {
       });
 
       if (token) {
-        token.price = winningBid;
-        token.paymentToken = auctionPayToken.address;
-        token.priceInUSD = unitPrice;
+        token.price = null;
+        token.paymentToken = null;
+        token.priceInUSD = null;
         token.lastSalePrice = winningBid;
         token.lastSalePricePaymentToken = auctionPayToken.address;
         token.lastSalePriceInUSD = unitPrice * winningBid;
@@ -489,7 +490,7 @@ router.post("/bidRefunded", service_auth, async (req, res) => {
   // TODO do we need history for this
   try {
     const { blockNumber, transactionHash } = req.body;
-    // TODO what to do with this event? Do we ant to process this?
+    // TODO what to do with this event? Do we want to process this?
 
     console.info("[BidRefunded] Success: ", { transactionHash, blockNumber });
     return res.json({status: "success"});
