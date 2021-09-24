@@ -16,14 +16,7 @@ const toLowerCase = require("../utils/utils");
 
 const extractAddress = require("../services/address.utils");
 
-const ipfsUri = "https://artion.mypinata.cloud/ipfs/"
-
-// artion.mypinata.cloud
-// artion1.mypinata.cloud
-// artion2.mypinata.cloud
-// artion3.mypinata.cloud
-// artion4.mypinata.cloud
-// artion5.mypinata.cloud
+const ipfsUris = ["https://artion.mypinata.cloud/ipfs/", "https://artion1.mypinata.cloud/ipfs/", "https://artion2.mypinata.cloud/ipfs/", "https://artion3.mypinata.cloud/ipfs/", "https://artion4.mypinata.cloud/ipfs/", "https://artion5.mypinata.cloud/ipfs/"]
 
 const uploadPath = process.env.UPLOAD_PATH;
 const pinata = pinataSDK(
@@ -60,6 +53,7 @@ const pinFileToIPFS = async (
     let result = await pinata.pinFileToIPFS(readableStreamForFile, options);
     return result;
   } catch (error) {
+    console.error(error.message);
     return "failed to pin file to ipfs";
   }
 };
@@ -208,6 +202,7 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
           status: "failed",
         });
       } else {
+        const ipfsUri = ipfsUris[Math.floor(Math.random() * ipfsUris.length)];
         let imgData = fields.image;
         let name = fields.name;
         // let address = fields.account;
@@ -232,61 +227,64 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
           "data:image/".length,
           imgData.indexOf(";base64")
         );
+        console.log({name: name.replace(" ", ""), symbol: symbol.replace(" ", "")})
         let imageFileName =
-          address + "_" + name.replace(" ", "") + "_" + symbol.replace(" ", "") + "_" + Date.now() + "." + extension;
+          address + "_" + name.replace(" ", "") + "_" + `${symbol ? symbol.replace(" ", "") : ""}` + "_" + Date.now() + "." + extension;
         imgData = imgData.replace(`data:image\/${extension};base64,`, "");
-        fs.writeFile(uploadPath + imageFileName, imgData, "base64", (err) => {
+        fs.writeFile(uploadPath + imageFileName, imgData, "base64", async (err) => {
           if (err) {
             console.error("[3] uploadToIPFSerr: ", {err});
             return res.status(400).json({
               status: "failed to save an image file",
               err,
             });
+          } else {
+            let filePinStatus = await pinFileToIPFS(
+              imageFileName,
+              address,
+              name,
+              symbol,
+              royalty,
+              xtraUrl
+            );
+
+            // remove file once pinned
+            try {
+              fs.unlinkSync(uploadPath + imageFileName);
+            } catch (error) {
+            }
+
+            let now = new Date();
+            let currentTime = now.toTimeString();
+
+            let metaData = {
+              name: name,
+              image: ipfsUri + filePinStatus.IpfsHash,
+              description: description,
+              properties: {
+                symbol: symbol,
+                address: address,
+                royalty: royalty,
+                recipient: address,
+                IP_Rights: xtraUrl,
+                createdAt: currentTime,
+                collection: "Fantom Powered NFT Collection",
+              },
+            };
+
+            let jsonPinStatus = await pinJsonToIPFS(metaData);
+            return res.send({
+              status: "success",
+              uploadedCounts: 2,
+              fileHash: ipfsUri + filePinStatus.IpfsHash,
+              jsonHash: ipfsUri + jsonPinStatus.IpfsHash,
+            });
           }
-        });
-        let filePinStatus = await pinFileToIPFS(
-          imageFileName,
-          address,
-          name,
-          symbol,
-          royalty,
-          xtraUrl
-        );
-
-        // remove file once pinned
-        try {
-          fs.unlinkSync(uploadPath + imageFileName);
-        } catch (error) {}
-
-        let now = new Date();
-        let currentTime = now.toTimeString();
-
-        let metaData = {
-          name: name,
-          image: ipfsUri + filePinStatus.IpfsHash,
-          description: description,
-          properties: {
-            symbol: symbol,
-            address: address,
-            royalty: royalty,
-            recipient: address,
-            IP_Rights: xtraUrl,
-            createdAt: currentTime,
-            collection: "Fantom Powered NFT Collection",
-          },
-        };
-
-        let jsonPinStatus = await pinJsonToIPFS(metaData);
-        return res.send({
-          status: "success",
-          uploadedCounts: 2,
-          fileHash: ipfsUri + filePinStatus.IpfsHash,
-          jsonHash: ipfsUri + jsonPinStatus.IpfsHash,
         });
       }
     });
   } catch (error) {
-    console.log(error);
+    console.error(error.message);
     return res.json({
       status: "failed",
     });
@@ -301,6 +299,7 @@ router.post("/uploadBundleImage2Server", auth, async (req, res) => {
         status: "failedParsingForm",
       });
     } else {
+      const ipfsUri = ipfsUris[Math.floor(Math.random()*ipfsUris.length)];
       let imgData = fields.imgData;
       let name = fields.name;
       let description = fields.description;
