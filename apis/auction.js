@@ -18,6 +18,7 @@ const TradeHistory = mongoose.model("TradeHistory");
 const AuctionContractAbi = require('../constants/auctionabi');
 // const CollectionFactoryContract = require("../constants/factory_abi");
 const { PAYTOKENS, DISABLED_PAYTOKENS } = require('../constants/tokens');
+const {getPrice} = require('../services/price.feed');
 
 const provider = new ethers.providers.JsonRpcProvider(
   process.env.NETWORK_RPC,
@@ -90,6 +91,8 @@ router.post("/auctionCreated", service_auth, async (req, res) => {
       // Save new auction for NFT
       if (!existingAuction.length) {
         const reservePrice = ethers.utils.formatUnits(auction._reservePrice.toString(), auctionPayToken.decimals)
+        const priceInUSD = reservePrice * getPrice(auctionPayToken.address);
+
         const newAuction = {
           minter: nftAddress,
           tokenID: tokenId,
@@ -110,6 +113,11 @@ router.post("/auctionCreated", service_auth, async (req, res) => {
         });
         if (updateToken) {
           updateToken.saleEndsAt = parseInt(auction._endTime.toString()) * 1000;
+          updateToken.price = reservePrice;
+          updateToken.paymentToken = auctionPayToken.address;
+          updateToken.priceInUSD = priceInUSD;
+          updateToken.listedAt = new Date();
+
           await updateToken.save();
         }
       }
@@ -160,7 +168,11 @@ router.post("/auctionCancelled", service_auth, async (req, res) => {
         tokenID: tokenId,
       });
       if (token) {
+        token.price = 0;
+        token.paymentToken = "ftm";
+        token.priceInUSD = 0;
         token.saleEndsAt = new Date();
+        token.listedAt = new Date(0);
         await token.save();
       }
     }
@@ -294,6 +306,18 @@ router.post("/updateAuctionReservePrice", service_auth, async (req, res) => {
       await auction.save();
     }
 
+    const updateToken = await NFTITEM.findOne({
+      contractAddress: nftAddress,
+      tokenID: tokenId,
+      blockNumber: {$lt: blockNumber},
+    });
+
+    //TODO is this needed?
+    if (updateToken) {
+      updateToken.price = reservePrice;
+      await updateToken.save();
+    }
+
     console.info("[UpdateAuctionReservePrice] Success: ", { transactionHash, blockNumber });
     return res.json({status: "success"});
   } catch (error) {
@@ -354,6 +378,7 @@ router.post("/auctionResulted", service_auth, async (req, res) => {
         token.soldAt = new Date();
         // update sale ends at as well
         token.saleEndsAt = new Date();
+        token.listedAt = new Date(0);
         await token.save();
 
         const existingHistory = await TradeHistory.find({txHash: transactionHash});
