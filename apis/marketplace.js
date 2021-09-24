@@ -179,6 +179,7 @@ router.post("/itemSold", service_auth, async (req, res) => {
         token.lastSalePrice = pricePerItem;
         token.lastSalePricePaymentToken = itemPayToken.address;
         token.lastSalePriceInUSD = priceInUSD;
+        token.listedAt = new Date(0);
         token.soldAt = new Date(); //set recently sold date
         await token.save();
       }
@@ -363,6 +364,7 @@ router.post("/itemCanceled", service_auth, async (req, res) => {
         token.price = 0;
         token.paymentToken = "ftm";
         token.priceInUSD = 0;
+        token.listedAt = new Date(0);
         await token.save();
       }
     }
