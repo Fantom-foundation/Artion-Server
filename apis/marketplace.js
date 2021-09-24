@@ -73,7 +73,7 @@ router.post("/itemListed", service_auth, async (req, res) => {
     const tokenId = parseInt(tokenIdBN.hex);
     const quantity = parseInt(quantityBN.hex);
     const startingTime = parseInt(startingTimeBN.hex) * 1000;
-
+    const priceInUSD = pricePerItem * getPrice(itemPayToken.address);
 
     // first update the token price
     let category = await Category.findOne({ minterAddress: nft });
@@ -115,6 +115,7 @@ router.post("/itemListed", service_auth, async (req, res) => {
         newList.quantity = quantity;
         newList.price = pricePerItem;
         newList.paymentToken = itemPayToken.address;
+        newList.priceInUSD = priceInUSD;
         newList.startTime = startingTime;
         newList.blockNumber = blockNumber;
         await newList.save();
@@ -172,9 +173,9 @@ router.post("/itemSold", service_auth, async (req, res) => {
         blockNumber: { $lte: blockNumber },
       });
       if (token) {
-        token.price = unitPrice;
-        token.paymentToken = itemPayToken.address;
-        token.priceInUSD = getPrice(itemPayToken.address);
+        token.price = null;
+        token.paymentToken = null;
+        token.priceInUSD = null;
         token.lastSalePrice = pricePerItem;
         token.lastSalePricePaymentToken = itemPayToken.address;
         token.lastSalePriceInUSD = priceInUSD;
@@ -293,6 +294,7 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
     const itemPayToken = [...PAYTOKENS, ...DISABLED_PAYTOKENS].find((token) => token.address.toLowerCase() === paytokenC.toLowerCase());
     const newPricePerItem = ethers.utils.formatUnits(ethers.BigNumber.from(newPricePerItemBN.hex), itemPayToken.decimals);
     const tokenId = parseInt(tokenIdBN.hex);
+    const newPriceInUSD = newPricePerItem * getPrice(itemPayToken.address);
 
     // update the price of the nft here
     // first update the token price
@@ -319,6 +321,7 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
     if (list) {
       list.price = newPricePerItem;
       list.paymentToken = itemPayToken.address;
+      list.priceInUSD = newPriceInUSD;
       list.blockNumber = blockNumber;
       await list.save();
     }
