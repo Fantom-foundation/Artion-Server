@@ -16,7 +16,14 @@ const toLowerCase = require("../utils/utils");
 
 const extractAddress = require("../services/address.utils");
 
-const ipfsUri = "https://gateway.pinata.cloud/ipfs/";
+const ipfsUri = "https://artion.mypinata.cloud/ipfs/"
+
+// artion.mypinata.cloud
+// artion1.mypinata.cloud
+// artion2.mypinata.cloud
+// artion3.mypinata.cloud
+// artion4.mypinata.cloud
+// artion5.mypinata.cloud
 
 const uploadPath = process.env.UPLOAD_PATH;
 const pinata = pinataSDK(
