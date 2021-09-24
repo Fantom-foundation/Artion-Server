@@ -32,6 +32,17 @@ const provider = new ethers.providers.JsonRpcProvider(
 
 const nonImage = 'non-image';
 
+const formatPrice = (price = 0, payToken) => {
+  if (
+    payToken === process.env.PRICE_USDC ||
+    payToken === process.env.PRICE_FUSDT
+  ) {
+    return price / 1e12;
+  }
+
+  return price;
+};
+
 const updatePrices = (items) => {
   items.map((item) => {
     item.currentPriceInUSD = item.price * getPrice(item.paymentToken);
@@ -849,9 +860,13 @@ router.post('/fetchTokens', async (req, res) => {
     items = await selectBundles(req, res);
   }
 
-  items = updatePrices(items);
+  items.map((item) => {
+    item.price = formatPrice(item.price, item.paymentToken);
+  });
 
-  let data = sortItems(items, sortby);
+  let updatedItems = updatePrices(items);
+
+  let data = sortItems(updatedItems, sortby);
 
   let _searchResults = data.slice(from, from + count);
 
