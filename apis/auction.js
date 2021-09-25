@@ -24,7 +24,7 @@ const provider = new ethers.providers.JsonRpcProvider(
   process.env.NETWORK_RPC,
   parseInt(process.env.NETWORK_CHAINID)
 );
-const ownerWallet = new ethers.Wallet(process.env.ROAYLTY_PK, provider);
+const ownerWallet = new ethers.Wallet(process.env.ROYALTY_PK, provider);
 
 const AuctionContractAddress = process.env.AUCTION_ADDRESS;
 const auctionSC = new ethers.Contract(
