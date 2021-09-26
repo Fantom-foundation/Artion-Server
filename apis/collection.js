@@ -110,31 +110,37 @@ router.post("/collectiondetails", auth, async (req, res) => {
   );
   // this is for editing a collection
   if (collection) {
-    collection.erc721Address = erc721Address;
-    collection.collectionName = collectionName;
-    collection.description = description;
-    collection.categories = categories;
-    collection.logoImageHash = logoImageHash;
-    collection.siteUrl = siteUrl;
-    collection.discord = discord;
-    collection.twitterHandle = twitterHandle;
-    collection.mediumHandle = mediumHandle;
-    collection.telegram = telegram;
-    collection.instagramHandle = instagram;
-    collection.email = email;
-    collection.feeRecipient = feeRecipient;
-    collection.royalty = royalty;
+    // disable modifying an existing collection
+    return res.json({
+      status: "failed",
+      data: "NFT Contract Address already exists",
+    });
 
-    let _collection = await collection.save();
-    if (_collection)
-      return res.send({
-        status: "success",
-        data: _collection.toJson(),
-      });
-    else
-      return res.send({
-        status: "failed",
-      });
+    //collection.erc721Address = erc721Address;
+    //collection.collectionName = collectionName;
+    //collection.description = description;
+    //collection.categories = categories;
+    //collection.logoImageHash = logoImageHash;
+    //collection.siteUrl = siteUrl;
+    //collection.discord = discord;
+    //collection.twitterHandle = twitterHandle;
+    //collection.mediumHandle = mediumHandle;
+    //collection.telegram = telegram;
+    //collection.instagramHandle = instagram;
+    //collection.email = email;
+    //collection.feeRecipient = feeRecipient;
+    //collection.royalty = royalty;
+
+    //let _collection = await collection.save();
+    //if (_collection)
+    //  return res.send({
+    //    status: "success",
+    //    data: _collection.toJson(),
+    //  });
+    //else
+    //  return res.send({
+    //    status: "failed",
+    // });
   } else {
     /* this is for new collection review */
     if (is1155) {
