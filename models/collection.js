@@ -18,6 +18,7 @@ const Collection = mongoose.Schema({
   isInternal: { type: Boolean, default: false },
   isOwnerble: { type: Boolean, default: false },
   isAppropriate: { type: Boolean, default: true },
+  isVerified: { type: Boolean, default: false },
   feeRecipient: { type: String },
   royalty: { type: Number, default: 0 },
 });
@@ -43,6 +44,7 @@ Collection.methods.toJson = function () {
     isInternal: this.isInternal,
     isOwnerble: this.isOwnerble,
     isAppropriate: this.isAppropriate,
+    isVerified: this.isVerified,
     feeRecipient: this.feeRecipient,
     royalty: this.royalty,
   };
