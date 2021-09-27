@@ -1062,13 +1062,16 @@ router.post('/getSingleItemDetails', async (req, res) => {
     let historyPromise = _history.map(async (hist) => {
       let sender = await getAccountInfo(hist.from);
       let receiver = await getAccountInfo(hist.to);
+
+      let finalPrice = hist.price * getPrice(hist.paymentToken);
+
       history.push({
         from: hist.from,
         to: hist.to,
         tokenID: hist.tokenID,
         price: hist.price,
         paymentToken: hist.paymentToken,
-        priceInUSD: hist.priceInUSD,
+        priceInUSD: finalPrice,
         value: hist.value,
         createdAt: hist.createdAt,
         isAuction: hist.isAuction,
