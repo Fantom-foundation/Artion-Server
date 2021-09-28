@@ -65,11 +65,11 @@ const connect = () => {
   const db = mongoose.connection;
   db.on("error", console.error.bind(console, "connection error:"));
   db.once("open", function () {
-    console.log("artion server has been connected to the db server");
+    console.log("digibirr server has been connected to the db server");
     console.log("price feed has been started");
     priceFeed.runPriceFeed();
     app.listen(port, () => {
-      console.log(`artion server is running at port ${port}`);
+      console.log(`digibirr server is running at port ${port}`);
     });
   });
 };
