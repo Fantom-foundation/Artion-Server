@@ -20,6 +20,7 @@ const Collection = mongoose.Schema({
   isAppropriate: { type: Boolean, default: true },
   isVerified: { type: Boolean, default: false },
   feeRecipient: { type: String },
+  txid: { type: String },
   royalty: { type: Number, default: 0 },
 });
 

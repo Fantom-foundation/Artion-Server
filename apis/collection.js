@@ -98,6 +98,7 @@ router.post("/collectiondetails", auth, async (req, res) => {
   let feeRecipient = req.body.feeRecipient
     ? toLowerCase(req.body.feeRecipient)
     : "";
+  let txid = req.body.txid;
   let royalty = req.body.royalty ? parseFloat(req.body.royalty) : 0;
 
   let collection = await Collection.findOne({ erc721Address: erc721Address });
@@ -201,6 +202,7 @@ router.post("/collectiondetails", auth, async (req, res) => {
     } else _collection.status = false;
     _collection.email = email;
     _collection.feeRecipient = feeRecipient;
+    _collection.txid = txid;
     _collection.royalty = royalty;
     let newCollection = await _collection.save();
     if (newCollection) {
