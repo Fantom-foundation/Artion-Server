@@ -27,6 +27,7 @@ const registrySC = new ethers.Contract(
   ownerWallet
 );
 const { getSymbol, getName } = require("../services/price.feed");
+const Logger = require('../services/logger');
 
 router.post("/addNewToken", admin_auth, async (req, res) => {
   try {
@@ -89,7 +90,7 @@ router.post("/addNewToken", admin_auth, async (req, res) => {
       }
     }
   } catch (error) {
-    console.log("error");
+    Logger.error(error);
     return res.json({
       status: "failed",
     });

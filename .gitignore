@@ -11,3 +11,5 @@ test.js
 
 # mac display info
 .DS_Store
+
+/logs

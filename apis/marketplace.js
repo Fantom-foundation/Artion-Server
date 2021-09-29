@@ -12,6 +12,7 @@ const Account = mongoose.model("Account");
 const NotificationSetting = mongoose.model("NotificationSetting");
 
 const service_auth = require("./middleware/auth.tracker");
+const Logger = require("../services/logger");
 
 const sendEmail = require("../mailer/marketplaceMailer");
 const notifications = require("../mailer/followMailer");
@@ -121,7 +122,7 @@ router.post("/itemListed", service_auth, async (req, res) => {
         await newList.save();
       }
     } catch (err) {
-      console.error("[ItemListed] failed to save new listing: ", err.message);
+      Logger.error("[ItemListed] failed to save new listing: ", err.message);
     }
     // now notify followers
     try {
@@ -134,14 +135,14 @@ router.post("/itemListed", service_auth, async (req, res) => {
         itemPayToken.address
       );
     } catch(err) {
-      console.error("[ItemListed] Failed to notify followers: ", err.message);
+      Logger.error("[ItemListed] Failed to notify followers: ", err.message);
     }
 
-    console.info("[ItemListed] Success: ", { transactionHash, blockNumber });
+    Logger.info("[ItemListed] Success: ", { transactionHash, blockNumber });
     return res.json({status: "success"});
   } catch (error) {
-    console.info("[ItemListed] Failed: ", { transactionHash: req.body.transactionHash, blockNumber: req.body.blockNumber });
-    console.error({ error });
+    Logger.info("[ItemListed] Failed: ", { transactionHash: req.body.transactionHash, blockNumber: req.body.blockNumber });
+    Logger.error(error);
 
     return res.status(400).json({ status: "failed", error });
   }
@@ -212,7 +213,7 @@ router.post("/itemSold", service_auth, async (req, res) => {
           await sendEmail(data);
         }
       } catch (err) {
-        console.error("[ItemSold] Failed to notify buyer: ", err.message)
+        Logger.error("[ItemSold] Failed to notify buyer: ", err.message)
       }
 
       try {
@@ -242,7 +243,7 @@ router.post("/itemSold", service_auth, async (req, res) => {
           await sendEmail(data);
         }
       } catch (err) {
-        console.error("[ItemSold] Failed to notify seller: ", err.message);
+        Logger.error("[ItemSold] Failed to notify seller: ", err.message);
       }
     }
 
@@ -263,7 +264,7 @@ router.post("/itemSold", service_auth, async (req, res) => {
         await history.save();
       }
     } catch (err) {
-      console.error("[ItemSold] Failed to save new TradeHistory: ", err.message)
+      Logger.error("[ItemSold] Failed to save new TradeHistory: ", err.message)
     }
 
     // remove from listing
@@ -274,11 +275,11 @@ router.post("/itemSold", service_auth, async (req, res) => {
       blockNumber: { $lte: blockNumber}
     });
 
-    console.info("[ItemSold] Success: ", { transactionHash, blockNumber });
+    Logger.info("[ItemSold] Success: ", { transactionHash, blockNumber });
     return res.json({status: "success"});
   } catch (error) {
-    console.info("[ItemSold] Failed: ", { transactionHash: req.body.transactionHash, blockNumber: req.body.blockNumber });
-    console.error({ error });
+    Logger.info("[ItemSold] Failed: ", { transactionHash: req.body.transactionHash, blockNumber: req.body.blockNumber });
+    Logger.error(error);
 
     return res.status(400).json({ status: "failed", error });
   }
@@ -331,14 +332,14 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
       // send notification
       await notifications.nofityNFTUpdated(owner, nft, tokenId, newPricePerItem, itemPayToken.address);
     } catch (err) {
-      console.error("[ItemUpdated] Failed to notify owner", err.message);
+      Logger.error("[ItemUpdated] Failed to notify owner", err.message);
     }
 
-    console.info("[ItemUpdated] Success: ", { transactionHash, blockNumber });
+    Logger.info("[ItemUpdated] Success: ", { transactionHash, blockNumber });
     return res.json({status: "success"});
   } catch (error) {
-    console.info("[ItemUpdated] Failed: ", { transactionHash: req.body.transactionHash, blockNumber: req.body.blockNumber });
-    console.error({ error });
+    Logger.info("[ItemUpdated] Failed: ", { transactionHash: req.body.transactionHash, blockNumber: req.body.blockNumber });
+    Logger.error(error);
 
     return res.status(400).json({ status: "failed", error });
   }
@@ -376,11 +377,11 @@ router.post("/itemCanceled", service_auth, async (req, res) => {
       blockNumber: {$lt: blockNumber}
     });
 
-    console.info("[ItemCanceled] Success: ", { transactionHash, blockNumber });
+    Logger.info("[ItemCanceled] Success: ", { transactionHash, blockNumber });
     return res.json({status: "success"});
   } catch (error) {
-    console.info("[ItemCanceled] Failed!: ", { transactionHash: req.body.transactionHash, blockNumber: req.body.blockNumber });
-    console.error({ error });
+    Logger.info("[ItemCanceled] Failed!: ", { transactionHash: req.body.transactionHash, blockNumber: req.body.blockNumber });
+    Logger.error(error);
 
     return res.status(400).json({ status: "failed", error });
   }
@@ -428,7 +429,7 @@ router.post("/offerCreated", service_auth, async (req, res) => {
         await offer.save();
       }
     } catch (error) {
-      console.error("[OfferCreated] Failed to create new offer: ", error.message);
+      Logger.error("[OfferCreated] Failed to create new offer: ", error.message);
     }
     // now send email to the owner
     try {
@@ -475,14 +476,14 @@ router.post("/offerCreated", service_auth, async (req, res) => {
         }
       }
     } catch (error) {
-      console.error("[OfferCreated] Failed to notify owner ", error.message)
+      Logger.error("[OfferCreated] Failed to notify owner ", error.message)
     }
 
-    console.info("[OfferCreated] Success: ", { transactionHash, blockNumber });
+    Logger.info("[OfferCreated] Success: ", { transactionHash, blockNumber });
     return res.json({status: "success"});
   } catch (error) {
-    console.info("[OfferCreated] Failed!: ", { transactionHash: req.body.transactionHash, blockNumber: req.body.blockNumber });
-    console.error({ error });
+    Logger.info("[OfferCreated] Failed!: ", { transactionHash: req.body.transactionHash, blockNumber: req.body.blockNumber });
+    Logger.error(error);
 
     return res.status(400).json({ status: "failed", error });
   }
@@ -551,14 +552,14 @@ router.post("/offerCanceled", service_auth, async (req, res) => {
         }
       }
     } catch (error) {
-      console.error("[OfferCanceled] Failed to notify owner ", error.message)
+      Logger.error("[OfferCanceled] Failed to notify owner ", error.message)
     }
 
-    console.info("[OfferCanceled] Success: ", { transactionHash, blockNumber });
+    Logger.info("[OfferCanceled] Success: ", { transactionHash, blockNumber });
     return res.json({status: "success"});
   } catch (error) {
-    console.info("[OfferCanceled] Failed!: ", { transactionHash: req.body.transactionHash, blockNumber: req.body.blockNumber });
-    console.error({ error });
+    Logger.info("[OfferCanceled] Failed!: ", { transactionHash: req.body.transactionHash, blockNumber: req.body.blockNumber });
+    Logger.error(error);
 
     return res.status(400).json({ status: "failed", error });
   }
