@@ -55,12 +55,10 @@ require("./models/unlockable");
 
 app.use(bodyParser.json());
 app.use(express.json());
-app.options("*", cors()); // include before other routes
 app.use(
-  cors({
-    origin: 'https://artion.io/'
-  })
+  cors()
 );
+app.options("*", cors()); // include before other routes
 
 app.use(morganMiddleware);
 app.use(require("./apis"));
