@@ -177,10 +177,22 @@ router.post('/collectiondetails', auth, async (req, res) => {
         sc_721.isAppropriate = true;
         await sc_721.save();
       }
-      let category = new Category();
-      category.minterAddress = erc721Address;
-      category.type = 721;
-      await category.save();
+
+      let categoryExists = await Category.findOne({
+        minterAddress: erc721Address
+      });
+
+      if (!categoryExists) {
+        let category = new Category();
+        category.minterAddress = erc721Address;
+        category.type = 721;
+        await category.save();
+      } else {
+        return res.json({
+          status: 'failed',
+          data: 'Category minter address already exists!'
+        });
+      }
     }
     // add a new collection
     let _collection = new Collection();

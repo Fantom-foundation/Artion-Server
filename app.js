@@ -55,9 +55,14 @@ require("./models/unlockable");
 
 app.use(bodyParser.json());
 app.use(express.json());
-app.use(morganMiddleware);
 app.options("*", cors()); // include before other routes
-app.use(cors());
+app.use(
+  cors({
+    origin: 'https://artion.io/'
+  })
+);
+
+app.use(morganMiddleware);
 app.use(require("./apis"));
 
 const priceFeed = require("./services/price.feed");
