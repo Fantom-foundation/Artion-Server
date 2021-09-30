@@ -46,6 +46,8 @@ const formatPrice = (price = 0, payToken) => {
 const updatePrices = (items) => {
   items.map((item) => {
     item.currentPriceInUSD = item.price * getPrice(item.paymentToken);
+    item.lastSalePriceInUSD =
+      item.lastSalePrice * getPrice(item.lastSalePricePaymentToken);
   });
 
   return items;
