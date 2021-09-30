@@ -52,8 +52,11 @@ require("./models/unlockable");
 
 app.use(bodyParser.json());
 app.use(express.json());
-app.options("*", cors()); // include before other routes
-app.use(cors());
+app.use(
+  cors({
+    origin: 'https://artion.io/'
+  })
+);
 app.use(require("./apis"));
 
 const priceFeed = require("./services/price.feed");
