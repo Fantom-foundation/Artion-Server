@@ -8,6 +8,7 @@ const Bundle = mongoose.model("Bundle");
 const NFTITEM = mongoose.model("NFTITEM");
 const Account = mongoose.model("Account");
 
+const Logger = require("../services/logger");
 const router = require("express").Router();
 const auth = require("./middleware/auth");
 const toLowerCase = require("../utils/utils");
@@ -86,6 +87,7 @@ router.post("/getPageLiked", async (req, res) => {
       data: data,
     });
   } catch (error) {
+    Logger.error(error);
     return res.json({
       status: "failed",
       data: [],
@@ -139,6 +141,7 @@ router.post("/isLiked", async (req, res) => {
       });
     }
   } catch (error) {
+    Logger.error(error);
     return res.json({
       status: "success",
       data: false,
@@ -210,6 +213,7 @@ router.post("/getMyLikes", async (req, res) => {
       },
     });
   } catch (error) {
+    Logger.error(error);
     return res.json({
       status: "failed",
     });
@@ -292,6 +296,7 @@ router.post("/update", auth, async (req, res) => {
         data: false,
       });
   } catch (error) {
+    Logger.error(error);
     return res.json({
       status: "failed",
       data: false,
@@ -338,6 +343,7 @@ router.post("/getLikes", async (req, res) => {
       data: data,
     });
   } catch (error) {
+    Logger.error(error);
     return res.json({
       status: "failed",
       data: [],

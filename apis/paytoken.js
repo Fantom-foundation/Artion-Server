@@ -18,7 +18,7 @@ const provider = new ethers.providers.JsonRpcProvider(
   process.env.NETWORK_RPC,
   parseInt(process.env.NETWORK_CHAINID)
 );
-const ownerWallet = new ethers.Wallet(process.env.ROAYLTY_PK, provider);
+const ownerWallet = new ethers.Wallet(process.env.ROYALTY_PK, provider);
 const registrySC = new ethers.Contract(
   network
     ? PaytokenRegistryABI.address.testnet
@@ -27,6 +27,7 @@ const registrySC = new ethers.Contract(
   ownerWallet
 );
 const { getSymbol, getName } = require("../services/price.feed");
+const Logger = require('../services/logger');
 
 router.post("/addNewToken", admin_auth, async (req, res) => {
   try {
@@ -89,7 +90,7 @@ router.post("/addNewToken", admin_auth, async (req, res) => {
       }
     }
   } catch (error) {
-    console.log("error");
+    Logger.error(error);
     return res.json({
       status: "failed",
     });

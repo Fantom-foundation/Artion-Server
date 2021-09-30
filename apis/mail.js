@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const sgMail = require("@sendgrid/mail");
+const Logger = require("../services/logger");
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 const SendGridTemplates = require("../constants/mail_template_id");
 router.get("/mailTest", async (req, res) => {
@@ -37,15 +38,15 @@ router.get("/mailTest", async (req, res) => {
     //send the email
     sgMail.send(msg, (error, result) => {
       if (error) {
-        console.log(error);
+        Logger.error(error);
         return res.json({ status: "failed" });
       } else {
-        console.log("That's wassup!");
+        Logger.info("Mail was send successful!")
         return res.json({ status: "success" });
       }
     });
   } catch (error) {
-    console.log(error);
+    Logger.error(error);
     return res.json({ status: "failed" });
   }
 });

@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const FactoryCollection = mongoose.model("FactoryCollection");
 const toLowerCase = require("../utils/utils");
 const service_auth = require("./middleware/auth.tracker");
+const Logger = require('../services/logger');
 
 router.post("/handleNewCollectionCreation", service_auth, async (req, res) => {
   try {
@@ -18,6 +19,7 @@ router.post("/handleNewCollectionCreation", service_auth, async (req, res) => {
       status: "success",
     });
   } catch (error) {
+    Logger.error(error);
     return res.json({
       status: "failed",
     });
