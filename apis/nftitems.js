@@ -24,6 +24,7 @@ const toLowerCase = require('../utils/utils');
 
 const { getPrice } = require('../services/price.feed');
 const sortBy = require('lodash.sortby');
+const Logger = require('../services/logger');
 
 const provider = new ethers.providers.JsonRpcProvider(
   process.env.NETWORK_RPC,
@@ -46,6 +47,8 @@ const formatPrice = (price = 0, payToken) => {
 const updatePrices = (items) => {
   items.map((item) => {
     item.currentPriceInUSD = item.price * getPrice(item.paymentToken);
+    item.lastSalePriceInUSD =
+      item.lastSalePrice * getPrice(item.lastSalePricePaymentToken);
   });
 
   return items;
@@ -67,6 +70,7 @@ router.post('/increaseViews', async (req, res) => {
       data: _token.viewed
     });
   } catch (error) {
+    Logger.error(error);
     return res.status(400).json({
       status: 'failed'
     });
@@ -170,7 +174,6 @@ const selectTokens = async (req, res) => {
     // get options from request & process
     let selectedCollections = req.body.collectionAddresses; //collection addresses from request
     let filters = req.body.filterby; //status -> array or null
-    console.log('filters', filters);
     let sortby = req.body.sortby; //sort -> string param
     // create a sort by option
     let selectOption;
@@ -373,19 +376,19 @@ const selectTokens = async (req, res) => {
         }
         if (filters.includes('onAuction')) {
           /* for on auction - pick from Auction */
-          console.log('filter encountered here');
+          Logger.log('filter encountered here');
           let minterFilters4Auction = {
             ...(collections2filter != null
               ? { minter: { $in: [...collections2filter] } }
               : {})
             // ...{ endTime: { $gt: new Date() } },
           };
-          console.log('minter filters for auction');
+          Logger.log('minter filters for auction');
           let tokens = await Auction.find(minterFilters4Auction).select([
             'minter',
             'tokenID'
           ]);
-          console.log('tokens in auction');
+          Logger.log('tokens in auction');
           if (tokens) {
             tokens.map((pair) => {
               let minter_id_pair = [pair.minter, pair.tokenID];
@@ -593,6 +596,7 @@ const selectTokens = async (req, res) => {
       }
     }
   } catch (error) {
+    Logger.error(error);
     return null;
   }
 };
@@ -610,6 +614,7 @@ const getBundleItemDetails = async (bundleItem) => {
       };
     else return {};
   } catch (error) {
+    Logger.error(error);
     return {};
   }
 };
@@ -839,6 +844,7 @@ const selectBundles = async (req, res) => {
       return data;
     }
   } catch (error) {
+    Logger.error(error);
     return null;
   }
 };
@@ -848,7 +854,7 @@ router.post('/fetchTokens', async (req, res) => {
   let sortby = req.body.sortby; //sort -> string param
   let from = parseInt(req.body.from);
   let count = parseInt(req.body.count);
-  console.log('log from fetch tokens');
+
   let items = [];
   if (type == 'all') {
     let nfts = await selectTokens(req, res);
@@ -948,7 +954,7 @@ router.post('/transfer721History', async (req, res) => {
       data: history
     });
   } catch (error) {
-    console.log(error);
+    Logger.error(error);
     return res.json({
       status: 'failed'
     });
@@ -965,6 +971,7 @@ router.post('/transfer1155History', async (req, res) => {
       data: history
     });
   } catch (error) {
+    Logger.error(error);
     return res.json({
       status: 'failed'
     });
@@ -1129,7 +1136,7 @@ router.post('/getSingleItemDetails', async (req, res) => {
       }
     });
   } catch (error) {
-    console.log(error);
+    Logger.error(error);
     return res.json({
       status: 'failed'
     });
@@ -1302,6 +1309,7 @@ const getAccountInfo = async (address) => {
       return null;
     }
   } catch (error) {
+    Logger.error(error);
     return null;
   }
 };

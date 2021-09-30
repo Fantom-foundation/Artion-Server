@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const mongoose = require("mongoose");
+const Logger = require('../services/logger');
 
 const BundleOffer = mongoose.model("BundleOffer");
 const Account = mongoose.model("Account");
@@ -30,6 +31,7 @@ router.post("/getBundleOffer", async (req, res) => {
       data: offers,
     });
   } catch (error) {
+    Logger.error(error);
     return res.json({ status: "failed" });
   }
 });
@@ -43,6 +45,7 @@ const getAccountInfo = async (address) => {
       return null;
     }
   } catch (error) {
+    Logger.error(error);
     return null;
   }
 };

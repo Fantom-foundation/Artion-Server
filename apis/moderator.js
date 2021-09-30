@@ -8,6 +8,7 @@ const auth = require("./middleware/auth");
 const toLowerCase = require("../utils/utils");
 const extractAddress = require("../services/address.utils");
 const validateSignature = require("../apis/middleware/auth.sign");
+const Logger = require('../services/logger');
 
 const ADMINADDRESS = process.env.ADMINADDRESS;
 
@@ -53,6 +54,7 @@ router.post("/add", auth, async (req, res) => {
       });
     }
   } catch (error) {
+    Logger.error(error);
     return res.json({
       status: "failed",
     });
@@ -85,6 +87,7 @@ router.post("/remove", auth, async (req, res) => {
       data: "Successfully removed a moderator",
     });
   } catch (error) {
+    Logger.error(error);
     return res.json({
       status: "failed",
     });
@@ -106,6 +109,7 @@ router.get("/isModerator/:address", async (req, res) => {
         data: false,
       });
   } catch (error) {
+    Logger.error(error);
     return res.json({
       status: "failed",
       data: false,

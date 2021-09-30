@@ -6,6 +6,9 @@ const bodyParser = require("body-parser");
 const cors = require("cors");
 const port = 5001;
 
+const Logger = require('./services/logger');
+const morganMiddleware = require('./apis/middleware/morgan');
+
 app.use(
   bodyParser.urlencoded({
     extended: false,
@@ -53,7 +56,13 @@ require("./models/unlockable");
 app.use(bodyParser.json());
 app.use(express.json());
 app.options("*", cors()); // include before other routes
-app.use(cors());
+app.use(
+  cors({
+    origin: 'https://artion.io/'
+  })
+);
+
+app.use(morganMiddleware);
 app.use(require("./apis"));
 
 const priceFeed = require("./services/price.feed");
@@ -65,11 +74,11 @@ const connect = () => {
   const db = mongoose.connection;
   db.on("error", console.error.bind(console, "connection error:"));
   db.once("open", function () {
-    console.log("artion server has been connected to the db server");
-    console.log("price feed has been started");
+    Logger.info("artion server has been connected to the db server");
+    Logger.info("price feed has been started");
     priceFeed.runPriceFeed();
     app.listen(port, () => {
-      console.log(`artion server is running at port ${port}`);
+      Logger.info(`artion server is running at port ${port}`);
     });
   });
 };

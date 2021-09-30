@@ -25,6 +25,7 @@ const MarketplaceContractAddress = process.env.MARKETPLACE_ADDRESS;
 
 const ftmScanApiKey = process.env.FTM_SCAN_API_KEY;
 
+const Logger = require("../services/logger");
 const { getSymbol } = require('../services/price.feed');
 // to sign txs
 const provider = new ethers.providers.JsonRpcProvider(
@@ -76,6 +77,7 @@ router.post('/collectiondetails', auth, async (req, res) => {
         });
     }
   } catch (error) {
+    Logger.error(error);
     return res.status(400).json({
       status: 'failed',
       data: ''
@@ -150,7 +152,7 @@ router.post('/collectiondetails', auth, async (req, res) => {
       sc_1155.address = erc721Address;
       sc_1155.name = collectionName;
       let symbol = await getSymbol(erc721Address);
-      console.log('symbol is', symbol);
+      Logger.debug('symbol is', symbol);
       sc_1155.symbol = symbol || 'Symbol';
       sc_1155.isVerified = true;
       sc_1155.isAppropriate = true;
@@ -175,10 +177,22 @@ router.post('/collectiondetails', auth, async (req, res) => {
         sc_721.isAppropriate = true;
         await sc_721.save();
       }
-      let category = new Category();
-      category.minterAddress = erc721Address;
-      category.type = 721;
-      await category.save();
+
+      let categoryExists = await Category.findOne({
+        minterAddress: erc721Address
+      });
+
+      if (!categoryExists) {
+        let category = new Category();
+        category.minterAddress = erc721Address;
+        category.type = 721;
+        await category.save();
+      } else {
+        return res.json({
+          status: 'failed',
+          data: 'Category minter address already exists!'
+        });
+      }
     }
     // add a new collection
     let _collection = new Collection();
@@ -262,6 +276,7 @@ router.post('/getMintableCollections', auth, async (req, res) => {
       data: data
     });
   } catch (error) {
+    Logger.error(error);
     return res.json({
       status: 'failed'
     });
@@ -276,6 +291,7 @@ router.post('/getReviewApplications', admin_auth, async (req, res) => {
       data: applications
     });
   } catch (error) {
+    Logger.error(error);
     return res.json({
       status: 'failed'
     });
@@ -362,8 +378,8 @@ router.post('/reviewApplication', admin_auth, async (req, res) => {
           { gasLimit: 4000000 }
         );
       } catch (error) {
-        console.log('error in setting collection royalty');
-        console.log(error);
+        Logger.debug('error in setting collection royalty');
+        Logger.error(error);
         return res.json({
           status: 'failed'
         });
@@ -402,6 +418,7 @@ router.post('/reviewApplication', admin_auth, async (req, res) => {
       });
     }
   } catch (error) {
+    Logger.error(error);
     return res.json({
       status: 'failed'
     });

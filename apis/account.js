@@ -5,6 +5,7 @@ const router = require("express").Router();
 const ethers = require("ethers");
 const mongoose = require("mongoose");
 
+const Logger = require("../services/logger");
 const auth = require("./middleware/auth");
 const Account = mongoose.model("Account");
 const Follow = mongoose.model("Follow");
@@ -71,6 +72,7 @@ const pinAccountAvatar = async (account, imgData, userName, address, res) => {
     } catch (error) {}
     return result.IpfsHash;
   } catch (error) {
+    Logger.error(error.message);
     return res.status(400).json({
       status: "failed to save an image 2",
     });
@@ -82,6 +84,7 @@ router.post("/accountdetails", auth, async (req, res) => {
   let form = new formidable.IncomingForm();
   form.parse(req, async (err, fields, files) => {
     if (err) {
+      Logger.error(err.message);
       return res.status(400).json({
         status: "failed",
         data: 0,
@@ -366,7 +369,7 @@ router.post("/notificationsettings", auth, async (req, res) => {
       status: "success",
     });
   } catch (error) {
-    console.log(error);
+    Logger.error(error.message);
     return res.json({
       status: "failed",
     });
@@ -382,6 +385,7 @@ router.get("/getnotificationsettings", auth, async (req, res) => {
       data: ns,
     });
   } catch (error) {
+    Logger.error(error.message);
     return res.json({
       status: "failed",
     });

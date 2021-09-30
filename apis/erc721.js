@@ -5,6 +5,7 @@ const validator = require("../utils/index");
 const mongoose = require("mongoose");
 const ERC721CONTRACT = mongoose.model("ERC721CONTRACT");
 
+const Logger = require("../services/logger");
 const toLowerCase = require("../utils/utils");
 
 const web3 = new Web3(
@@ -30,6 +31,7 @@ router.post("/isERC721Contract", async (req, res) => {
       });
     }
   } catch (error) {
+    Logger.error(error);
     res.status(400).json({
       status: "failed",
       data: false,
