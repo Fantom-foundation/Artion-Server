@@ -8,6 +8,7 @@ const auth = require("./middleware/auth");
 const toLowerCase = require("../utils/utils");
 const extractAddress = require("../services/address.utils");
 const validateSignature = require("../apis/middleware/auth.sign");
+const Logger = require('../services/logger');
 
 router.post("/addUnlockableContent", auth, async (req, res) => {
   try {
@@ -37,12 +38,14 @@ router.post("/addUnlockableContent", auth, async (req, res) => {
         status: "success",
       });
     } catch (error) {
+      Logger.error(error);
       return res.json({
         status: "failed",
         data: "This Item already has an unlockable content.",
       });
     }
   } catch (error) {
+    Logger.error(error);
     return res.json({
       status: "failed",
     });
@@ -80,6 +83,7 @@ router.post("/retrieveUnlockableContent", auth, async (req, res) => {
         data: "This item doesn't have unlockable content.",
       });
   } catch (error) {
+    Logger.error(error);
     return res.json({
       status: "failed",
     });

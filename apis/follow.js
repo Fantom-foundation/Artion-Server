@@ -6,6 +6,7 @@ const toLowerCase = require("../utils/utils");
 const extractAddress = require("../services/address.utils");
 
 const mongoose = require("mongoose");
+const Logger = require('../services/logger');
 const Follow = mongoose.model("Follow");
 const Account = mongoose.model("Account");
 
@@ -91,6 +92,7 @@ router.post("/update", auth, async (req, res) => {
       });
     }
   } catch (error) {
+    Logger.error(error);
     return res.status(400).json({});
   }
 });
@@ -123,6 +125,7 @@ router.get("/getFollowings/:address", async (req, res) => {
       data,
     });
   } catch (error) {
+    Logger.error(error);
     return res.status(400).json({});
   }
 });
@@ -155,6 +158,7 @@ router.get("/getFollowers/:address", async (req, res) => {
       data,
     });
   } catch (error) {
+    Logger.error(error);
     return res.status(400).json({});
   }
 });

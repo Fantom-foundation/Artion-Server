@@ -4,6 +4,7 @@ const service_auth = require('./middleware/auth.tracker');
 const mongoose = require('mongoose');
 const ethers = require('ethers');
 
+const Logger = require("../services/logger");
 const Auction = mongoose.model('Auction');
 const Account = mongoose.model('Account');
 const Bid = mongoose.model('Bid');
@@ -24,7 +25,7 @@ const provider = new ethers.providers.JsonRpcProvider(
   process.env.NETWORK_RPC,
   parseInt(process.env.NETWORK_CHAINID)
 );
-const ownerWallet = new ethers.Wallet(process.env.ROAYLTY_PK, provider);
+const ownerWallet = new ethers.Wallet(process.env.ROYALTY_PK, provider);
 
 const AuctionContractAddress = process.env.AUCTION_ADDRESS;
 const auctionSC = new ethers.Contract(
@@ -60,6 +61,7 @@ const getAuction = async (nftAddress, tokenID) => {
   try {
     return auctionSC.getAuction(nftAddress, tokenID);
   } catch (error) {
+    Logger.error(error);
     return null;
   }
 };
@@ -127,7 +129,7 @@ router.post('/auctionCreated', service_auth, async (req, res) => {
         }
       }
     } catch (error) {
-      console.error(
+      Logger.error(
         '[AuctionCreated] Failed to create new auction: ',
         error.message
       );
@@ -137,17 +139,17 @@ router.post('/auctionCreated', service_auth, async (req, res) => {
     // notify followers
     // notifications.notifyNewAuction(nftAddress, tokenID);
 
-    console.info('[AuctionCreated] Success: ', {
+    Logger.info('[AuctionCreated] Success: ', {
       transactionHash,
       blockNumber
     });
     return res.json({ status: 'success' });
   } catch (error) {
-    console.info('[AuctionCreated] Failed!: ', {
+    Logger.info('[AuctionCreated] Failed!: ', {
       transactionHash: req.body.transactionHash,
       blockNumber: req.body.blockNumber
     });
-    console.error({ error });
+    Logger.error(error);
 
     return res.status(400).json({ status: 'failed', error });
   }
@@ -222,17 +224,17 @@ router.post('/auctionCancelled', service_auth, async (req, res) => {
     //   }
     // }
 
-    console.info('[AuctionCancelled] Success: ', {
+    Logger.info('[AuctionCancelled] Success: ', {
       transactionHash,
       blockNumber
     });
     return res.json({ status: 'success' });
   } catch (error) {
-    console.info('[AuctionCancelled] Failed!: ', {
+    Logger.info('[AuctionCancelled] Failed!: ', {
       transactionHash: req.body.transactionHash,
       blockNumber: req.body.blockNumber
     });
-    console.error({ error });
+    Logger.error(error);
 
     return res.status(400).json({ status: 'failed', error });
   }
@@ -257,17 +259,17 @@ router.post('/updateAuctionStartTime', service_auth, async (req, res) => {
       await auction.save();
     }
 
-    console.info('[UpdateAuctionStartTime] Success: ', {
+    Logger.info('[UpdateAuctionStartTime] Success: ', {
       transactionHash,
       blockNumber
     });
     return res.json({ status: 'success' });
   } catch (error) {
-    console.info('[UpdateAuctionStartTime] Failed!: ', {
+    Logger.info('[UpdateAuctionStartTime] Failed!: ', {
       transactionHash: req.body.transactionHash,
       blockNumber: req.body.blockNumber
     });
-    console.error({ error });
+    Logger.error(error);
 
     return res.status(400).json({ status: 'failed', error });
   }
@@ -304,17 +306,17 @@ router.post('/updateAuctionEndTime', service_auth, async (req, res) => {
       await updateToken.save();
     }
 
-    console.info('[UpdateAuctionEndTime] Success: ', {
+    Logger.info('[UpdateAuctionEndTime] Success: ', {
       transactionHash,
       blockNumber
     });
     return res.json({ status: 'success' });
   } catch (error) {
-    console.info('[UpdateAuctionEndTime] Failed!: ', {
+    Logger.info('[UpdateAuctionEndTime] Failed!: ', {
       transactionHash: req.body.transactionHash,
       blockNumber: req.body.blockNumber
     });
-    console.error({ error });
+    Logger.error(error);
 
     return res.status(400).json({ status: 'failed', error });
   }
@@ -358,17 +360,17 @@ router.post('/updateAuctionReservePrice', service_auth, async (req, res) => {
       await updateToken.save();
     }
 
-    console.info('[UpdateAuctionReservePrice] Success: ', {
+    Logger.info('[UpdateAuctionReservePrice] Success: ', {
       transactionHash,
       blockNumber
     });
     return res.json({ status: 'success' });
   } catch (error) {
-    console.info('[UpdateAuctionReservePrice] Failed!: ', {
+    Logger.info('[UpdateAuctionReservePrice] Failed!: ', {
       transactionHash: req.body.transactionHash,
       blockNumber: req.body.blockNumber
     });
-    console.error({ error });
+    Logger.error(error);
 
     return res.status(400).json({ status: 'failed', error });
   }
@@ -466,17 +468,17 @@ router.post('/auctionResulted', service_auth, async (req, res) => {
       }
     }
 
-    console.info('[AuctionResulted] Success: ', {
+    Logger.info('[AuctionResulted] Success: ', {
       transactionHash,
       blockNumber
     });
     return res.json({ status: 'success' });
   } catch (error) {
-    console.info('[AuctionResulted] Failed!: ', {
+    Logger.info('[AuctionResulted] Failed!: ', {
       transactionHash: req.body.transactionHash,
       blockNumber: req.body.blockNumber
     });
-    console.error({ error });
+    Logger.error(error);
 
     return res.status(400).json({ status: 'failed', error });
   }
@@ -544,18 +546,18 @@ router.post('/bidPlaced', service_auth, async (req, res) => {
           await Bid.create(createBid);
         }
       } catch (err) {
-        console.error('[BidPlaced] Failed to create new bid: ', err.message);
+        Logger.error('[BidPlaced] Failed to create new bid: ', err.message);
       }
     }
 
-    console.info('[BidPlaced] Success: ', { transactionHash, blockNumber });
+    Logger.info('[BidPlaced] Success: ', { transactionHash, blockNumber });
     return res.json({ status: 'success' });
   } catch (error) {
-    console.info('[BidPlaced] Failed!: ', {
+    Logger.info('[BidPlaced] Failed!: ', {
       transactionHash: req.body.transactionHash,
       blockNumber: req.body.blockNumber
     });
-    console.error({ error });
+    Logger.error(error);
 
     return res.status(400).json({ status: 'failed', error });
   }
@@ -589,14 +591,14 @@ router.post('/bidWithdrawn', service_auth, async (req, res) => {
       );
     }
 
-    console.info('[BidWithdrawn] Success: ', { transactionHash, blockNumber });
+    Logger.info('[BidWithdrawn] Success: ', { transactionHash, blockNumber });
     return res.json({ status: 'success' });
   } catch (error) {
-    console.info('[BidWithdrawn] Failed!: ', {
+    Logger.info('[BidWithdrawn] Failed!: ', {
       transactionHash: req.body.transactionHash,
       blockNumber: req.body.blockNumber
     });
-    console.error({ error });
+    Logger.error(error);
 
     return res.status(400).json({ status: 'failed', error });
   }
@@ -608,14 +610,14 @@ router.post('/bidRefunded', service_auth, async (req, res) => {
     const { blockNumber, transactionHash } = req.body;
     // TODO what to do with this event? Do we want to process this?
 
-    console.info('[BidRefunded] Success: ', { transactionHash, blockNumber });
+    Logger.info('[BidRefunded] Success: ', { transactionHash, blockNumber });
     return res.json({ status: 'success' });
   } catch (error) {
-    console.info('[BidRefunded] Failed!: ', {
+    Logger.info('[BidRefunded] Failed!: ', {
       transactionHash: req.body.transactionHash,
       blockNumber: req.body.blockNumber
     });
-    console.error({ error });
+    Logger.error(error);
 
     return res.status(400).json({ status: 'failed', error });
   }
