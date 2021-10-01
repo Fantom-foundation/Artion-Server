@@ -20,7 +20,6 @@ const Collection = mongoose.Schema({
   isAppropriate: { type: Boolean, default: true },
   isVerified: { type: Boolean, default: false },
   feeRecipient: { type: String },
-  txid: { type: String },
   signature: { type: String },
   signatureAddress: { type: String },
   royalty: { type: Number, default: 0 }
@@ -49,7 +48,6 @@ Collection.methods.toJson = function () {
     isAppropriate: this.isAppropriate,
     isVerified: this.isVerified,
     feeRecipient: this.feeRecipient,
-    txid: this.txid,
     signature: this.signature,
     signatureAddress: this.signatureAddress,
     royalty: this.royalty
