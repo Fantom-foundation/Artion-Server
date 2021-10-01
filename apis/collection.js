@@ -25,7 +25,7 @@ const MarketplaceContractAddress = process.env.MARKETPLACE_ADDRESS;
 
 const ftmScanApiKey = process.env.FTM_SCAN_API_KEY;
 
-const Logger = require("../services/logger");
+const Logger = require('../services/logger');
 const { getSymbol } = require('../services/price.feed');
 // to sign txs
 const provider = new ethers.providers.JsonRpcProvider(
@@ -64,6 +64,7 @@ router.post('/collectiondetails', auth, async (req, res) => {
       status: 'failed',
       data: 'Invalid signature from user'
     });
+
   // validate to see whether the contract is either 721 or 1155, otherwise, reject
 
   try {
@@ -218,6 +219,9 @@ router.post('/collectiondetails', auth, async (req, res) => {
     _collection.feeRecipient = feeRecipient;
     _collection.txid = txid;
     _collection.royalty = royalty;
+    _collection.signature = signature;
+    _collection.signatureAddress = retrievedAddr;
+
     let newCollection = await _collection.save();
     if (newCollection) {
       // notify admin about a new app
