@@ -376,19 +376,19 @@ const selectTokens = async (req, res) => {
         }
         if (filters.includes('onAuction')) {
           /* for on auction - pick from Auction */
-          Logger.log('filter encountered here');
+          Logger.info('filter encountered here');
           let minterFilters4Auction = {
             ...(collections2filter != null
               ? { minter: { $in: [...collections2filter] } }
               : {})
             // ...{ endTime: { $gt: new Date() } },
           };
-          Logger.log('minter filters for auction');
+          Logger.info('minter filters for auction');
           let tokens = await Auction.find(minterFilters4Auction).select([
             'minter',
             'tokenID'
           ]);
-          Logger.log('tokens in auction');
+          Logger.info('tokens in auction');
           if (tokens) {
             tokens.map((pair) => {
               let minter_id_pair = [pair.minter, pair.tokenID];
