@@ -45,18 +45,50 @@ router.post('/banUser', auth, async (req, res) => {
         await bannedUser.save();
         return res.json({
           status: 'success',
-          data: 'banned'
+          data: 'User successfully banned!'
         });
       } catch (error) {
         return res.json({
           status: 'failed',
-          data: 'user is alread banned'
+          data: 'User is alread banned'
         });
       }
     } else {
       return res.json({
         status: 'failed',
         data: 'You are not an admin'
+      });
+    }
+  } catch (error) {
+    Logger.error(error);
+    return res.status(400).json({
+      status: 'failed'
+    });
+  }
+});
+
+router.get('/banUser', auth, async (req, res) => {
+  try {
+    let address = extractAddress(req);
+
+    try {
+      let existingUser = await BannedUser.findOne({ address });
+
+      if (existingUser) {
+        return res.json({
+          status: 'success',
+          data: 'banned'
+        });
+      } else {
+        return res.json({
+          status: 'failed',
+          data: 'allowed'
+        });
+      }
+    } catch (error) {
+      return res.json({
+        status: 'failed',
+        data: 'error occured'
       });
     }
   } catch (error) {
