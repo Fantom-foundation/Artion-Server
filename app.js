@@ -4,7 +4,7 @@ require("dotenv").config();
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const port = 5001;
+const port = process.env.PORT || 5001;
 
 const Logger = require('./services/logger');
 const morganMiddleware = require('./apis/middleware/morgan');
