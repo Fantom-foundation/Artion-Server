@@ -4,7 +4,7 @@ require("dotenv").config();
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const cors = require("cors");
-const port = 5001;
+const port = process.env.SERVER_PORT;
 
 app.use(
   bodyParser.urlencoded({
@@ -60,7 +60,6 @@ const priceFeed = require("./services/price.feed");
 
 const connect = () => {
   const uri = process.env.DB_URL;
-
   mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
   const db = mongoose.connection;
   db.on("error", console.error.bind(console, "connection error:"));

@@ -1,12 +1,12 @@
 {
   "type": "service_account",
-  "project_id": "fantomsea-8a097",
-  "private_key_id": "",
-  "private_key": "",
-  "client_email": "firebase-adminsdk-wvd6g@fantomsea-8a097.iam.gserviceaccount.com",
-  "client_id": "106219824613077903855",
+  "project_id": "digibirr-nft-8a097",
+  "private_key_id": "ae681027d641e4983300dfa6992e60f3feb8727d",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDRgmNDDmucSYeF\n9SPFFMDosaP1ui/lN6rMt4xk/1q0fZGAoMMVsNnitNOnPnVyebPHal9nzR6HFjTl\nSFZUbtckqUZL9tELS7nPszW7AuLcd//AwZHtCXD9dRp/BM2xl7OKunFQBFDaTVLy\nLwoCrqAXj3jEu9D1u6uY4/n1KhawQzlU+lV2Y7gpJaeEjRnmsKXgO4e3mLWwhAjg\nwAvSzwQdy+3Z7WtYq7DUIdCnQQ1vFPvPlshGLpc5jAEGg4nolY4rav0e4cWHghXw\nER7UeXnBrdNkP2Mq6BYRleXQQHe2IvyunV2e855lqTJbqEV2gPaDmNN2k8VCi1RB\nawSXrTpZAgMBAAECggEAA4m+6OM9tHw2Zm/7HGkrD9LuKKhuBiIwR3hDDfKVAs7L\nDf/JA50CtPYmS+D9ZUNCYrf8Z/maDiB1ILkdwhvEFNmp9v7yTU1IVEZbvi6Ai8YY\nAtaSAw2Bg7o+Sg5X9euQq+NVpgsInYMoRzA9rElsKTGyUao1T20Nqw2Qi1AcZXoZ\nTtU0IUl6NqdNwAXLK+ViCpgUsvJrfeFOl4tQathTi2FRdAgit002N5mduMBGS5Rb\n4flAkFGOlRnI2IC0JR1dE/1FZqClh//jh2td/UkMZ/7ldvgHeVuddC+XbipRxBb7\nVTmzawdkKZbGe6xRHpiIZ4k6RD0+/qqd8WYJcwaF4QKBgQD4EN8Qlq/xtQDGThzF\nm9t/crztOWbkrEu3kjmt6c9Irpd0ylbWb7u8Ms3+lwMuz045puo9yBkReMoURZOz\njGLy7XRSQ3zbVIqp7FcGckKmZ59bs2AKg4wn1TS64Pq3K8g5k2BkaxGzPswwe/TI\n9S6agVCOy2KVx1CUz7aCs0KXCQKBgQDYNdIRlV6nXs1LTrdLv3T/ksPBLDntKqnl\nb5+lZ8HTNhqMEBaNo2NftiA46Rf7dKje4Tn6I9iYgp/RvWXixvG835/zzN5fYWuI\nKa955wixdHilov7RP8U4IH8YXuDq8tkwlS/8rU4vKTDW+mfWvEUd8dQyhMrHEOrr\n2geVBL+M0QKBgA5r3Kv4Nq5UmYDt1ZpfXzlfkEAyUBsHMTew1o2XxCczjzaI9Ndu\nk3lzcqpUWSkFgES1wXRqB5sObKEVEmsjxDTfPR3zMnUFyzHpvX1wcxN9frQ0D2dN\nEn7WVERxA+JWN0Oxn6720oabJf/DlQ2Bw33T+rzycf7HIZYlJTUf+sURAoGBANfM\nQDOUprjfAoDbvE86dQhx8DhqcBarso9x7iIlgWvSYITTue782T66hUbIQEuWkMaE\nfl2QUatHFUU+iObkMnuVqAyqunjwv2dUU/SUCDU2TwTjvvoTcEEpDjHA4TUf1m+L\nOC42vAaOUlT/8Yx+tW3B5U3XBJ3T4OYu48p0xstBAoGAb9fHyhe6ZpbEOzXwm6T9\nq1cUJMetbtWrv1VXSj8Jsr1yg9+bGgwqmgFg4PhfZ3n7Ma04jpsMijBUkxwS1J7e\nvWF/fHgKHIUWtCa84CK4hoyAjVYQjbiP2f9fTKOx1txzODh5I5BjlOOW0/b1CdBk\n5myjv1FtRwY0DhzTw4Uilcc=\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-mivno@digibirr-nft-8a097.iam.gserviceaccount.com",
+  "client_id": "110859779801938584214",
   "auth_uri": "https://accounts.google.com/o/oauth2/auth",
   "token_uri": "https://oauth2.googleapis.com/token",
   "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": ""
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-mivno%40digibirr-nft-8a097.iam.gserviceaccount.com"
 }

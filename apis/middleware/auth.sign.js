@@ -13,7 +13,7 @@ const validateSignature = async (publicKey, signature, retrievedAddr) => {
     retrievedAddr = toLowerCase(retrievedAddr);
     let account = await Account.findOne({ address: publicKey });
     let nonce = account.nonce;
-    let msg = `Approve Signature on Artion.io with nonce ${nonce}`;
+    let msg = `Approve Signature on DigiBirr with nonce ${nonce}`;
     let msgBufferHex = ethUtil.bufferToHex(Buffer.from(msg, "utf8"));
     let address = sigUtil.recoverPersonalSignature({
       data: msgBufferHex,

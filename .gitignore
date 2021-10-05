@@ -11,3 +11,8 @@ test.js
 
 # mac display info
 .DS_Store
+.env.sample
+.firebaserc
+config/fantomsea_tommy_service.json
+database.rules.json
+firebase.json

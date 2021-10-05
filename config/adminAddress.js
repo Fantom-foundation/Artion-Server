@@ -1,3 +1,3 @@
-const AdminAddresses = ["0xb7bc6d2666e73f8cd143a929db5404e2fc03ea89"];
+const AdminAddresses = ["0xA5C3F65Ae7667358b049A8c7aC75cbf7093d994d"]; //Address swapped out with FTM_metamask address
 
 module.exports = AdminAddresses;
