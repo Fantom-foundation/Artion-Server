@@ -24,7 +24,7 @@ const isAdmin = (msgSender) => {
   return toLowerCase(adminAddress) == toLowerCase(msgSender);
 };
 
-const canBanNFT = async (address) => {
+const isAllowedToBan = async (address) => {
   let _isAdmin = isAdmin(address);
   if (_isAdmin) return true;
   let mod = await Moderator.findOne({ address: address });
@@ -35,7 +35,9 @@ const canBanNFT = async (address) => {
 router.post('/banUser', auth, async (req, res) => {
   try {
     let adminAddress = extractAddress(req, res);
-    if (isAdmin(adminAddress)) {
+    let isModOrAdmin = await isAllowedToBan(adminAddress);
+
+    if (isModOrAdmin) {
       let banAddress = toLowerCase(req.body.address);
       let reason = req.body.reason;
       try {
@@ -56,7 +58,7 @@ router.post('/banUser', auth, async (req, res) => {
     } else {
       return res.json({
         status: 'failed',
-        data: 'You are not an admin'
+        data: 'Only Admin or Mods can ban NFT!'
       });
     }
   } catch (error) {
@@ -102,7 +104,7 @@ router.get('/banUser', auth, async (req, res) => {
 router.post('/banItem', auth, async (req, res) => {
   try {
     let adminAddress = extractAddress(req, res);
-    let isModOrAdmin = await canBanNFT(adminAddress);
+    let isModOrAdmin = await isAllowedToBan(adminAddress);
     if (!isModOrAdmin)
       return res.json({
         status: 'failed',
@@ -142,7 +144,7 @@ router.post('/banItem', auth, async (req, res) => {
 router.post('/banCollection', auth, async (req, res) => {
   try {
     let adminAddress = extractAddress(req, res);
-    let isModOrAdmin = await canBanNFT(adminAddress);
+    let isModOrAdmin = await isAllowedToBan(adminAddress);
     if (!isModOrAdmin)
       return res.json({
         status: 'failed',
@@ -279,7 +281,7 @@ router.post('/unbanCollection', auth, async (req, res) => {
 router.post('/banItems', auth, async (req, res) => {
   try {
     let adminAddress = extractAddress(req, res);
-    let isModOrAdmin = await canBanNFT(adminAddress);
+    let isModOrAdmin = await isAllowedToBan(adminAddress);
     if (!isModOrAdmin)
       return res.json({
         status: 'failed',
