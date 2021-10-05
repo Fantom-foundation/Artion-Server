@@ -8,6 +8,7 @@ const mongoose = require("mongoose");
 const Bundle = mongoose.model("Bundle");
 const Account = mongoose.model("Account");
 
+const Logger = require("../services/logger");
 const auth = require("./middleware/auth");
 
 const pinataSDK = require("@pinata/sdk");
@@ -53,7 +54,7 @@ const pinFileToIPFS = async (
     let result = await pinata.pinFileToIPFS(readableStreamForFile, options);
     return result;
   } catch (error) {
-    console.error(error.message);
+    Logger.error(error);
     return "failed to pin file to ipfs";
   }
 };
@@ -99,6 +100,7 @@ const pinBannerFileToIPFS = async (fileName, address) => {
     let result = await pinata.pinFileToIPFS(readableStreamForFile, options);
     return result;
   } catch (error) {
+    Logger.error(error);
     return "failed to pin file to ipfs";
   }
 };
@@ -123,6 +125,7 @@ const pinCollectionFileToIPFS = async (fileName, name, address) => {
     let result = await pinata.pinFileToIPFS(readableStreamForFile, options);
     return result;
   } catch (error) {
+    Logger.error(error);
     return "failed to pin file to ipfs";
   }
 };
@@ -144,6 +147,7 @@ const pinJsonToIPFS = async (jsonMetadata) => {
     let result = await pinata.pinJSONToIPFS(jsonMetadata, options);
     return result;
   } catch (error) {
+    Logger.error(error);
     return "failed to pin json to ipfs";
   }
 };
@@ -165,6 +169,7 @@ const pinBundleJsonToIPFS = async (jsonMetadata) => {
     let result = await pinata.pinJSONToIPFS(jsonMetadata, options);
     return result;
   } catch (error) {
+    Logger.error(error);
     return "failed to pin json to ipfs";
   }
 };
@@ -178,6 +183,7 @@ router.get("/ipfstest", async (req, res) => {
       });
     })
     .catch((err) => {
+      Logger.error(err);
       res.send({
         result: "failed",
       });
@@ -197,7 +203,7 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
   try {
     form.parse(req, async (err, fields, files) => {
       if (err) {
-        console.error("[1] uploadToIPFSerr: ", {err});
+        Logger.error("uploadToIPFSerr: ", err);
         return res.status(400).json({
           status: "failed",
         });
@@ -217,7 +223,6 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
 
         let xtraUrl = fields.xtra;
         if (xtraUrl && !validUrl.isUri(xtraUrl)) {
-          console.error("[2] uploadToIPFSerr: ", {xtraUrl});
           return res.status(400).json({
             status: "failed",
           });
@@ -227,13 +232,13 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
           "data:image/".length,
           imgData.indexOf(";base64")
         );
-        console.log({name: name.replace(" ", ""), symbol: symbol.replace(" ", "")})
+
         let imageFileName =
           address + "_" + name.replace(" ", "") + "_" + `${symbol ? symbol.replace(" ", "") : ""}` + "_" + Date.now() + "." + extension;
         imgData = imgData.replace(`data:image\/${extension};base64,`, "");
         fs.writeFile(uploadPath + imageFileName, imgData, "base64", async (err) => {
           if (err) {
-            console.error("[3] uploadToIPFSerr: ", {err});
+            Logger.error("uploadToIPFSerr: ", err);
             return res.status(400).json({
               status: "failed to save an image file",
               err,
@@ -284,7 +289,7 @@ router.post("/uploadImage2Server", auth, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error(error.message);
+    Logger.error(error);
     return res.json({
       status: "failed",
     });
@@ -313,6 +318,7 @@ router.post("/uploadBundleImage2Server", auth, async (req, res) => {
       imgData = imgData.replace(`data:image\/${extension};base64,`, "");
       fs.writeFile(uploadPath + imageFileName, imgData, "base64", (err) => {
         if (err) {
+          Logger.error(err);
           return res.status(400).json({
             status: "failed to save an image file",
             err,
@@ -328,7 +334,9 @@ router.post("/uploadBundleImage2Server", auth, async (req, res) => {
       // remove file once pinned
       try {
         fs.unlinkSync(uploadPath + imageFileName);
-      } catch (error) {}
+      } catch (error) {
+        Logger.error(error);
+      }
 
       let bundle = new Bundle();
       bundle.bundleName = name;
@@ -349,6 +357,7 @@ router.post("/uploadBundleImage2Server", auth, async (req, res) => {
           });
         }
       } catch (error) {
+        Logger.error(error);
         return res.status(400).json({
           status: "failedOutSave",
         });
@@ -368,6 +377,7 @@ router.post("/uploadBannerImage2Server", auth, async (req, res) => {
   let form = new formidable.IncomingForm();
   form.parse(req, async (err, fields, files) => {
     if (err) {
+      Logger.error(err);
       return res.status(400).json({
         status: "failedParsingForm",
       });
@@ -386,6 +396,7 @@ router.post("/uploadBannerImage2Server", auth, async (req, res) => {
       imgData = imgData.replace(`data:image\/${extension};base64,`, "");
       fs.writeFile(uploadPath + imageFileName, imgData, "base64", (err) => {
         if (err) {
+          Logger.error(err);
           return res.status(400).json({
             status: "failed to save an image file",
             err,
@@ -409,10 +420,14 @@ router.post("/uploadBannerImage2Server", auth, async (req, res) => {
           _account.bannerHash = filePinStatus.IpfsHash;
           await _account.save();
         }
-      } catch (error) {}
+      } catch (error) {
+        Logger.error(error);
+      }
       try {
         fs.unlinkSync(uploadPath + imageFileName);
-      } catch (error) {}
+      } catch (error) {
+        Logger.error(error);
+      }
       return res.json({
         status: "success",
         data: filePinStatus.IpfsHash,
@@ -426,8 +441,7 @@ router.post("/uploadCollectionImage2Server", auth, async (req, res) => {
   let form = new formidable.IncomingForm();
   form.parse(req, async (err, fields, files) => {
     if (err) {
-      console.log("error in parsing the form");
-      console.log(err);
+      Logger.error(err);
       return res.status(400).json({
         status: "failedParsingForm",
       });
@@ -448,8 +462,7 @@ router.post("/uploadCollectionImage2Server", auth, async (req, res) => {
       imgData = imgData.replace(`data:image\/${extension};base64,`, "");
       fs.writeFile(uploadPath + imageFileName, imgData, "base64", (err) => {
         if (err) {
-          console.log("failed to upload a collection image file");
-          console.log(err);
+          Logger.error(err);
           return res.status(400).json({
             status: "failed to save an image file",
             err,

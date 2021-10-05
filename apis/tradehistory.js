@@ -7,6 +7,7 @@ const Account = mongoose.model("Account");
 const BundleTradeHistory = mongoose.model("BundleTradeHistory");
 
 const service_auth = require("./middleware/auth.tracker");
+const Logger = require('../services/logger');
 
 const getAccountInfo = async (address) => {
   if (!address) return null;
@@ -44,6 +45,7 @@ router.post("/addBundleHistory", service_auth, async (req, res) => {
       status: "success",
     });
   } catch (error) {
+    Logger.error(error);
     return res.status(400).json({
       status: "failed",
     });
@@ -98,6 +100,7 @@ router.post("/getBundleTradeHistory", async (req, res) => {
       data: history,
     });
   } catch (error) {
+    Logger.error(error);
     return res.json({
       status: "failed",
     });

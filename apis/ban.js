@@ -11,6 +11,7 @@ const NFTITEM = mongoose.model('NFTITEM');
 const Moderator = mongoose.model('Moderator');
 const TurkWork = mongoose.model('TurkWork');
 
+const Logger = require("../services/logger");
 const auth = require('./middleware/auth');
 const toLowerCase = require('../utils/utils');
 const validateSignature = require('../apis/middleware/auth.sign');
@@ -44,12 +45,12 @@ router.post('/banUser', auth, async (req, res) => {
         await bannedUser.save();
         return res.json({
           status: 'success',
-          data: 'banned'
+          data: 'User successfully banned!'
         });
       } catch (error) {
         return res.json({
           status: 'failed',
-          data: 'user is alread banned'
+          data: 'User is alread banned'
         });
       }
     } else {
@@ -59,6 +60,39 @@ router.post('/banUser', auth, async (req, res) => {
       });
     }
   } catch (error) {
+    Logger.error(error);
+    return res.status(400).json({
+      status: 'failed'
+    });
+  }
+});
+
+router.get('/banUser', auth, async (req, res) => {
+  try {
+    let address = extractAddress(req);
+
+    try {
+      let existingUser = await BannedUser.findOne({ address });
+
+      if (existingUser) {
+        return res.json({
+          status: 'success',
+          data: 'banned'
+        });
+      } else {
+        return res.json({
+          status: 'failed',
+          data: 'allowed'
+        });
+      }
+    } catch (error) {
+      return res.json({
+        status: 'failed',
+        data: 'error occured'
+      });
+    }
+  } catch (error) {
+    Logger.error(error);
     return res.status(400).json({
       status: 'failed'
     });
@@ -91,12 +125,14 @@ router.post('/banItem', auth, async (req, res) => {
     try {
       await NFTITEM.deleteOne({ contractAddress: address, tokenID: tokenID });
     } catch (error) {
+      Logger.error(error);
       return res.json({
         status: 'failed',
         data: 'This Item does not exist!'
       });
     }
   } catch (error) {
+    Logger.error(error);
     return res.status(400).json({
       status: 'failed'
     });
@@ -137,19 +173,25 @@ router.post('/banCollection', auth, async (req, res) => {
         { address: contractAddress },
         { $set: { isAppropriate: false } }
       );
-    } catch (error) {}
+    } catch (error) {
+      Logger.error(error);
+    }
     try {
       await ERC1155CONTRACT.updateOne(
         { address: contractAddress },
         { $set: { isAppropriate: false } }
       );
-    } catch (error) {}
+    } catch (error) {
+      Logger.error(error);
+    }
     try {
       await Collection.updateOne(
         { erc721Address: contractAddress },
         { $set: { isAppropriate: false } }
       );
-    } catch (error) {}
+    } catch (error) {
+      Logger.error(error);
+    }
 
     let collectionItems = await NFTITEM.find({
       contractAddress: contractAddress
@@ -168,7 +210,7 @@ router.post('/banCollection', auth, async (req, res) => {
       data: 'banned'
     });
   } catch (error) {
-    console.log(error);
+    Logger.error(error);
     return res.json({
       status: 'Failed to ban a collection!'
     });
@@ -219,13 +261,15 @@ router.post('/unbanCollection', auth, async (req, res) => {
         { erc721Address: contractAddress },
         { $set: { isAppropriate: true } }
       );
-    } catch (error) {}
+    } catch (error) {
+      Logger.error(error);
+    }
     return res.json({
       status: 'success',
       data: 'unbanned'
     });
   } catch (error) {
-    console.log(error);
+    Logger.error(error);
     return res.json({
       status: 'Failed to unban a collection!'
     });
@@ -267,7 +311,7 @@ router.post('/banItems', auth, async (req, res) => {
       tokenID: { $in: tokenIDs }
     });
   } catch (error) {
-    console.log(error);
+    Logger.error(error);
     return res.json({
       status: 'Failed to ban NFT Items!'
     });
@@ -296,6 +340,7 @@ router.post('/boostCollection', auth, async (req, res) => {
           });
         }
       } catch (error) {
+        Logger.error(error);
         return res.status(400).json({
           status: 'failed'
         });
@@ -306,6 +351,7 @@ router.post('/boostCollection', auth, async (req, res) => {
       });
     }
   } catch (error) {
+    Logger.error(error);
     return res.status(400).json({
       status: 'failed'
     });

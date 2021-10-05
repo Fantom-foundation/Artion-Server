@@ -7,6 +7,7 @@ const mongoose = require("mongoose");
 const Account = mongoose.model("Account");
 const NotificationSetting = mongoose.model("NotificationSetting");
 const toLowerCase = require("../utils/utils");
+const Logger = require('../services/logger');
 
 router.post("/getToken", async (req, res) => {
   let address = req.body.address;
@@ -36,7 +37,7 @@ router.post("/getToken", async (req, res) => {
       ns.address = address;
       let _ns = await ns.save();
     } catch (error) {
-      console.log(error);
+      Logger.error(error);
     }
   let token = jwt.sign(
     {
