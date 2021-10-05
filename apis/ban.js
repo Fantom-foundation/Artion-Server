@@ -41,18 +41,27 @@ router.post('/removeBan', auth, async (req, res) => {
       let banAddress = toLowerCase(req.body.address);
       let reason = req.body.reason;
       try {
-        await BannedUser.findOneAndDelete({
-          address: banAddress
-        });
+        let existingUser = await BannedUser.findOne({ address: banAddress });
 
-        return res.json({
-          status: 'success',
-          data: 'User successfully unbanned!'
-        });
+        if (existingUser) {
+          await BannedUser.findOneAndDelete({
+            address: banAddress
+          });
+
+          return res.json({
+            status: 'success',
+            data: 'User successfully unbanned!'
+          });
+        } else {
+          return res.json({
+            status: 'failed',
+            data: 'User is not banned'
+          });
+        }
       } catch (error) {
         return res.json({
           status: 'failed',
-          data: 'User is not banned'
+          data: 'Error'
         });
       }
     } else {
