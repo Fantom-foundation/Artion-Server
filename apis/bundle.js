@@ -18,6 +18,7 @@ const toLowerCase = require("../utils/utils");
 
 const extractAddress = require("../services/address.utils");
 const { getPrice } = require("../services/price.feed");
+const Logger = require('../services/logger');
 
 router.post("/increaseViews", async (req, res) => {
   try {
@@ -154,7 +155,7 @@ router.post("/createBundle", auth, async (req, res) => {
       data: bundleID,
     });
   } catch (error) {
-    console.log(error);
+    Logger.error(error);
     return res.status(400).json({
       status: "failed",
     });

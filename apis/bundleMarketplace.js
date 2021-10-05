@@ -16,6 +16,7 @@ const sendEmail = require("../mailer/bundleMailer");
 const notifications = require("../mailer/followMailer");
 const { getPrice } = require("../services/price.feed");
 const toLowerCase = require("../utils/utils");
+const Logger = require('../services/logger');
 
 // check if nft is erc721 or 1155
 const getTokenType = async (address) => {
@@ -234,7 +235,7 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
       });
       await Promise.all(promise);
 
-      console.log(`new price, old price ${newPrice}, ${oldPrice}`);
+      Logger.info(`new price, old price ${newPrice}, ${oldPrice}`);
       // notify
       if (oldPrice != newPrice)
         notifications.notifyBundleUpdate(
@@ -247,8 +248,7 @@ router.post("/itemUpdated", service_auth, async (req, res) => {
     }
     return res.json({});
   } catch (error) {
-    console.log("bundle item udpate");
-    console.log(error);
+    Logger.error(error);
     return res.json({ status: "failed" });
   }
 });

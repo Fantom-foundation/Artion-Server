@@ -22,6 +22,7 @@ const validatorAddress = process.env.VALIDATORADDRESS;
 
 const SimplifiedERC721ABI = require("../constants/simplifiederc721abi");
 const SimplifiedERC1155ABI = require("../constants/simplifiederc1155abi");
+const Logger = require('../services/logger');
 
 const bannedCollections = new Map();
 const loadedContracts = new Map();
@@ -79,6 +80,7 @@ const is721CollectionBanned = async (contractAddress) => {
       return false;
     }
   } catch (error) {
+    Logger.error(error);
     return false;
   }
 };
@@ -99,6 +101,7 @@ const is1155CollectionBanned = async (contractAddress) => {
       return false;
     }
   } catch (error) {
+    Logger.error(error);
     return false;
   }
 };
@@ -109,7 +112,9 @@ const removeLike = async (contractAddress, tokenID) => {
       contractAddress: contractAddress,
       tokenID: tokenID,
     });
-  } catch (error) {}
+  } catch (error) {
+    Logger.error(error);
+  }
 };
 
 const handle1155SingleTransfer = async (
@@ -149,7 +154,7 @@ const handle1155SingleTransfer = async (
             });
             await removeLike(contractAddress, tokenID);
           } catch (error) {
-            console.log(error);
+            Logger.error(error);
           }
         } else {
           // now remove the supply
@@ -200,7 +205,7 @@ const handle1155SingleTransfer = async (
             newTk.isAppropriate = !isBanned;
             await newTk.save();
           } catch (error) {
-            console.log(error);
+            Logger.error(error);
           }
         }
         let holding = await ERC1155HOLDING.findOne({
@@ -218,7 +223,7 @@ const handle1155SingleTransfer = async (
             holding.supplyPerHolder = value;
             await holding.save();
           } catch (error) {
-            console.log(error);
+            Logger.error(error);
           }
         }
       }
@@ -243,7 +248,7 @@ const handle1155SingleTransfer = async (
             await db_fromSupply.save();
           }
         } catch (error) {
-          console.log(error);
+          Logger.error(error);
         }
       }
       if (db_toSupply) {
@@ -253,7 +258,7 @@ const handle1155SingleTransfer = async (
             await db_toSupply.save();
           }
         } catch (error) {
-          console.log(error);
+          Logger.error(error);
         }
       } else {
         try {
@@ -265,12 +270,12 @@ const handle1155SingleTransfer = async (
           holding.supplyPerHolder = toSupply;
           await holding.save();
         } catch (error) {
-          console.log(error);
+          Logger.error(error);
         }
       }
     }
   } catch (error) {
-    console.log(error);
+    Logger.error(error);
   }
 };
 
@@ -300,7 +305,7 @@ router.post(
           try {
             if (erc721token.createdAt > now) erc721token.createdAt = now;
           } catch (error) {
-            console.log("error 11");
+            Logger.error(error);
           }
           await erc721token.save();
           return res.json({});
@@ -323,8 +328,7 @@ router.post(
               tokenName = metadata.name;
               imageURL = metadata.image;
             } catch (error) {
-              console.log("metadata base64 error");
-              console.log(error);
+              Logger.error(error);
             }
           }
         } else {
@@ -332,7 +336,9 @@ router.post(
           try {
             tokenName = metadata.data.name;
             imageURL = metadata.data.image;
-          } catch (error) {}
+          } catch (error) {
+            Logger.error(error);
+          }
         }
         if (to == validatorAddress) {
           return res.json();
@@ -352,7 +358,7 @@ router.post(
         }
       }
     } catch (error) {
-      console.log(error);
+      Logger.error(error);
       return res.json({});
     }
   }
@@ -368,7 +374,7 @@ router.post("/handle1155SingleTransfer", service_auth, async (req, res) => {
     await handle1155SingleTransfer(from, to, address, id, value);
     return res.json();
   } catch (error) {
-    console.log(error);
+    Logger.error(error);
     return res.json({});
   }
 });
@@ -402,6 +408,7 @@ router.post("/handle1155URI", service_auth, async (req, res) => {
       return res.json();
     }
   } catch (error) {
+    Logger.error(error);
     return res.json();
   }
 });
@@ -428,6 +435,7 @@ router.post("/handle1155BatchTransfer", service_auth, async (req, res) => {
     await Promise.all(promises);
     return res.json({});
   } catch (error) {
+    Logger.error(error);
     return res.json();
   }
 });
@@ -444,6 +452,7 @@ router.get("/getTrackable721Contracts", service_auth, async (req, res) => {
       data: trackable_scs,
     });
   } catch (error) {
+    Logger.error(error);
     return res.json({
       status: "failed",
       data: [],
@@ -462,6 +471,7 @@ router.get("/getTrackable1155Contracts", service_auth, async (req, res) => {
       data: trackable_scs,
     });
   } catch (error) {
+    Logger.error(error);
     return res.json({
       status: "failed",
       data: [],

@@ -11,6 +11,7 @@ const validateSignature = require("../apis/middleware/auth.sign");
 const adminAddress = process.env.ADMINADDRESS;
 
 const extractAddress = require("../services/address.utils");
+const Logger = require('../services/logger');
 
 const isAdmin = (msgSender) => {
   return toLowerCase(adminAddress) == toLowerCase(msgSender);
@@ -43,6 +44,7 @@ router.get("/reportForWeek/:address", auth, async (req, res) => {
       data: bannedNFTs,
     });
   } catch (error) {
+    Logger.error(error);
     return res.json({
       status: "failed",
     });
@@ -51,6 +53,8 @@ router.get("/reportForWeek/:address", auth, async (req, res) => {
 
 router.get("/reportForMonth/:address", auth, async (req, res) => {
   try {
-  } catch (error) {}
+  } catch (error) {
+    Logger.error(error);
+  }
 });
 module.exports = router;

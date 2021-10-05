@@ -18,6 +18,7 @@ const Like = mongoose.model('Like');
 const BundleLike = mongoose.model('BundleLike');
 
 const toLowerCase = require('../utils/utils');
+const Logger = require("../services/logger");
 
 const service_auth = require('./middleware/auth.tracker');
 
@@ -140,6 +141,7 @@ router.post('/searchNames', async (req, res) => {
       data: data
     });
   } catch (error) {
+    Logger.error(error);
     return res.json([]);
   }
 });
@@ -182,6 +184,7 @@ router.get('/getOwnership/:address/:tokenID', async (req, res) => {
       data: _users
     });
   } catch (error) {
+    Logger.error(error);
     return res.json([]);
   }
 });
@@ -209,6 +212,7 @@ router.get('/get1155info/:address/:tokenID', async (req, res) => {
       }
     });
   } catch (error) {
+    Logger.error(error);
     return res.json([]);
   }
 });
@@ -376,6 +380,7 @@ router.get('/getOffersFromAccount/:address', async (req, res) => {
       data: offers
     });
   } catch (error) {
+    Logger.error(error);
     return res.json({
       status: 'failed',
       data: []
@@ -446,6 +451,7 @@ router.get('/getActivityFromOthers/:address', async (req, res) => {
       data: offers
     });
   } catch (error) {
+    Logger.error(error);
     return res.status(400).json({
       status: 'failed'
     });
@@ -482,6 +488,7 @@ router.get('/getFigures/:address', async (req, res) => {
       }
     });
   } catch (error) {
+    Logger.error(error);
     return res.json({
       status: 'failed'
     });
@@ -496,6 +503,7 @@ router.get('/price/:token', (req, res) => {
       data: getPrice(token)
     });
   } catch (error) {
+    Logger.error(error);
     return res.json({
       status: 'failed'
     });
@@ -510,6 +518,7 @@ router.get('/getDecimals/:address', async (req, res) => {
       data: decimal
     });
   } catch (error) {
+    Logger.error(error);
     return res.json({
       data: 0
     });
@@ -525,6 +534,7 @@ const getAccountInfo = async (address) => {
       return null;
     }
   } catch (error) {
+    Logger.error(error);
     return null;
   }
 };

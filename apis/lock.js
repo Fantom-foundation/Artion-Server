@@ -3,7 +3,7 @@ const router = require("express").Router();
 
 const mongoose = require("mongoose");
 const SiteLock = mongoose.model("SiteLock");
-
+const Logger = require("../services/logger");
 const auth = require("./middleware/auth");
 const admin_auth = require("./middleware/auth.admin");
 const validateSignature = require("../apis/middleware/auth.sign");
@@ -23,6 +23,7 @@ router.get("/isSiteLocked", async (req, res) => {
       },
     });
   } catch (error) {
+    Logger.error(error);
     return res.json({
       status: "failed",
       data: {
@@ -45,6 +46,7 @@ router.get("/lock/:lockTime", admin_auth, async (req, res) => {
       data: true,
     });
   } catch (error) {
+    Logger.error(error);
     return res.json({
       status: "failed",
       data: false,
@@ -63,6 +65,7 @@ router.get("/unlock", admin_auth, async (req, res) => {
       data: true,
     });
   } catch (error) {
+    Logger.error(error);
     return res.json({
       status: "failed",
       data: false,
