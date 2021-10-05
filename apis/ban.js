@@ -11,7 +11,7 @@ const NFTITEM = mongoose.model('NFTITEM');
 const Moderator = mongoose.model('Moderator');
 const TurkWork = mongoose.model('TurkWork');
 
-const Logger = require("../services/logger");
+const Logger = require('../services/logger');
 const auth = require('./middleware/auth');
 const toLowerCase = require('../utils/utils');
 const validateSignature = require('../apis/middleware/auth.sign');
@@ -31,6 +31,43 @@ const isAllowedToBan = async (address) => {
   if (mod) return true;
   else return false;
 };
+
+router.post('/removeBan', auth, async (req, res) => {
+  try {
+    let adminAddress = extractAddress(req, res);
+    let isModOrAdmin = await isAllowedToBan(adminAddress);
+
+    if (isModOrAdmin) {
+      let banAddress = toLowerCase(req.body.address);
+      let reason = req.body.reason;
+      try {
+        await BannedUser.findOneAndDelete({
+          address: banAddress
+        });
+
+        return res.json({
+          status: 'success',
+          data: 'User successfully unbanned!'
+        });
+      } catch (error) {
+        return res.json({
+          status: 'failed',
+          data: 'User is not banned'
+        });
+      }
+    } else {
+      return res.json({
+        status: 'failed',
+        data: 'Only Admin or Mods can unban User!'
+      });
+    }
+  } catch (error) {
+    Logger.error(error);
+    return res.status(400).json({
+      status: 'failed'
+    });
+  }
+});
 
 router.post('/banUser', auth, async (req, res) => {
   try {
@@ -52,13 +89,13 @@ router.post('/banUser', auth, async (req, res) => {
       } catch (error) {
         return res.json({
           status: 'failed',
-          data: 'User is alread banned'
+          data: 'User is already banned'
         });
       }
     } else {
       return res.json({
         status: 'failed',
-        data: 'Only Admin or Mods can ban NFT!'
+        data: 'Only Admin or Mods can ban User!'
       });
     }
   } catch (error) {
