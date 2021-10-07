@@ -39,6 +39,18 @@ NFTITEM.index(
   { tokenURI: 1, tokenID: -1, contractAddress: -1 },
   { unique: true }
 );
+NFTITEM.index(
+  { thumbnailPath: 1, isAppropriate: 1 },
+);
+NFTITEM.index(
+  { contractAddress: 1, thumbnailPath: 1, isAppropriate: 1 },
+);
+NFTITEM.index(
+  { contractAddress: 1, tokenID: -1},
+);
+NFTITEM.index(
+  { contractAddress: 1, tokenID: -1, isAppropriate: 1},
+);
 
 NFTITEM.methods.toSimpleJson = function () {
   return {
