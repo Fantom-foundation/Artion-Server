@@ -319,99 +319,100 @@ const selectTokens = async (req, res) => {
           .lean();
         return allTokens;
       } else {
-        /*
-        when status option
-         */
-        /* minter filter */
-        let minterFilters = {
-          ...(collections2filter != null
-            ? { minter: { $in: [...collections2filter] } }
-            : {})
-        };
-        let statusFilteredTokens = [];
-        if (filters.includes('hasBids')) {
-          /* for buy now - pick from Bid */
-          let tokens = await Bid.find(minterFilters).select([
-            'minter',
-            'tokenID'
-          ]);
-          if (tokens) {
-            tokens.map((pair) => {
-              let minter_id_pair = [pair.minter, pair.tokenID];
-              statusFilteredTokens.push(minter_id_pair);
-            });
+        const lookupNFTItemsAndMerge = [
+          {
+          $lookup: {
+            from: "nftitems",
+            let: {
+              id: "$tokenID",
+              contract: "$minter"
+            },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      {
+                        $eq: [
+                          "$tokenID",
+                          "$$id"
+                        ]
+                      },
+                      {
+                        $eq: [
+                          "$contractAddress",
+                          "$$contract"
+                        ]
+                      },
+                    ]
+                  }
+                }
+              }
+            ],
+            as: "result"
           }
+        },
+          {
+            $replaceRoot: {
+              newRoot: {
+                $mergeObjects:[
+                  {
+                    $arrayElemAt: [
+                      "$result",
+                      0
+                    ]
+                  },
+                  {
+                    listing: "$$ROOT._id",
+                  }
+                ]
+              }
+            }}]
+        const minterFilters = { $match: { $expr: { $in: ["$minter", collections2filter]}}};
+
+        if (filters.includes('hasBids')) {
+          const activeBidFilter = {
+            $match: {
+              $expr: {
+                $and: [
+                  {
+                    $eq: ["$winningBid", true]
+                  }, {
+                    $eq: ["$auctionActive", true]
+                  },
+                  collections2filter?.length ? {$in: ["$minter", collections2filter]} : undefined,
+                ].filter(action => action !== undefined)
+              }
+            }
+          }
+          /* for buy now - pick from Bid */
+          const pipeline = [
+            activeBidFilter,
+            ...lookupNFTItemsAndMerge
+          ].filter(part => part !== undefined);
+          return Bid.aggregate(pipeline)
         }
         if (filters.includes('buyNow')) {
-          /* for had bids - pick from Listing */
-          let tokens = await Listing.find(minterFilters).select([
-            'minter',
-            'tokenID'
-          ]);
-          if (tokens) {
-            tokens.map((pair) => {
-              let minter_id_pair = [pair.minter, pair.tokenID];
-              statusFilteredTokens.push(minter_id_pair);
-            });
-          }
+          const pipeline = [
+            collections2filter?.length ? minterFilters : undefined,
+            ...lookupNFTItemsAndMerge,
+          ].filter(part => part !== undefined);
+          return Listing.aggregate(pipeline)
         }
         if (filters.includes('hasOffers')) {
-          /* for has offers - pick from Offer */
-          let minterFilters4Offer = {
-            ...(collections2filter != null
-              ? { minter: { $in: [...collections2filter] } }
-              : {})
-            // ...{ deadline: { $gt: new Date() } },
-          };
-          let tokens = await Offer.find(minterFilters4Offer).select([
-            'minter',
-            'tokenID'
-          ]);
-          if (tokens) {
-            tokens.map((pair) => {
-              let minter_id_pair = [pair.minter, pair.tokenID];
-              statusFilteredTokens.push(minter_id_pair);
-            });
-          }
+          const pipeline = [
+            collections2filter?.length ? minterFilters : undefined,
+            ...lookupNFTItemsAndMerge,
+          ].filter(part => part !== undefined);
+          return Offer.aggregate(pipeline)
         }
         if (filters.includes('onAuction')) {
-          /* for on auction - pick from Auction */
-          Logger.info('filter encountered here');
-          let minterFilters4Auction = {
-            ...(collections2filter != null
-              ? { minter: { $in: [...collections2filter] } }
-              : {})
-            // ...{ endTime: { $gt: new Date() } },
-          };
-          Logger.info('minter filters for auction');
-          let tokens = await Auction.find(minterFilters4Auction).select([
-            'minter',
-            'tokenID'
-          ]);
-          Logger.info('tokens in auction');
-          if (tokens) {
-            tokens.map((pair) => {
-              let minter_id_pair = [pair.minter, pair.tokenID];
-              statusFilteredTokens.push(minter_id_pair);
-            });
-          }
+          const pipeline = [
+            collections2filter?.length ? minterFilters : undefined,
+            ...lookupNFTItemsAndMerge,
+          ].filter(part => part !== undefined);
+          return Auction.aggregate(pipeline)
         }
-        statusFilteredTokens = statusFilteredTokens.filter(
-          ((t = {}), (a) => !(t[a] = a in t))
-        );
-
-        let allFilteredTokens = [];
-        let statusPromise = statusFilteredTokens.map(async (tk) => {
-          let token = await NFTITEM.findOne({
-            contractAddress: tk[0],
-            tokenID: tk[1]
-          }).select(selectOption);
-          if (token) {
-            allFilteredTokens.push(token);
-          }
-        });
-        await Promise.all(statusPromise);
-        return allFilteredTokens;
       }
     } else {
       /*
