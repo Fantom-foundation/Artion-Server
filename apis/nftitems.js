@@ -25,6 +25,7 @@ const toLowerCase = require('../utils/utils');
 const { getPrice } = require('../services/price.feed');
 const sortBy = require('lodash.sortby');
 const Logger = require('../services/logger');
+const {MAX_INTEGER} = require('ethereumjs-util');
 
 const provider = new ethers.providers.JsonRpcProvider(
   process.env.NETWORK_RPC,
@@ -107,7 +108,7 @@ const sortItems = (_allTokens, sortby) => {
     case 'cheapest': {
       tmp = orderBy(
         _allTokens,
-        ({ currentPriceInUSD }) => currentPriceInUSD || 0,
+        ({ currentPriceInUSD }) => currentPriceInUSD || MAX_INTEGER,
         ['asc']
       );
       break;
@@ -198,7 +199,10 @@ const selectTokens = async (req, res) => {
       'lastSalePricePaymentToken',
       'lastSalePriceInUSD',
       'saleEndsAt',
-      'createdAt'
+      'createdAt',
+      'listedAt',
+      'soldAt',
+      'viewed',
     ];
 
     const getCategoryCollectionAddresses = async (category) => {
