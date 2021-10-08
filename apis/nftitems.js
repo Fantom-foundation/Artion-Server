@@ -170,206 +170,128 @@ const selectTokens = async (req, res) => {
   let tokenTypes = await Category.find();
   tokenTypes = tokenTypes.map((tt) => [tt.minterAddress, tt.type]);
   try {
-    let collections2filter = null;
     // get options from request & process
-    let selectedCollections = req.body.collectionAddresses; //collection addresses from request
-    let filters = req.body.filterby; //status -> array or null
-    let sortby = req.body.sortby; //sort -> string param
+    const category = req.body?.category;
+    const wallet = req.body?.address && req.body.address.toLowerCase(); // account address from meta mask
+    const filterCollections = req.body.collectionAddresses?.length ? req.body.collectionAddresses.map(coll => coll.toLowerCase()) : null;
+    const filters = req.body.filterby; //status -> array or null
     // create a sort by option
-    let selectOption;
-    let _sortBy = sortby;
-    if (sortby == 'oldest') sortby = 'createdAt';
-    if (sortby == 'lastSalePrice')
-      selectOption = [
-        'contractAddress',
-        'tokenID',
-        'tokenURI',
-        'tokenType',
-        'thumbnailPath',
-        'name',
-        'imageURL',
-        'supply',
-        'price',
-        'paymentToken',
-        'priceInUSD',
-        'liked',
-        'isAppropriate',
-        'saleEndsAt',
-        'createdAt',
-        _sortBy,
-        'lastSalePricePaymentToken',
-        'lastSalePriceInUSD'
-      ];
-    else if (sortby == 'saleEndsAt')
-      selectOption = [
-        'contractAddress',
-        'tokenID',
-        'tokenURI',
-        'tokenType',
-        'thumbnailPath',
-        'name',
-        'imageURL',
-        'supply',
-        'price',
-        'paymentToken',
-        'priceInUSD',
-        'liked',
-        'isAppropriate',
-        'lastSalePrice',
-        'lastSalePricePaymentToken',
-        'lastSalePriceInUSD',
-        'createdAt',
-        _sortBy
-      ];
-    else if (sortby == 'createdAt')
-      selectOption = [
-        'contractAddress',
-        'tokenID',
-        'tokenURI',
-        'tokenType',
-        'thumbnailPath',
-        'name',
-        'imageURL',
-        'supply',
-        'price',
-        'paymentToken',
-        'priceInUSD',
-        'liked',
-        'isAppropriate',
-        'lastSalePrice',
-        'lastSalePricePaymentToken',
-        'lastSalePriceInUSD',
-        'saleEndsAt',
-        'createdAt'
-      ];
-    else
-      selectOption = [
-        'contractAddress',
-        'tokenID',
-        'tokenURI',
-        'tokenType',
-        'thumbnailPath',
-        'name',
-        'imageURL',
-        'supply',
-        'price',
-        'paymentToken',
-        'priceInUSD',
-        'liked',
-        'isAppropriate',
-        'lastSalePrice',
-        'lastSalePricePaymentToken',
-        'lastSalePriceInUSD',
-        'saleEndsAt',
-        'createdAt',
-        sortby
-      ];
-    let wallet = req.body.address; // account address from meta mask
-    if (wallet) wallet = toLowerCase(wallet);
+    const selectOption = [
+      'contractAddress',
+      'tokenID',
+      'tokenURI',
+      'tokenType',
+      'thumbnailPath',
+      'name',
+      'imageURL',
+      'supply',
+      'price',
+      'paymentToken',
+      'priceInUSD',
+      'liked',
+      'isAppropriate',
+      'saleEndsAt',
+      'createdAt',
+      'lastSalePricePaymentToken',
+      'lastSalePriceInUSD',
+      'lastSalePrice',
+      'lastSalePricePaymentToken',
+      'lastSalePriceInUSD',
+      'saleEndsAt',
+      'createdAt'
+    ];
 
-    if (!selectedCollections) selectedCollections = [];
-    else {
-      selectedCollections = selectedCollections.map((selectedCollection) =>
-        toLowerCase(selectedCollection)
-      );
-      collections2filter = selectedCollections;
-    }
-    let category = req.body.category; //category -> array or null
+    const getCategoryCollectionAddresses = async (category) => {
+      const categoryCollectionRows = await Collection.find({ categories: category }).select("erc721Address")
+      const categoryCollectionAddresses = categoryCollectionRows.map((row) => row.erc721Address.toLowerCase());
 
-    let categoryCollections = null;
-
-    if (category != undefined) {
-      categoryCollections = await Collection.find({
-        categories: category
-      }).select('erc721Address');
-      categoryCollections = categoryCollections.map((c) =>
-        toLowerCase(c.erc721Address)
-      );
-      if (collections2filter != null) {
-        collections2filter = collections2filter.filter((x) =>
-          categoryCollections.includes(x)
-        );
-        if (collections2filter.length == 0) {
-          // if not intersection between categoryfilter & collection filter => return null
-          collections2filter = null;
-          return [];
-        }
-      } else {
-        collections2filter = categoryCollections;
+      if (filterCollections) {
+        return categoryCollectionAddresses.filter((erc721Address) => filterCollections.includes(erc721Address));
       }
+
+      return categoryCollectionAddresses;
     }
+
+    const categoryCollections = category === undefined ? null : await getCategoryCollectionAddresses(category);
+    const collections2filter = categoryCollections || filterCollections;
+
+    const lookupNFTItemsAndMerge = [
+      {
+        $lookup: {
+          from: "nftitems",
+          let: {
+            id: "$tokenID",
+            contract: "$minter"
+          },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $and: [
+                    {
+                      $eq: [
+                        "$tokenID",
+                        "$$id"
+                      ]
+                    },
+                    {
+                      $eq: [
+                        "$contractAddress",
+                        "$$contract"
+                      ]
+                    },
+                  ]
+                }
+              }
+            }
+          ],
+          as: "result"
+        }
+      },
+      {
+        $replaceRoot: {
+          newRoot: {
+            $mergeObjects:[
+              {
+                $arrayElemAt: [
+                  "$result",
+                  0
+                ]
+              },
+              {
+                listing: "$$ROOT._id",
+              }
+            ]
+          }
+        }
+      }
+    ]
+
     /*
     for global search
      */
     if (!wallet) {
-      if (filters == undefined) {
+      if (!filters) {
         /*
         when no status option
          */
         /* contract address filter */
-        let collectionFilters = {
-          ...(collections2filter != null
-            ? { contractAddress: { $in: [...collections2filter] } }
-            : {}),
-          thumbnailPath: { $ne: nonImage },
+        const collectionFilters = {
+          ...(collections2filter === null ?
+            {} :
+            {contractAddress: {$in: [...collections2filter]}}
+          ),
+          thumbnailPath: {$ne: nonImage},
           isAppropriate: true
         };
-        let allTokens = await NFTITEM.find(collectionFilters)
+
+        return NFTITEM.find(collectionFilters)
           .select(selectOption)
           .lean();
-        return allTokens;
-      } else {
-        const lookupNFTItemsAndMerge = [
-          {
-          $lookup: {
-            from: "nftitems",
-            let: {
-              id: "$tokenID",
-              contract: "$minter"
-            },
-            pipeline: [
-              {
-                $match: {
-                  $expr: {
-                    $and: [
-                      {
-                        $eq: [
-                          "$tokenID",
-                          "$$id"
-                        ]
-                      },
-                      {
-                        $eq: [
-                          "$contractAddress",
-                          "$$contract"
-                        ]
-                      },
-                    ]
-                  }
-                }
-              }
-            ],
-            as: "result"
-          }
-        },
-          {
-            $replaceRoot: {
-              newRoot: {
-                $mergeObjects:[
-                  {
-                    $arrayElemAt: [
-                      "$result",
-                      0
-                    ]
-                  },
-                  {
-                    listing: "$$ROOT._id",
-                  }
-                ]
-              }
-            }}]
-        const minterFilters = { $match: { $expr: { $in: ["$minter", collections2filter]}}};
+      }
 
+      if (filters) {
+        const minterFilters = { $match: { $expr: { $in: ["$minter", collections2filter]}}};
         if (filters.includes('hasBids')) {
           const activeBidFilter = {
             $match: {
@@ -380,7 +302,7 @@ const selectTokens = async (req, res) => {
                   }, {
                     $eq: ["$auctionActive", true]
                   },
-                  collections2filter?.length ? {$in: ["$minter", collections2filter]} : undefined,
+                  collections2filter === null ? undefined : {$in: ["$minter", collections2filter]}
                 ].filter(action => action !== undefined)
               }
             }
@@ -394,206 +316,174 @@ const selectTokens = async (req, res) => {
         }
         if (filters.includes('buyNow')) {
           const pipeline = [
-            collections2filter?.length ? minterFilters : undefined,
+            collections2filter === null ? undefined : minterFilters,
             ...lookupNFTItemsAndMerge,
           ].filter(part => part !== undefined);
           return Listing.aggregate(pipeline)
         }
         if (filters.includes('hasOffers')) {
           const pipeline = [
-            collections2filter?.length ? minterFilters : undefined,
+            collections2filter === null ? undefined : minterFilters,
             ...lookupNFTItemsAndMerge,
           ].filter(part => part !== undefined);
           return Offer.aggregate(pipeline)
         }
         if (filters.includes('onAuction')) {
           const pipeline = [
-            collections2filter?.length ? minterFilters : undefined,
+            collections2filter === null ? undefined : minterFilters,
             ...lookupNFTItemsAndMerge,
           ].filter(part => part !== undefined);
           return Auction.aggregate(pipeline)
         }
       }
-    } else {
+    }
+
+    if (wallet) {
       /*
     for account search
      */
 
-      let holdingSupplies = new Map();
-      let holdings = await ERC1155HOLDING.find({
-        holderAddress: wallet,
-        supplyPerHolder: { $gt: 0 }
-      });
-      let holders = holdings.map((holder) => {
-        holdingSupplies.set(
-          holder.contractAddress + holder.tokenID,
-          holder.supplyPerHolder
-        );
-        return [holder.contractAddress, holder.tokenID];
-      });
+      // TODO enable erc1155
+      // const holdingSupplies = new Map();
+      // const holdings = await ERC1155HOLDING.find({
+      //   holderAddress: wallet,
+      //   supplyPerHolder: { $gt: 0 }
+      // });
+      // const holders = holdings.map((holder) => {
+      //   holdingSupplies.set(
+      //     holder.contractAddress + holder.tokenID,
+      //     holder.supplyPerHolder
+      //   );
+      //   return [holder.contractAddress, holder.tokenID];
+      // });
 
-      if (filters == undefined) {
+      if (!filters) {
         /*
         when no status option
          */
         /* contract address filter */
-        let collectionFilters721 = {
-          ...(collections2filter != null
-            ? { contractAddress: { $in: [...collections2filter] } }
-            : {}),
-          ...(wallet != null ? { owner: wallet } : {}),
+        const collectionFilters721 = {
+          ...(collections2filter === null ?
+            {} :
+            { contractAddress: { $in: [...collections2filter] } }),
+          ...(wallet ? { owner: wallet } : {}),
           thumbnailPath: { $ne: nonImage },
           isAppropriate: true
         };
-        let collectionFilters1155 = {
-          ...(collections2filter != null
-            ? { contractAddress: { $in: [...collections2filter] } }
-            : {}),
-          thumbnailPath: { $ne: nonImage },
-          isAppropriate: true
-        };
-        let tokens_721 = await NFTITEM.find(collectionFilters721)
+        return NFTITEM.find(collectionFilters721)
           .select(selectOption)
           .lean();
-        let _tokens_1155 = await NFTITEM.find(collectionFilters1155)
-          .select(selectOption)
-          .lean();
-        let tokens_1155 = [];
-        _tokens_1155.map((token_1155) => {
-          let isIncluded = isIncludedInArray(holders, [
-            token_1155.contractAddress,
-            token_1155.tokenID
-          ]);
-          if (isIncluded)
-            tokens_1155.push({
-              supply: token_1155.supply,
-              price: token_1155.price,
-              paymentToken: token_1155.paymentToken,
-              priceInUSD: token_1155.priceInUSD,
-              lastSalePrice: token_1155.lastSalePrice,
-              lastSalePricePaymentToken: token_1155.lastSalePricePaymentToken,
-              lastSalePriceInUSD: token_1155.lastSalePriceInUSD,
-              viewed: token_1155.viewed,
-              contractAddress: token_1155.contractAddress,
-              tokenID: token_1155.tokenID,
-              tokenURI: token_1155.tokenURI,
-              thumbnailPath: token_1155.thumbnailPath,
-              imageURL: token_1155.imageURL,
-              tokenType: token_1155.tokenType,
-              name: token_1155.name,
-              symbol: token_1155.symbol,
-              liked: token_1155.liked,
-              createdAt: token_1155.createdAt,
-              saleEndsAt: token_1155.saleEndsAt,
-              isAppropriate: token_1155.isAppropriate,
-              holderSupply: holdingSupplies.get(
-                token_1155.contractAddress + token_1155.tokenID
-              )
-            });
-        });
-        let allTokens = [...tokens_721, ...tokens_1155];
-        return allTokens;
-      } else {
+
+        // TODO enable erc1155
+        // let collectionFilters1155 = {
+        //   ...(collections2filter != null
+        //     ? { contractAddress: { $in: [...collections2filter] } }
+        //     : {}),
+        //   thumbnailPath: { $ne: nonImage },
+        //   isAppropriate: true
+        // };
+        // let _tokens_1155 = await NFTITEM.find(collectionFilters1155)
+        //   .select(selectOption)
+        //   .lean();
+        // let tokens_1155 = [];
+        // _tokens_1155.map((token_1155) => {
+        //   let isIncluded = isIncludedInArray(holders, [
+        //     token_1155.contractAddress,
+        //     token_1155.tokenID
+        //   ]);
+        //   if (isIncluded)
+        //     tokens_1155.push({
+        //       supply: token_1155.supply,
+        //       price: token_1155.price,
+        //       paymentToken: token_1155.paymentToken,
+        //       priceInUSD: token_1155.priceInUSD,
+        //       lastSalePrice: token_1155.lastSalePrice,
+        //       lastSalePricePaymentToken: token_1155.lastSalePricePaymentToken,
+        //       lastSalePriceInUSD: token_1155.lastSalePriceInUSD,
+        //       viewed: token_1155.viewed,
+        //       contractAddress: token_1155.contractAddress,
+        //       tokenID: token_1155.tokenID,
+        //       tokenURI: token_1155.tokenURI,
+        //       thumbnailPath: token_1155.thumbnailPath,
+        //       imageURL: token_1155.imageURL,
+        //       tokenType: token_1155.tokenType,
+        //       name: token_1155.name,
+        //       symbol: token_1155.symbol,
+        //       liked: token_1155.liked,
+        //       createdAt: token_1155.createdAt,
+        //       saleEndsAt: token_1155.saleEndsAt,
+        //       isAppropriate: token_1155.isAppropriate,
+        //       holderSupply: holdingSupplies.get(
+        //         token_1155.contractAddress + token_1155.tokenID
+        //       )
+        //     });
+        // });
+        // let allTokens = [...tokens_721, ...tokens_1155];
+        // return allTokens
+      }
+      if (filters) {
         /*
         when status option
          */
-        /* minter filter */
-        let minterFilters = {
-          ...(collections2filter != null
-            ? { minter: { $in: [...collections2filter] } }
-            : {})
-        };
-        let statusFilteredTokens = [];
-        if (filters.includes('hasBids')) {
-          /* for buy now - pick from Bid */
-          let tokens = await Bid.find(minterFilters).select([
-            'minter',
-            'tokenID'
-          ]);
-          if (tokens) {
-            tokens.map((pair) => {
-              let minter_id_pair = [pair.minter, pair.tokenID];
-              statusFilteredTokens.push(minter_id_pair);
-            });
-          }
-        }
-        if (filters.includes('buyNow')) {
-          /* for had bids - pick from Listing */
-          let tokens = await Listing.find(minterFilters).select([
-            'minter',
-            'tokenID'
-          ]);
-          if (tokens) {
-            tokens.map((pair) => {
-              let minter_id_pair = [pair.minter, pair.tokenID];
-              statusFilteredTokens.push(minter_id_pair);
-            });
-          }
-        }
-        if (filters.includes('hasOffers')) {
-          /* for has offers - pick from Offer */
-          let tokens = await Offer.find(minterFilters).select([
-            'minter',
-            'tokenID'
-          ]);
-          if (tokens) {
-            tokens.map((pair) => {
-              let minter_id_pair = [pair.minter, pair.tokenID];
-              statusFilteredTokens.push(minter_id_pair);
-            });
-          }
-        }
-        if (filters.includes('onAuction')) {
-          /* for on auction - pick from Auction */
-          let tokens = await Auction.find(minterFilters).select([
-            'minter',
-            'tokenID'
-          ]);
-          if (tokens) {
-            tokens.map((pair) => {
-              let minter_id_pair = [pair.minter, pair.tokenID];
-              statusFilteredTokens.push(minter_id_pair);
-            });
-          }
-        }
-        statusFilteredTokens = statusFilteredTokens.filter(
-          ((t = {}), (a) => !(t[a] = a in t))
-        );
 
-        let allFilteredTokens721 = [];
-        let allFilteredTokens1155 = [];
-        let allFilteredTokens = [];
-        let statusPromise = statusFilteredTokens.map(async (tk) => {
-          let tokenCategory = tokenTypes.filter(
-            (tokenType) => tokenType[0] == tk[0]
-          );
-          tokenCategory = tokenCategory[0];
-          if (parseInt(tokenCategory[1]) == 721) {
-            let token = await NFTITEM.findOne({
-              contractAddress: tk[0],
-              tokenID: tk[1],
-              owner: wallet
-            }).select(selectOption);
-            if (token) allFilteredTokens721.push(token);
-          } else if (parseInt(tokenCategory[1]) == 1155) {
-            let token = await NFTITEM.findOne({
-              contractAddress: tk[0],
-              tokenID: tk[1]
-            }).select(selectOption);
-            if (token) {
-              if (
-                isIncludedInArray(holders, [
-                  token.contractAddress,
-                  token.tokenID
-                ])
-              )
-                allFilteredTokens1155.push(token);
+        const accountAndMintFilter = (accountColumnName) => ({
+          $match: {
+            $expr: {
+              $and: [
+                {
+                  $eq: [`$${accountColumnName}`, wallet]
+                },
+                collections2filter === null ? undefined : {$in: ["$minter", collections2filter]},
+              ].filter(action => action !== undefined)
             }
           }
         });
-        await Promise.all(statusPromise);
-        allFilteredTokens = [...allFilteredTokens721, ...allFilteredTokens1155];
-        return allFilteredTokens;
+        if (filters.includes('hasBids')) {
+          /* for has bids - pick from Bid */
+          const activeBidAccountFilter = {
+            $match: {
+              $expr: {
+                $and: [
+                  {
+                    $eq: ["$winningBid", true]
+                  }, {
+                    $eq: ["$auctionActive", true]
+                  },
+                  collections2filter === null ? undefined : {$in: ["$minter", collections2filter]},
+                  { $eq: ["$bidder", wallet]}
+                ].filter(action => action !== undefined)
+              }
+            }
+          }
+
+          const pipeline = [
+            activeBidAccountFilter,
+            ...lookupNFTItemsAndMerge
+          ];
+          return Bid.aggregate(pipeline)
+        }
+
+        if (filters.includes('buyNow')) {
+          const pipeline = [
+            accountAndMintFilter("owner"),
+            ...lookupNFTItemsAndMerge,
+          ];
+          return Listing.aggregate(pipeline)
+        }
+        if (filters.includes('hasOffers')) {
+          const pipeline = [
+            accountAndMintFilter("creator"),
+            ...lookupNFTItemsAndMerge,
+          ];
+          return Offer.aggregate(pipeline)
+        }
+        if (filters.includes('onAuction')) {
+          const pipeline = [
+            accountAndMintFilter("bidder"),
+            ...lookupNFTItemsAndMerge,
+          ];
+          return Auction.aggregate(pipeline)
+        }
       }
     }
   } catch (error) {
@@ -857,13 +747,13 @@ router.post('/fetchTokens', async (req, res) => {
   let count = parseInt(req.body.count);
 
   let items = [];
-  if (type == 'all') {
+  if (type === 'all') {
     let nfts = await selectTokens(req, res);
     let bundles = await selectBundles(req, res);
     items = [...nfts, ...bundles];
-  } else if (type == 'single') {
+  } else if (type === 'single') {
     items = await selectTokens(req, res);
-  } else if (type == 'bundle') {
+  } else if (type === 'bundle') {
     items = await selectBundles(req, res);
   }
 
