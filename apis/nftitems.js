@@ -18,6 +18,7 @@ const BundleListing = mongoose.model('BundleListing');
 const BundleOffer = mongoose.model('BundleOffer');
 const TradeHistory = mongoose.model('TradeHistory');
 const UnlockableContents = mongoose.model('UnlockableContents');
+const DisabledExplorerCollection = mongoose.model("DisabledExplorerCollection");
 
 const orderBy = require('lodash.orderby');
 const toLowerCase = require('../utils/utils');
@@ -217,7 +218,18 @@ const selectTokens = async (req, res) => {
     }
 
     const categoryCollections = category === undefined ? null : await getCategoryCollectionAddresses(category);
-    const collections2filter = categoryCollections || filterCollections;
+
+
+    // Filter out disabled explorer collections. Disabled collections are only returned when in filterCollections
+    let allExceptDisabledCollections = null;
+    if (!categoryCollections && !filterCollections) {
+      const disabledExplorerCollectionRows = await DisabledExplorerCollection.find();
+      const disabledExploreCollectionAddresses = disabledExplorerCollectionRows.map((row) => row.minterAddress.toLowerCase())
+      const allExploreCollectionRows = await Collection.find({ erc721Address: { $nin: disabledExploreCollectionAddresses }});
+
+      allExceptDisabledCollections = allExploreCollectionRows.map((row) => row.erc721Address.toLowerCase());
+    }
+    const collections2filter = categoryCollections || filterCollections || allExceptDisabledCollections;
 
     const lookupNFTItemsAndMerge = [
       {

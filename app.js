@@ -52,6 +52,7 @@ require("./models/turkwork");
 require("./models/sitelock");
 require("./models/paytoken");
 require("./models/unlockable");
+require("./models/disabledExplorerCollection");
 
 app.use(bodyParser.json());
 app.use(express.json());
