@@ -541,6 +541,11 @@ const AuctionContractABI = [
         internalType: 'bool',
         name: '_resulted',
         type: 'bool'
+      },
+      {
+        internalType: 'uint256',
+        name: 'minBid',
+        type: 'uint256'
       }
     ],
     stateMutability: 'view',
