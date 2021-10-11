@@ -333,29 +333,6 @@ const MarketplaceContractABI = [
         type: 'uint256'
       },
       {
-        internalType: 'address payable',
-        name: '_owner',
-        type: 'address'
-      }
-    ],
-    name: 'buyItem',
-    outputs: [],
-    stateMutability: 'payable',
-    type: 'function'
-  },
-  {
-    inputs: [
-      {
-        internalType: 'address',
-        name: '_nftAddress',
-        type: 'address'
-      },
-      {
-        internalType: 'uint256',
-        name: '_tokenId',
-        type: 'uint256'
-      },
-      {
         internalType: 'address',
         name: '_payToken',
         type: 'address'
