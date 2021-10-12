@@ -332,7 +332,12 @@ router.post(
             }
           }
         } else {
-          metadata = await axios.get(tokenURI);
+          let metadataURI = tokenURI;
+          if (tokenURI.includes('ipfs://')) {
+            let uri = tokenURI.split('//')[1];
+            metadataURI = `https://cloudflare-ipfs.com/ipfs/${uri}`;
+          }
+          metadata = await axios.get(metadataURI);
           try {
             tokenName = metadata.data.name;
             imageURL = metadata.data.image;
