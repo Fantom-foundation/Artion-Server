@@ -12,13 +12,14 @@ const Category = mongoose.model('Category');
 const Bid = mongoose.model('Bid');
 const Offer = mongoose.model('Offer');
 const Listing = mongoose.model('Listing');
+const Sold = mongoose.model('Sold');
 const Auction = mongoose.model('Auction');
 const Bundle = mongoose.model('Bundle');
 const Like = mongoose.model('Like');
 const BundleLike = mongoose.model('BundleLike');
 
 const toLowerCase = require('../utils/utils');
-const Logger = require("../services/logger");
+const Logger = require('../services/logger');
 
 const service_auth = require('./middleware/auth.tracker');
 
@@ -226,6 +227,7 @@ router.get('/getAccountActivity/:address', async (req, res) => {
   let bids = [];
   let offers = [];
   let listings = [];
+  let sold = [];
 
   let bidsFromAccount = await Bid.find({
     bidder: address
@@ -236,6 +238,8 @@ router.get('/getAccountActivity/:address', async (req, res) => {
   let listsFromAccount = await Listing.find({
     owner: address
   });
+  let salesFromAccount = await Sold.find({ from: address });
+
   if (bidsFromAccount) {
     let bidsPromise = bidsFromAccount.map(async (bfa) => {
       let token = await NFTITEM.findOne({
@@ -317,12 +321,40 @@ router.get('/getAccountActivity/:address', async (req, res) => {
     });
     await Promise.all(listsPromise);
   }
+  if (salesFromAccount) {
+    let soldPromise = salesFromAccount.map(async (sfa) => {
+      token = await NFTITEM.findOne({
+        contractAddress: sfa.minter,
+        tokenID: sfa.tokenID
+      });
+      if (token) {
+        let account = await getAccountInfo(token.owner);
+        sold.push({
+          contractAddress: token.contractAddress,
+          tokenID: token.tokenID,
+          name: token.name,
+          tokenURI: token.tokenURI,
+          thumbnailPath: token.thumbnailPath,
+          imageURL: token.imageURL,
+          owner: token.owner,
+          quantity: sfa.quantity,
+          price: sfa.price,
+          paymentToken: sfa.paymentToken,
+          createdAt: sfa._id.getTimestamp(),
+          alias: account ? account[0] : null,
+          image: account ? account[1] : null
+        });
+      }
+    });
+    await Promise.all(soldPromise);
+  }
   return res.json({
     status: 'success',
     data: {
       bids,
       offers,
-      listings
+      listings,
+      sold
     }
   });
 });
