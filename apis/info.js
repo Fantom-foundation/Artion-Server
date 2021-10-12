@@ -11,6 +11,7 @@ const ERC1155HOLDING = mongoose.model('ERC1155HOLDING');
 const Category = mongoose.model('Category');
 const Bid = mongoose.model('Bid');
 const Offer = mongoose.model('Offer');
+const TradeHistory = mongoose.model('TradeHistory');
 const Listing = mongoose.model('Listing');
 const Auction = mongoose.model('Auction');
 const Bundle = mongoose.model('Bundle');
@@ -18,7 +19,7 @@ const Like = mongoose.model('Like');
 const BundleLike = mongoose.model('BundleLike');
 
 const toLowerCase = require('../utils/utils');
-const Logger = require("../services/logger");
+const Logger = require('../services/logger');
 
 const service_auth = require('./middleware/auth.tracker');
 
@@ -226,6 +227,7 @@ router.get('/getAccountActivity/:address', async (req, res) => {
   let bids = [];
   let offers = [];
   let listings = [];
+  let sold = [];
 
   let bidsFromAccount = await Bid.find({
     bidder: address
@@ -236,6 +238,8 @@ router.get('/getAccountActivity/:address', async (req, res) => {
   let listsFromAccount = await Listing.find({
     owner: address
   });
+  let salesFromAccount = await TradeHistory.find({ from: address });
+
   if (bidsFromAccount) {
     let bidsPromise = bidsFromAccount.map(async (bfa) => {
       let token = await NFTITEM.findOne({
@@ -317,12 +321,41 @@ router.get('/getAccountActivity/:address', async (req, res) => {
     });
     await Promise.all(listsPromise);
   }
+
+  if (salesFromAccount) {
+    let soldPromise = salesFromAccount.map(async (sfa) => {
+      token = await NFTITEM.findOne({
+        contractAddress: sfa.collectionAddress,
+        tokenID: sfa.tokenID
+      });
+      if (token) {
+        let account = await getAccountInfo(token.owner);
+        sold.push({
+          contractAddress: token.contractAddress,
+          tokenID: token.tokenID,
+          name: token.name,
+          tokenURI: token.tokenURI,
+          thumbnailPath: token.thumbnailPath,
+          imageURL: token.imageURL,
+          owner: token.owner,
+          quantity: sfa.value,
+          price: sfa.price,
+          paymentToken: sfa.paymentToken,
+          createdAt: sfa._id.getTimestamp(),
+          alias: account ? account[0] : null,
+          image: account ? account[1] : null
+        });
+      }
+    });
+    await Promise.all(soldPromise);
+  }
   return res.json({
     status: 'success',
     data: {
       bids,
       offers,
-      listings
+      listings,
+      sold
     }
   });
 });
