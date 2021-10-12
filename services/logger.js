@@ -9,11 +9,11 @@ const levels = {
 }
 
 const level = () => {
-  // const env = process.env.NODE_ENV || 'development'
-  // const isDevelopment = env === 'development'
-  // return isDevelopment ? 'debug' : 'warn'
+  const env = process.env.NODE_ENV || 'development'
+  const isDevelopment = env === 'development'
+  return isDevelopment ? 'debug' : 'info'
   // TODO change back to prod logging at some point
-  return 'debug';
+  // return 'debug';
 }
 
 const colors = {
