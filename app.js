@@ -28,6 +28,7 @@ require("./models/nftitems");
 require("./models/event");
 require("./models/highestblock");
 require("./models/listing");
+require("./models/sold");
 require("./models/notification");
 require("./models/offer");
 require("./models/tradehistory");

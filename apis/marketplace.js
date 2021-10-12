@@ -4,6 +4,7 @@ const router = require("express").Router();
 const ethers = require("ethers");
 
 const Listing = mongoose.model("Listing");
+const Sold = mongoose.model("Sold");
 const TradeHistory = mongoose.model("TradeHistory");
 const Offer = mongoose.model("Offer");
 const NFTITEM = mongoose.model("NFTITEM");
@@ -164,6 +165,7 @@ router.post("/itemSold", service_auth, async (req, res) => {
 
     const priceInUSD = pricePerItem * getPrice(itemPayToken.address);
 
+    
     // update last sale price
     // first update the token price
     let category = await Category.findOne({ minterAddress: nft });
@@ -266,6 +268,33 @@ router.post("/itemSold", service_auth, async (req, res) => {
     } catch (err) {
       Logger.error("[ItemSold] Failed to save new TradeHistory: ", err.message)
     }
+
+      // Sold
+      try {
+        const alreadySold = await Sold.find({
+          from: seller,
+          minter: nft,
+          tokenID: tokenId,
+          txHash: transactionHash
+        });
+  
+        if (!alreadySold.length) {
+          const newSold = new Sold();
+          newSold.from = seller;
+          newSold.to = buyer;
+          newSold.minter = nft;
+          newSold.tokenID = tokenId;
+          newSold.quantity = quantity;
+          newSold.price = pricePerItem;
+          newSold.paymentToken = itemPayToken.address;
+          newSold.priceInUSD = priceInUSD;
+          newSold.soldAt = new Date(); //set recently sold date
+          newSold.txHash = transactionHash;
+          await newSold.save();
+        }
+      } catch (err) {
+        Logger.error('[ItemSold] failed to save new Sold: ', err.message);
+      }
 
     // remove from listing
     await Listing.deleteMany({
