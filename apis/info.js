@@ -119,7 +119,8 @@ router.post('/searchNames', async (req, res) => {
       .select(['erc721Address', 'collectionName', 'logoImageHash'])
       .limit(3);
     let tokens = await NFTITEM.find({
-      name: { $regex: name, $options: 'i' }
+      name: { $regex: name, $options: 'i' },
+      isAppropriate: true
     })
       .select([
         'contractAddress',
