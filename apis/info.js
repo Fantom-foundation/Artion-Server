@@ -119,7 +119,8 @@ router.post('/searchNames', async (req, res) => {
       .select(['erc721Address', 'collectionName', 'logoImageHash'])
       .limit(3);
     let tokens = await NFTITEM.find({
-      name: { $regex: name, $options: 'i' }
+      name: { $regex: name, $options: 'i' },
+      isAppropriate: true
     })
       .select([
         'contractAddress',
@@ -249,13 +250,14 @@ router.get('/getAccountActivity/:address', async (req, res) => {
       if (token) {
         let account = await getAccountInfo(token.owner);
         bids.push({
+          event: 'Bid',
           contractAddress: token.contractAddress,
           tokenID: token.tokenID,
           name: token.name,
           tokenURI: token.tokenURI,
           thumbnailPath: token.thumbnailPath,
           imageURL: token.imageURL,
-          owner: token.owner,
+          to: token.owner,
           price: bfa.bid,
           paymentToken: bfa.paymentToken,
           quantity: bfa.quantity,
@@ -265,6 +267,7 @@ router.get('/getAccountActivity/:address', async (req, res) => {
         });
       }
     });
+
     await Promise.all(bidsPromise);
   }
   if (offersFromAccount) {
@@ -276,13 +279,14 @@ router.get('/getAccountActivity/:address', async (req, res) => {
       if (token) {
         let account = await getAccountInfo(token.owner);
         offers.push({
+          event: 'Offer',
           contractAddress: token.contractAddress,
           tokenID: token.tokenID,
           name: token.name,
           tokenURI: token.tokenURI,
           thumbnailPath: token.thumbnailPath,
           imageURL: token.imageURL,
-          owner: token.owner,
+          to: token.owner,
           quantity: ofa.quantity,
           price: ofa.pricePerItem,
           paymentToken: ofa.paymentToken,
@@ -296,20 +300,21 @@ router.get('/getAccountActivity/:address', async (req, res) => {
   }
   if (listsFromAccount) {
     let listsPromise = listsFromAccount.map(async (lfa) => {
-      token = await NFTITEM.findOne({
+      let token = await NFTITEM.findOne({
         contractAddress: lfa.minter,
         tokenID: lfa.tokenID
       });
       if (token) {
         let account = await getAccountInfo(token.owner);
         listings.push({
+          event: 'Listing',
           contractAddress: token.contractAddress,
           tokenID: token.tokenID,
           name: token.name,
           tokenURI: token.tokenURI,
           thumbnailPath: token.thumbnailPath,
           imageURL: token.imageURL,
-          owner: token.owner,
+          to: token.owner,
           quantity: lfa.quantity,
           price: lfa.price,
           paymentToken: lfa.paymentToken,
@@ -324,20 +329,22 @@ router.get('/getAccountActivity/:address', async (req, res) => {
 
   if (salesFromAccount) {
     let soldPromise = salesFromAccount.map(async (sfa) => {
-      token = await NFTITEM.findOne({
+      let token = await NFTITEM.findOne({
         contractAddress: sfa.collectionAddress,
         tokenID: sfa.tokenID
       });
+
       if (token) {
-        let account = await getAccountInfo(token.owner);
+        let account = await getAccountInfo(sfa.to);
         sold.push({
+          event: 'Sold',
           contractAddress: token.contractAddress,
           tokenID: token.tokenID,
           name: token.name,
           tokenURI: token.tokenURI,
           thumbnailPath: token.thumbnailPath,
           imageURL: token.imageURL,
-          owner: token.owner,
+          to: sfa.to,
           quantity: sfa.value,
           price: sfa.price,
           paymentToken: sfa.paymentToken,
@@ -349,6 +356,7 @@ router.get('/getAccountActivity/:address', async (req, res) => {
     });
     await Promise.all(soldPromise);
   }
+
   return res.json({
     status: 'success',
     data: {
