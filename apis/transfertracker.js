@@ -9,6 +9,7 @@ const ERC721CONTRACT = mongoose.model("ERC721CONTRACT");
 const ERC1155CONTRACT = mongoose.model("ERC1155CONTRACT");
 const ERC1155HOLDING = mongoose.model("ERC1155HOLDING");
 const NFTITEM = mongoose.model("NFTITEM");
+const Listing = mongoose.model("Listing");
 const Like = mongoose.model("Like");
 
 const service_auth = require("./middleware/auth.tracker");
@@ -286,11 +287,18 @@ router.post(
       let address = toLowerCase(req.body.address); //contract address
       let to = toLowerCase(req.body.to); // transferred to
       let tokenID = parseInt(req.body.tokenID); //tokenID
+
+      // remove existing listing(s)
+      await Listing.deleteMany({
+        minter: address,
+        tokenID: tokenID
+      });
+
       let erc721token = await NFTITEM.findOne({
         contractAddress: address,
         tokenID: tokenID,
       });
-
+      
       if (erc721token) {
         if (to == erc721token.owner) {
           return res.json({});
