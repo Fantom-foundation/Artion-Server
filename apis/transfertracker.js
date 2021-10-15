@@ -1,19 +1,19 @@
-require("dotenv").config();
-const axios = require("axios");
-const ethers = require("ethers");
-const router = require("express").Router();
-const isBase64 = require("is-base64");
+require('dotenv').config();
+const axios = require('axios');
+const ethers = require('ethers');
+const router = require('express').Router();
+const isBase64 = require('is-base64');
 
-const mongoose = require("mongoose");
-const ERC721CONTRACT = mongoose.model("ERC721CONTRACT");
-const ERC1155CONTRACT = mongoose.model("ERC1155CONTRACT");
-const ERC1155HOLDING = mongoose.model("ERC1155HOLDING");
-const NFTITEM = mongoose.model("NFTITEM");
-const Listing = mongoose.model("Listing");
-const Like = mongoose.model("Like");
+const mongoose = require('mongoose');
+const ERC721CONTRACT = mongoose.model('ERC721CONTRACT');
+const ERC1155CONTRACT = mongoose.model('ERC1155CONTRACT');
+const ERC1155HOLDING = mongoose.model('ERC1155HOLDING');
+const NFTITEM = mongoose.model('NFTITEM');
+const Listing = mongoose.model('Listing');
+const Like = mongoose.model('Like');
 
-const service_auth = require("./middleware/auth.tracker");
-const toLowerCase = require("../utils/utils");
+const service_auth = require('./middleware/auth.tracker');
+const toLowerCase = require('../utils/utils');
 
 const provider = new ethers.providers.JsonRpcProvider(
   process.env.NETWORK_RPC,
@@ -21,8 +21,8 @@ const provider = new ethers.providers.JsonRpcProvider(
 );
 const validatorAddress = process.env.VALIDATORADDRESS;
 
-const SimplifiedERC721ABI = require("../constants/simplifiederc721abi");
-const SimplifiedERC1155ABI = require("../constants/simplifiederc1155abi");
+const SimplifiedERC721ABI = require('../constants/simplifiederc721abi');
+const SimplifiedERC1155ABI = require('../constants/simplifiederc1155abi');
 const Logger = require('../services/logger');
 
 const bannedCollections = new Map();
@@ -71,7 +71,7 @@ const is721CollectionBanned = async (contractAddress) => {
   try {
     let contract_721 = await ERC721CONTRACT.findOne({
       address: contractAddress,
-      isAppropriate: false,
+      isAppropriate: false
     });
     if (contract_721) {
       bannedCollections.set(contractAddress, true);
@@ -92,7 +92,7 @@ const is1155CollectionBanned = async (contractAddress) => {
   try {
     let contract_1155 = await ERC1155CONTRACT.findOne({
       address: contractAddress,
-      isAppropriate: false,
+      isAppropriate: false
     });
     if (contract_1155) {
       bannedCollections.set(contractAddress, true);
@@ -111,7 +111,7 @@ const removeLike = async (contractAddress, tokenID) => {
   try {
     await Like.remove({
       contractAddress: contractAddress,
-      tokenID: tokenID,
+      tokenID: tokenID
     });
   } catch (error) {
     Logger.error(error);
@@ -128,13 +128,13 @@ const handle1155SingleTransfer = async (
   try {
     let tk = await NFTITEM.findOne({
       contractAddress: contractAddress,
-      tokenID: tokenID,
+      tokenID: tokenID
     });
     let fromSupply = await getSupply(contractAddress, tokenID, from);
     let db_fromSupply = await ERC1155HOLDING.findOne({
       contractAddress: contractAddress,
       tokenID: tokenID,
-      holderAddress: from,
+      holderAddress: from
     });
     if (!db_fromSupply) {
     }
@@ -151,7 +151,7 @@ const handle1155SingleTransfer = async (
             await tk.remove();
             await ERC1155HOLDING.deleteMany({
               contractAddress: contractAddress,
-              tokenID: tokenID,
+              tokenID: tokenID
             });
             await removeLike(contractAddress, tokenID);
           } catch (error) {
@@ -165,7 +165,7 @@ const handle1155SingleTransfer = async (
           let holding = await ERC1155HOLDING.findOne({
             contractAddress: contractAddress,
             tokenID: tokenID,
-            holderAddress: from,
+            holderAddress: from
           });
           holding = parseInt(holding.supplyPerHolder) - value;
           await holding.save();
@@ -179,7 +179,7 @@ const handle1155SingleTransfer = async (
       let db_toSupply = await ERC1155HOLDING.findOne({
         contractAddress: contractAddress,
         tokenID: tokenID,
-        holderAddress: to,
+        holderAddress: to
       });
       if (db_toSupply) {
         if (db_toSupply.supplyPerHolder != toSupply) {
@@ -190,7 +190,7 @@ const handle1155SingleTransfer = async (
         // this is a new mint
         let tk = await NFTITEM.findOne({
           contractAddress: contractAddress,
-          tokenID: tokenID,
+          tokenID: tokenID
         });
         if (!tk) {
           try {
@@ -200,7 +200,7 @@ const handle1155SingleTransfer = async (
             newTk.supply = value;
             newTk.createdAt = new Date();
             let tokenUri = await getTokenUri(contractAddress, tokenID);
-            newTk.tokenURI = tokenUri ? tokenUri : "https://";
+            newTk.tokenURI = tokenUri ? tokenUri : 'https://';
             newTk.tokenType = 1155;
             let isBanned = await is1155CollectionBanned(contractAddress);
             newTk.isAppropriate = !isBanned;
@@ -212,7 +212,7 @@ const handle1155SingleTransfer = async (
         let holding = await ERC1155HOLDING.findOne({
           contractAddress: contractAddress,
           tokenID: tokenID,
-          holderAddress: to,
+          holderAddress: to
         });
         if (!holding) {
           try {
@@ -235,12 +235,12 @@ const handle1155SingleTransfer = async (
       let db_fromSupply = await ERC1155HOLDING.findOne({
         contractAddress: contractAddress,
         tokenID: tokenID,
-        holderAddress: from,
+        holderAddress: from
       });
       let db_toSupply = await ERC1155HOLDING.findOne({
         contractAddress: contractAddress,
         tokenID: tokenID,
-        holderAddress: to,
+        holderAddress: to
       });
       if (db_fromSupply) {
         try {
@@ -281,7 +281,7 @@ const handle1155SingleTransfer = async (
 };
 
 router.post(
-  "/handle721Transfer",
+  '/handle721Transfer',
   /*service_auth,*/ async (req, res) => {
     try {
       let address = toLowerCase(req.body.address); //contract address
@@ -296,9 +296,9 @@ router.post(
 
       let erc721token = await NFTITEM.findOne({
         contractAddress: address,
-        tokenID: tokenID,
+        tokenID: tokenID
       });
-      
+
       if (erc721token) {
         if (to == erc721token.owner) {
           return res.json({});
@@ -322,11 +322,11 @@ router.post(
         let sc = loadContract(address, 721);
         let tokenURI = await sc.tokenURI(tokenID);
         let metadata;
-        let tokenName = "";
-        let imageURL = "";
+        let tokenName = '';
+        let imageURL = '';
         // now check if token uri is base64
-        if (tokenURI.startsWith("data:application/json;base64,")) {
-          tokenURI = tokenURI.split(",");
+        if (tokenURI.startsWith('data:application/json;base64,')) {
+          tokenURI = tokenURI.split(',');
           tokenURI = tokenURI[1];
           let isBased64Encoded = isBase64(tokenURI);
           if (isBased64Encoded) {
@@ -377,7 +377,7 @@ router.post(
   }
 );
 
-router.post("/handle1155SingleTransfer", service_auth, async (req, res) => {
+router.post('/handle1155SingleTransfer', service_auth, async (req, res) => {
   try {
     let address = toLowerCase(req.body.address);
     let from = toLowerCase(req.body.from);
@@ -392,19 +392,19 @@ router.post("/handle1155SingleTransfer", service_auth, async (req, res) => {
   }
 });
 
-router.post("/handle1155URI", service_auth, async (req, res) => {
+router.post('/handle1155URI', service_auth, async (req, res) => {
   try {
     let address = toLowerCase(req.body.address);
     let id = parseInt(req.body.id);
     let value = req.body.value;
     let tk = await NFTITEM.findOne({
       contractAddress: address,
-      tokenID: id,
+      tokenID: id
     });
     if (!tk) {
     } else {
       let _tkURI = tk.tokenURI;
-      if (_tkURI == "https://") {
+      if (_tkURI == 'https://') {
         tk.tokenURI = value;
       }
       try {
@@ -413,9 +413,9 @@ router.post("/handle1155URI", service_auth, async (req, res) => {
         let imageURL = metadata.data.image;
         tk.imageURL = imageURL;
         tk.name = name;
-        tk.thumbnailPath = "-";
+        tk.thumbnailPath = '-';
       } catch (error) {
-        tk.name = "";
+        tk.name = '';
       }
       await tk.save();
       return res.json();
@@ -426,15 +426,15 @@ router.post("/handle1155URI", service_auth, async (req, res) => {
   }
 });
 
-router.post("/handle1155BatchTransfer", service_auth, async (req, res) => {
+router.post('/handle1155BatchTransfer', service_auth, async (req, res) => {
   try {
     let address = toLowerCase(req.body.address);
     let from = toLowerCase(req.body.from);
     let to = toLowerCase(req.body.to);
     let ids = req.body.id;
-    ids = ids.split(",");
+    ids = ids.split(',');
     let values = req.body.value;
-    values = values.split(",");
+    values = values.split(',');
     let promises = ids.map(async (_, index) => {
       operator = toLowerCase(operator);
       from = toLowerCase(from);
@@ -453,7 +453,7 @@ router.post("/handle1155BatchTransfer", service_auth, async (req, res) => {
   }
 });
 
-router.get("/getTrackable721Contracts", service_auth, async (req, res) => {
+router.get('/getTrackable721Contracts', service_auth, async (req, res) => {
   try {
     let contracts = await ERC721CONTRACT.find({ isAppropriate: true });
     let trackable_scs = [];
@@ -461,18 +461,18 @@ router.get("/getTrackable721Contracts", service_auth, async (req, res) => {
       trackable_scs.push(contract.address);
     });
     return res.json({
-      status: "success",
-      data: trackable_scs,
+      status: 'success',
+      data: trackable_scs
     });
   } catch (error) {
     Logger.error(error);
     return res.json({
-      status: "failed",
-      data: [],
+      status: 'failed',
+      data: []
     });
   }
 });
-router.get("/getTrackable1155Contracts", service_auth, async (req, res) => {
+router.get('/getTrackable1155Contracts', service_auth, async (req, res) => {
   try {
     let contracts = await ERC1155CONTRACT.find({ isAppropriate: true });
     let trackable_scs = [];
@@ -480,14 +480,14 @@ router.get("/getTrackable1155Contracts", service_auth, async (req, res) => {
       trackable_scs.push(contract.address);
     });
     return res.json({
-      status: "success",
-      data: trackable_scs,
+      status: 'success',
+      data: trackable_scs
     });
   } catch (error) {
     Logger.error(error);
     return res.json({
-      status: "failed",
-      data: [],
+      status: 'failed',
+      data: []
     });
   }
 });
