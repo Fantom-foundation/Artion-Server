@@ -182,6 +182,7 @@ const selectTokens = async (req, res) => {
     // create a sort by option
     const selectOption = [
       'contractAddress',
+      'contentType',
       'tokenID',
       'tokenURI',
       'tokenType',
@@ -791,6 +792,9 @@ router.post('/fetchTokens', async (req, res) => {
   let _searchResults = data.slice(from, from + count);
 
   let searchResults = _searchResults.map((sr) => ({
+    ...(sr.contentType != null && sr.contentType != undefined
+      ? { contentType: sr.contentType }
+      : {}),
     ...(sr.contractAddress != null && sr.contractAddress != undefined
       ? { contractAddress: sr.contractAddress }
       : {}),
